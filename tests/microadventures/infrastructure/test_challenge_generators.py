@@ -179,3 +179,20 @@ def test_ollama_asks_for_a_different_category_per_challenge_in_a_random_order():
         assert len(set(order)) == 3  # no repeated category within a walk
         orders.add(tuple(order))
     assert len(orders) > 1  # and walks do not all start the same way
+
+
+def test_ollama_accepts_json_wrapped_in_a_markdown_fence():
+    output = '```json\n{"challenges": [{"category": "sound", "text": "Escucha un pájaro."}, {"category": "nature", "text": "Busca un árbol viejo."}]}\n```'
+
+    challenges = OllamaChallengeGenerator("http://ollama:11434", "gemma", http=FakeHttp(output)).generate(BRIEF)
+
+    assert [c.text for c in challenges] == ["Escucha un pájaro.", "Busca un árbol viejo."]
+
+
+def test_ollama_accepts_challenges_given_as_plain_sentences():
+    output = '{"challenges": ["Encuentra tres tipos de hojas.", "Fotografía algo de color rojo."]}'
+
+    challenges = OllamaChallengeGenerator("http://ollama:11434", "gemma", http=FakeHttp(output)).generate(BRIEF)
+
+    assert [c.text for c in challenges] == ["Encuentra tres tipos de hojas.", "Fotografía algo de color rojo."]
+    assert len({c.category for c in challenges}) == 2  # no category given: they are spread over the categories

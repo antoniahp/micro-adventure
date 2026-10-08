@@ -1,5 +1,6 @@
 import json
 import random
+import re
 from uuid import uuid4
 
 import requests
@@ -148,6 +149,21 @@ def _items(data) -> list:
     raise KeyError("challenges")
 
 
+FENCE = re.compile(r"^```[a-zA-Z]*\s*(.*?)\s*```$", re.DOTALL)
+
+
+def _load_json(raw: str):
+    """Reads the model's JSON. Some models wrap it in a markdown fence (```json ... ```) even when asked for plain JSON."""
+    text = raw.strip()
+    fenced = FENCE.match(text)
+    return json.loads(fenced.group(1) if fenced else text)
+
+
+def _as_item(item) -> dict:
+    """A challenge is normally {"category", "text"}, but a model may give just the sentence."""
+    return {"text": item} if isinstance(item, str) else item
+
+
 def _text(item: dict) -> str:
     for key in ("text", "challenge", "reto", "description", "descripcion"):
         if isinstance(item.get(key), str):
@@ -157,7 +173,7 @@ def _text(item: dict) -> str:
 
 def _parse_challenges(raw: str, brief: ChallengeBrief) -> list[Challenge]:
     try:
-        items = _items(json.loads(raw))[: brief.count]
+        items = [_as_item(item) for item in _items(_load_json(raw))[: brief.count]]
         challenges = [
             Challenge(id=uuid4(), category=_category(item.get("category"), position, brief.category), text=_text(item))
             for position, item in enumerate(items)

@@ -161,6 +161,8 @@ One Render web service runs everything: the Django API, the admin and the built 
 3. The container applies the migrations to Atlas on every start. Create the admin user once from the service's Shell tab: `python src/manage.py createsuperuser`.
 4. **GPU Droplet (Gemma).** Create a GPU Droplet on DigitalOcean (Ubuntu, AI/ML-ready image), open its console as root and run `scripts/gpu-droplet-setup.sh`. It installs Ollama (listening only on localhost), pulls the model and puts Caddy in front with HTTPS and a random key. It prints the two values for Render: set `OLLAMA_URL` (`https://<ip>.sslip.io`) and `OLLAMA_API_KEY`, and the service redeploys. Ollama has no login of its own, so never open its port directly. A Droplet bills for as long as it exists, even powered off: destroy it when the demo is over. If it is unreachable the app falls back to its template challenges.
 
+   **No server of your own?** Ollama also hosts Gemma in its cloud. Create an API key at ollama.com/settings/keys and set `OLLAMA_URL=https://ollama.com`, `OLLAMA_API_KEY=<the key>` and `OLLAMA_MODEL` to a name from `https://ollama.com/api/tags` (for example `gemma4:31b`). The notes people write travel to Ollama's servers, which say they do not use them for training.
+
 Free Render services fall asleep after a while without traffic and take about a minute to wake up. Open the app before a demo.
 
 ## Decisions
