@@ -10,7 +10,7 @@ import { CATEGORIES, FALLBACK_CATEGORY } from "../ui";
 type Props = { walkId: string; onFinished: () => void; onOpenNotebook: () => void };
 
 export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [walk, setWalk] = useState<Walk | null>(null);
   const [loadError, setLoadError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -59,6 +59,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   return (
     <section>
       <h2>{t("walk.title")}</h2>
+      {walk.language !== lang && <p className="hint" role="status">{t("walk.languageNote")}</p>}
       <div className="progress">
         <div className="progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={doneCount}>
           {walk.challenges.map((c) => (
