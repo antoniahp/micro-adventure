@@ -15,12 +15,13 @@ The backend must be running on port 8000 (`make run` in the repo root). Vite for
 | --- | --- |
 | `src/main.tsx` | Entry point: mounts React |
 | `src/i18n.tsx` | All the texts in Spanish and English, the language switch and `t()` |
+| `src/sky.ts` | Sky colours, sun, moon and lamp for the hour on the device. Open the app with `?hour=21` to preview any hour |
 | `src/App.tsx` | Tabs (walk / notebook) and which walk is active |
 | `src/api.ts` | Every call to the backend |
 | `src/types.ts` | Types that mirror the API JSON |
 | `src/storage.ts` | Anonymous user id and current walk, kept in `localStorage` |
 | `src/ui.ts` | Names, colours and icons for categories, moods, weather and stickers |
-| `src/components/` | Small pieces: loader, trail illustration, icons, and `StoryForm` (write or record a voice note) |
+| `src/components/` | Small pieces: loader, animated logo, trail illustration (flying birds, drifting clouds, fireflies), icons, and `StoryForm` (write or record a voice note) |
 | `src/screens/` | One file per screen: start, walk, notebook |
 | `src/styles.css` | All styles |
 

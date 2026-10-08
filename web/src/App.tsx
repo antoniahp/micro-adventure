@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "./components/Icon";
+import Logo from "./components/Logo";
 import { LANGUAGES, useI18n } from "./i18n";
 import { currentWalk } from "./storage";
 import NotebookScreen from "./screens/NotebookScreen";
@@ -27,7 +28,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <Icon name="compass" size={22} />
+        <Logo size={34} />
         <h1>MicroAdventures</h1>
         <div className="lang" role="group" aria-label={t("app.language")}>
           {LANGUAGES.map((code) => (
