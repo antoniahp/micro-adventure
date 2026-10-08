@@ -37,11 +37,18 @@ legend { padding: 0; margin-bottom: 8px; font-size: 0.9rem; font-weight: 700; co
 main { flex: 1; padding: 12px 20px 32px; }
 section { position: relative; display: grid; gap: 22px; align-content: start; }
 
-.topbar { display: flex; align-items: center; gap: 8px; padding: 18px 20px 0; color: var(--dusk); }
-.topbar h1 { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; }
+.topbar { display: flex; align-items: center; gap: 10px; padding: 18px 20px 0; color: var(--dusk); }
+.topbar h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
 .lang { margin-left: auto; display: flex; padding: 3px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
 .lang button { min-width: 40px; min-height: 32px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; font-size: 0.82rem; font-weight: 800; color: var(--muted); cursor: pointer; }
 .lang button[aria-pressed="true"] { background: var(--dusk); color: #fff; }
+
+/* ---------- Logo ---------- */
+.logo { flex: none; }
+.logo-needle { transform-origin: 16px 16px; animation: seek 2.2s cubic-bezier(0.2, 0.9, 0.3, 1) 1, shake 7s ease-in-out 3s infinite; }
+.topbar:hover .logo-needle { animation: seek 1.2s cubic-bezier(0.2, 0.9, 0.3, 1) 1; }
+@keyframes seek { from { transform: rotate(-400deg); } 55% { transform: rotate(28deg); } 75% { transform: rotate(-14deg); } to { transform: rotate(0); } }
+@keyframes shake { 0%, 88%, 100% { transform: rotate(0); } 91% { transform: rotate(22deg); } 94% { transform: rotate(-16deg); } 97% { transform: rotate(8deg); } }
 
 h2 { font-size: 1.7rem; line-height: 1.1; font-weight: 800; letter-spacing: -0.025em; }
 h3 { font-size: 1.15rem; font-weight: 800; }
@@ -67,8 +74,26 @@ h3 { font-size: 1.15rem; font-weight: 800; }
 
 /* ---------- Start screen ---------- */
 .hero-card { position: relative; min-height: 330px; padding: 26px 22px; overflow: hidden; border-radius: 28px; background: var(--dusk); color: #fff; }
-.hero { position: relative; z-index: 1; max-width: 13ch; font-size: 2.1rem; line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; }
+.hero { position: relative; z-index: 1; max-width: 13ch; font-size: 2.1rem; line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; text-shadow: 0 1px 14px rgb(15 15 70 / 0.35); }
 .trail { position: absolute; inset: auto 0 0 0; width: 100%; height: 230px; }
+
+/* things that move in the scene */
+.bird { animation: fly linear infinite; }
+@keyframes fly {
+  from { transform: translate(-40px, 6px); }
+  50% { transform: translate(200px, -7px); }
+  to { transform: translate(440px, 5px); }
+}
+.cloud { animation: drift linear infinite; }
+@keyframes drift { from { transform: translateX(-50px); } to { transform: translateX(450px); } }
+.star { animation: twinkle 3.2s ease-in-out infinite; }
+@keyframes twinkle { 50% { opacity: 0.25; } }
+.firefly { animation: glow 3.4s ease-in-out infinite; }
+@keyframes glow { 0%, 100% { opacity: 0.15; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-6px); } }
+.sun-glow { animation: breathe 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes breathe { 50% { transform: scale(1.12); opacity: 0.15; } }
+.puddle-shine { animation: shine 4s ease-in-out infinite; }
+@keyframes shine { 50% { opacity: 0.3; } }
 
 .field { display: grid; gap: 8px; }
 .field label { font-weight: 800; }

@@ -4,6 +4,7 @@ import Trail from "../components/Trail";
 import Icon from "../components/Icon";
 import Loader from "../components/Loader";
 import { useI18n, type TextKey } from "../i18n";
+import { useSky } from "../sky";
 import { getUserId } from "../storage";
 import type { Mood } from "../types";
 import { ENERGIES, MINUTES, WEATHERS } from "../ui";
@@ -12,6 +13,7 @@ const MAX_NOTE = 500;
 
 export default function StartScreen({ onStarted }: { onStarted: (walkId: string) => void }) {
   const { t } = useI18n();
+  const sky = useSky();
   const [note, setNote] = useState("");
   const [mood, setMood] = useState<Mood>("calm");
   const [minutes, setMinutes] = useState(30);
@@ -40,9 +42,9 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
 
   return (
     <section className="start">
-      <div className="hero-card">
+      <div className="hero-card" style={{ background: `linear-gradient(180deg, ${sky.top} 0%, ${sky.bottom} 100%)` }}>
         <h2 className="hero">{t("start.hero")}</h2>
-        <Trail />
+        <Trail sky={sky} />
       </div>
 
       <div className="field">
