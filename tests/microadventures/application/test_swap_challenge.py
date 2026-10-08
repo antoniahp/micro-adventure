@@ -60,3 +60,13 @@ def test_the_replacement_is_asked_for_with_what_the_person_wrote():
     handler.handle(SwapChallengeCommand(walk_id=walk.id, challenge_id=current.id))
 
     assert generator.briefs[0].note == "Quiero algo tranquilo"
+
+
+def test_the_replacement_is_asked_for_in_the_language_of_the_walk():
+    current = a_challenge()
+    walk = a_walk(challenges=[current], language="en")
+    _, generator, handler = _setup(walk, a_challenge())
+
+    handler.handle(SwapChallengeCommand(walk_id=walk.id, challenge_id=current.id))
+
+    assert generator.briefs[0].language == "en"

@@ -1,4 +1,5 @@
 // All the calls to the backend live in this file. Screens never use fetch directly.
+import { currentLanguage, translate } from "./i18n";
 import type { Mood, Progress, Walk } from "./types";
 
 const MAX_SWAPS_PER_WALK = 2; // same rule as the backend (Walk.MAX_SWAPS_PER_WALK)
@@ -10,12 +11,19 @@ class ApiError extends Error {
   }
 }
 
+function friendlyMessage(status: number): string {
+  if (status === 404) return translate("error.notFound");
+  if (status === 409) return translate("error.conflict");
+  if (status === 422) return translate("error.rejected");
+  if (status === 502 || status === 503) return translate("error.modelDown");
+  return translate("error.generic");
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T | undefined> {
   const response = await fetch(`/api${path}`, init);
   if (!response.ok) {
-    // Domain errors come as {"detail": "..."}; anything else gets a generic message.
-    const body = await response.json().catch(() => null);
-    throw new ApiError(body?.detail ?? "Algo ha fallado. Inténtalo de nuevo.", response.status);
+    // The backend's messages are for developers; the person gets one in their language.
+    throw new ApiError(friendlyMessage(response.status), response.status);
   }
   return response.status === 204 ? undefined : response.json();
 }
@@ -26,10 +34,11 @@ export async function warmUp() {
 }
 
 export async function startWalk(userId: string, mood: Mood, minutes: number, weather: string, note: string) {
+  const language = currentLanguage(); // the challenges are written in the language the person is using
   const created = await request<{ id: string }>("/walks", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id: userId, mood, minutes, weather, note }),
+    body: JSON.stringify({ user_id: userId, mood, minutes, weather, note, language }),
   });
   return created!.id;
 }
@@ -62,8 +71,8 @@ export async function transcribe(audio: Blob) {
     const result = await request<{ text: string }>("/transcribe", { method: "POST", body: form });
     return result!.text;
   } catch (e) {
-    if (e instanceof ApiError && e.status === 503) throw new Error("La voz no está activada todavía. Escríbelo, por favor.");
-    if (e instanceof ApiError && e.status === 502) throw new Error("No he podido entender el audio. Prueba otra vez o escríbelo.");
+    if (e instanceof ApiError && e.status === 503) throw new Error(translate("error.voiceOff"));
+    if (e instanceof ApiError && e.status === 502) throw new Error(translate("error.voiceFailed"));
     throw e;
   }
 }

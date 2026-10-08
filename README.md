@@ -82,6 +82,10 @@ Challenges are answered by telling, not only by photographing. A challenge is co
 3. Add a route in `api/routers/` and, if it can fail, map its exception in `api/errors.py`.
 4. Test the handler with the fakes in `tests/fakes.py`.
 
+## Languages
+
+The app is bilingual (Spanish and English). The web client picks the browser language on the first visit and remembers the choice (ES/EN switch in the top bar). The chosen language travels as `language` when a walk starts: it is stored in the walk, and Gemma (or the template fallback) writes the challenges in that language, including the ones created later by a swap. To add a language: one block in `web/src/i18n.tsx`, one entry in `Language`, one prompt in `ollama_challenge_generator.py` and one bank in `template_challenge_generator.py`.
+
 ## Admin
 
 Django admin is served at `/admin/`. It needs a superuser:
@@ -100,7 +104,7 @@ Swagger UI is served at `/api/docs`.
 | Method | Path | Use case |
 | --- | --- | --- |
 | POST | `/api/warmup` | Load the model; the web client calls it when the form opens |
-| POST | `/api/walks` | Start a walk and generate its challenges (optional free-text `note`, which the model reads) |
+| POST | `/api/walks` | Start a walk and generate its challenges (optional free-text `note`, which the model reads, and `language`: `es` by default or `en`) |
 | GET | `/api/walks/{walk_id}` | Find a walk |
 | POST | `/api/walks/{walk_id}/challenges/{challenge_id}/complete` | Complete a challenge (multipart: `story` text and/or `photo`; people challenges take a story only) |
 | POST | `/api/transcribe` | Turn a voice note (multipart `audio`) into text with ElevenLabs |

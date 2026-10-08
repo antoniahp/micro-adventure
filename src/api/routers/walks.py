@@ -25,6 +25,7 @@ def start_walk(request, payload: StartWalkIn):
             weather=payload.weather,
             challenges_count=payload.challenges_count,
             note=payload.note.strip(),
+            language=payload.language,
         )
     )
     return Status(201, {"id": walk_id})

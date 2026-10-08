@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
 
 
@@ -13,3 +14,4 @@ class StartWalkCommand:
     weather: str
     challenges_count: int
     note: str = ""
+    language: Language = Language.ES

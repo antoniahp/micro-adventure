@@ -23,6 +23,7 @@ class SwapChallengeCommandHandler:
             count=1,
             category=current.category,
             note=walk.note,
+            language=walk.language,
         )
         replacement = self.challenge_generator.generate(brief)[0]
 

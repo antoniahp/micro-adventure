@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from microadventures.domain.models.challenge_category import ChallengeCategory
+from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
 
 
@@ -14,3 +15,4 @@ class ChallengeBrief:
     count: int
     category: ChallengeCategory | None = None
     note: str = ""  # what the person wrote about their day, in their own words
+    language: Language = Language.ES

@@ -3,6 +3,7 @@ from uuid import UUID
 
 from ninja import Field, Schema
 
+from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
 
 
@@ -13,6 +14,7 @@ class StartWalkIn(Schema):
     weather: str = "unknown"
     challenges_count: int = Field(3, ge=1, le=10)
     note: str = Field("", max_length=500)
+    language: Language = Language.ES
 
 
 class WalkCreatedOut(Schema):
@@ -35,6 +37,7 @@ class WalkOut(Schema):
     minutes: int
     weather: str
     note: str
+    language: str
     swaps_used: int
     created_at: datetime
     challenges: list[ChallengeOut]

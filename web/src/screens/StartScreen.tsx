@@ -3,6 +3,7 @@ import { startWalk, warmUp } from "../api";
 import Trail from "../components/Trail";
 import Icon from "../components/Icon";
 import Loader from "../components/Loader";
+import { useI18n, type TextKey } from "../i18n";
 import { getUserId } from "../storage";
 import type { Mood } from "../types";
 import { ENERGIES, MINUTES, WEATHERS } from "../ui";
@@ -10,6 +11,7 @@ import { ENERGIES, MINUTES, WEATHERS } from "../ui";
 const MAX_NOTE = 500;
 
 export default function StartScreen({ onStarted }: { onStarted: (walkId: string) => void }) {
+  const { t } = useI18n();
   const [note, setNote] = useState("");
   const [mood, setMood] = useState<Mood>("calm");
   const [minutes, setMinutes] = useState(30);
@@ -34,65 +36,65 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
     }
   }
 
-  if (loading) return <Loader title="Preparando tu paseo" />;
+  if (loading) return <Loader title={t("start.loading")} />;
 
   return (
     <section className="start">
       <div className="hero-card">
-        <h2 className="hero">Sal a caminar un rato antes de volver a casa.</h2>
+        <h2 className="hero">{t("start.hero")}</h2>
         <Trail />
       </div>
 
       <div className="field">
-        <label htmlFor="note">Cuéntame cómo vienes</label>
+        <label htmlFor="note">{t("start.noteLabel")}</label>
         <textarea
           id="note"
           rows={4}
           maxLength={MAX_NOTE}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Día de reuniones, necesito desconectar. Me apetece algo tranquilo, sin mucha gente."
+          placeholder={t("start.notePlaceholder")}
         />
         <p className="hint">
-          Gemma lee lo que escribas para elegir tus retos. <span className="count">{note.length}/{MAX_NOTE}</span>
+          {t("start.noteHint")} <span className="count">{note.length}/{MAX_NOTE}</span>
         </p>
       </div>
 
       <fieldset>
-        <legend>Tiempo</legend>
+        <legend>{t("start.time")}</legend>
         <div className="segments">
           {MINUTES.map((m) => (
             <button key={m} className={minutes === m ? "segment selected" : "segment"} aria-pressed={minutes === m} onClick={() => setMinutes(m)}>
-              {m} min
+              {t("start.minutes", { n: m })}
             </button>
           ))}
         </div>
       </fieldset>
 
       <fieldset>
-        <legend>Energía</legend>
+        <legend>{t("start.energy")}</legend>
         <div className="segments">
           {ENERGIES.map((e) => (
             <button key={e.value} className={mood === e.value ? "segment selected" : "segment"} aria-pressed={mood === e.value} onClick={() => setMood(e.value)}>
-              {e.label}
+              {t(`energy.${e.value}` as TextKey)}
             </button>
           ))}
         </div>
       </fieldset>
 
       <fieldset>
-        <legend>Clima</legend>
+        <legend>{t("start.weather")}</legend>
         <div className="segments">
           {WEATHERS.map((w) => (
             <button key={w.value} className={weather === w.value ? "segment selected" : "segment"} aria-pressed={weather === w.value} onClick={() => setWeather(w.value)}>
-              <Icon name={w.icon} size={18} /> {w.label}
+              <Icon name={w.icon} size={18} /> {t(`weather.${w.value}` as TextKey)}
             </button>
           ))}
         </div>
       </fieldset>
 
       {error && <p className="error" role="alert">{error}</p>}
-      <button className="btn btn-primary btn-big" onClick={submit}>Preparar mi paseo</button>
+      <button className="btn btn-primary btn-big" onClick={submit}>{t("start.submit")}</button>
     </section>
   );
 }

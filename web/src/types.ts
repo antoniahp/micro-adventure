@@ -18,6 +18,7 @@ export type Walk = {
   minutes: number;
   weather: string;
   note: string;
+  language: string;
   swaps_used: number;
   created_at: string;
   challenges: Challenge[];

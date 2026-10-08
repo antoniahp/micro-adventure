@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 
+import { useI18n } from "../i18n";
+
 // Shown while the model writes the challenges, which can take a few seconds.
 // The messages rotate so the wait feels like part of the walk.
-const MESSAGES = [
-  "Buscando algo que tocar…",
-  "Afinando el oído…",
-  "Eligiendo un rincón con historia…",
-  "Preparando tu cuaderno…",
-];
+const MESSAGES = ["loader.1", "loader.2", "loader.3", "loader.4"] as const;
 
 export default function Loader({ title }: { title: string }) {
+  const { t } = useI18n();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -21,7 +19,7 @@ export default function Loader({ title }: { title: string }) {
     <div className="loader" role="status">
       <div className="steps" aria-hidden="true"><span /><span /><span /><span /></div>
       <h2>{title}</h2>
-      <p>{MESSAGES[index]}</p>
+      <p>{t(MESSAGES[index])}</p>
     </div>
   );
 }
