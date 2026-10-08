@@ -87,4 +87,10 @@ ELEVENLABS_STT_MODEL = os.environ.get("ELEVENLABS_STT_MODEL", "scribe_v2")
 PHOTO_VERIFIER = os.environ.get("PHOTO_VERIFIER", "ollama")
 
 if dsn := os.environ.get("SENTRY_DSN"):
-    sentry_sdk.init(dsn=dsn, traces_sample_rate=1.0)
+    # Every request is traced (this is a small app), so the model calls show up with their latency and tokens.
+    sentry_sdk.init(
+        dsn=dsn,
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "development"),
+        traces_sample_rate=1.0,
+        send_default_pii=False,
+    )

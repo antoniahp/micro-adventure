@@ -10,6 +10,7 @@ from microadventures.domain.models.challenge_category import ChallengeCategory
 from microadventures.domain.models.language import Language
 from microadventures.domain.services.challenge_generator import ChallengeGenerator
 from microadventures.domain.exceptions.challenge_generation_failed_exception import ChallengeGenerationFailedException
+from microadventures.infrastructure.api.model_tracing import record_usage, traced_model_call
 
 TOKENS_PER_CHALLENGE = 90  # 60 cut Spanish answers in half: broken JSON, so the template fallback answered
 
@@ -24,20 +25,25 @@ class OllamaChallengeGenerator(ChallengeGenerator):
 
     def generate(self, brief: ChallengeBrief) -> list[Challenge]:
         prompt = _build_prompt(brief, _category_order(brief, self.rng))
-        response = self.http.post(
-            f"{self.base_url}/api/generate",
-            json={
-                "model": self.model,
-                "prompt": prompt,
-                "format": "json",
-                "stream": False,
-                "keep_alive": "30m",
-                "options": {"temperature": 0.8, "num_predict": TOKENS_PER_CHALLENGE * brief.count},
-            },
-            timeout=self.timeout_seconds,
-        )
-        response.raise_for_status()
-        return _parse_challenges(response.json()["response"], brief)
+        with traced_model_call("generate_challenges", self.model, prompt) as span:
+            span.set_data("challenges.count", brief.count)
+            span.set_data("challenges.language", str(brief.language))
+            response = self.http.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": prompt,
+                    "format": "json",
+                    "stream": False,
+                    "keep_alive": "30m",
+                    "options": {"temperature": 0.8, "num_predict": TOKENS_PER_CHALLENGE * brief.count},
+                },
+                timeout=self.timeout_seconds,
+            )
+            response.raise_for_status()
+            body = response.json()
+            record_usage(span, body)
+        return _parse_challenges(body["response"], brief)
 
 
     def warm_up(self) -> None:

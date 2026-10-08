@@ -86,6 +86,10 @@ Challenges are answered by telling, not only by photographing. A challenge is co
 
 The app is bilingual (Spanish and English). The web client picks the browser language on the first visit and remembers the choice (ES/EN switch in the top bar). The chosen language travels as `language` when a walk starts: it is stored in the walk, and Gemma (or the template fallback) writes the challenges in that language, including the ones created later by a swap. To add a language: one block in `web/src/i18n.tsx`, one entry in `Language`, one prompt in `ollama_challenge_generator.py` and one bank in `template_challenge_generator.py`.
 
+## Measuring the model
+
+`python3 scripts/benchmark.py` (app running) warms the model up, creates 5 walks in Spanish and 5 in English, and prints the time of each plus the median. Run it cold, warm, and against the GPU Droplet to get the numbers for the post. With `SENTRY_DSN` set, the same calls appear in Sentry with latency and tokens.
+
 ## Admin
 
 Django admin is served at `/admin/`. It needs a superuser:
@@ -128,6 +132,8 @@ If Ollama is not running, challenges come from the template bank. `PHOTO_VERIFIE
 
 ## Configuration
 
+Settings live in `local.env` (ignored by git). The file must exist, so the first time run `make setup`, which copies `sample.env`, the committed template with every variable and no secrets. Edit `local.env` to add your `SENTRY_DSN` or `ELEVENLABS_API_KEY`, then `docker compose up -d`. `docker-compose.yml` only keeps the wiring that never changes (Mongo and Ollama addresses). On Render, set the same variables in the service's Environment tab instead.
+
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `DJANGO_SECRET_KEY` | required | Django secret |
@@ -142,7 +148,8 @@ If Ollama is not running, challenges come from the template bank. `PHOTO_VERIFIE
 | `PHOTO_VERIFIER` | `ollama` | `ollama` or `trusting` |
 | `ELEVENLABS_API_KEY` | unset | Enables voice notes (speech to text). Without it people can still write |
 | `ELEVENLABS_STT_MODEL` | `scribe_v2` | ElevenLabs speech-to-text model |
-| `SENTRY_DSN` | unset | Enables Sentry |
+| `SENTRY_DSN` | unset | Enables Sentry. Every call to the model becomes a span (`gen_ai.request`) with model, tokens and timings, never the text or photos |
+| `SENTRY_ENVIRONMENT` | `development` | Label for the traces (use `production` on Render) |
 
 ## Deployment
 

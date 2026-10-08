@@ -1,4 +1,7 @@
-.PHONY: run test createmigrations migrate createsuperuser lock
+.PHONY: setup run test createmigrations migrate createsuperuser lock
+
+setup:
+	cp -n sample.env local.env
 
 run:
 	docker compose up --build

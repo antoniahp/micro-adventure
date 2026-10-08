@@ -16,17 +16,15 @@ services:
     command: sh -c "python src/manage.py migrate && python src/manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
+    # Personal settings and secrets (Sentry, ElevenLabs, model, timeout) live in local.env.
+    # It must exist: run "make setup" the first time (it copies sample.env). Only what never changes stays here.
+    env_file:
+      - local.env
     environment:
-      DEBUG: true
-      DJANGO_SECRET_KEY: secret-key
       MONGODB_URI: mongodb://mongo:27017
       MONGODB_DB: micro_adventure
       # Ollama runs on the host machine, outside Docker.
       OLLAMA_URL: http://host.docker.internal:11434
-      OLLAMA_MODEL: gemma3:latest
-      PHOTO_VERIFIER: trusting
-      # Optional: lets people answer with a voice note. Set it in your shell or in a .env file.
-      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
       PYTHONDONTWRITEBYTECODE: 1
       PYTHONUNBUFFERED: 1
     extra_hosts:
