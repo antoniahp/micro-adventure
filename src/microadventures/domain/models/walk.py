@@ -9,6 +9,7 @@ from microadventures.domain.models.challenge_status import ChallengeStatus
 from microadventures.domain.exceptions.challenge_already_completed_exception import ChallengeAlreadyCompletedException
 from microadventures.domain.exceptions.challenge_not_found_exception import ChallengeNotFoundException
 from microadventures.domain.exceptions.swap_limit_reached_exception import SwapLimitReachedException
+from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
 
 MAX_SWAPS_PER_WALK = 2
@@ -21,6 +22,7 @@ class Walk(models.Model):
     minutes = models.PositiveSmallIntegerField()
     weather = models.CharField(max_length=50)
     note = models.CharField(max_length=500, blank=True, default="")
+    language = models.CharField(max_length=5, choices=Language.choices, default=Language.ES)
     swaps_used = models.PositiveSmallIntegerField(default=0)
     challenges = EmbeddedModelArrayField(Challenge)
     created_at = models.DateTimeField(default=timezone.now)

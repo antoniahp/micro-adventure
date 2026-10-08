@@ -3,12 +3,14 @@ import { completeChallenge, getWalk, MAX_SWAPS_PER_WALK, swapChallenge } from ".
 import Icon from "../components/Icon";
 import Loader from "../components/Loader";
 import StoryForm from "../components/StoryForm";
+import { useI18n, type TextKey } from "../i18n";
 import type { Challenge, Walk } from "../types";
 import { CATEGORIES, FALLBACK_CATEGORY } from "../ui";
 
 type Props = { walkId: string; onFinished: () => void; onOpenNotebook: () => void };
 
 export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props) {
+  const { t } = useI18n();
   const [walk, setWalk] = useState<Walk | null>(null);
   const [loadError, setLoadError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -43,11 +45,11 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
     return (
       <section>
         <p className="error" role="alert">{loadError}</p>
-        <button className="btn btn-secondary" onClick={onFinished}>Empezar otro paseo</button>
+        <button className="btn btn-secondary" onClick={onFinished}>{t("walk.startAnother")}</button>
       </section>
     );
   }
-  if (!walk) return <Loader title="Abriendo tu paseo" />;
+  if (!walk) return <Loader title={t("walk.opening")} />;
 
   const swapsLeft = MAX_SWAPS_PER_WALK - walk.swaps_used;
   const doneCount = walk.challenges.filter((c) => c.status === "completed").length;
@@ -56,25 +58,25 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
 
   return (
     <section>
-      <h2>Tus retos de hoy</h2>
+      <h2>{t("walk.title")}</h2>
       <div className="progress">
         <div className="progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={doneCount}>
           {walk.challenges.map((c) => (
             <span key={c.id} className={c.status === "completed" ? "full" : ""} style={{ "--c": (CATEGORIES[c.category] ?? FALLBACK_CATEGORY).color } as React.CSSProperties} />
           ))}
         </div>
-        <span className="progress-text">{doneCount} de {total}</span>
+        <span className="progress-text">{t("walk.progress", { done: doneCount, total })}</span>
       </div>
 
       {allDone && (
         <div className="celebration">
           <span className="stamp big" aria-hidden="true"><Icon name="check" size={34} /></span>
           <div>
-            <h3>Paseo completado</h3>
-            <p>{walk.swaps_used === 0 ? "Sin cambiar ningún reto: paseo perfecto." : "Has salido y lo has hecho. Eso ya cuenta."}</p>
+            <h3>{t("walk.finishedTitle")}</h3>
+            <p>{walk.swaps_used === 0 ? t("walk.finishedPerfect") : t("walk.finishedNormal")}</p>
             <div className="celebration-actions">
-              <button className="btn btn-primary" onClick={onOpenNotebook}>Ver mi cuaderno</button>
-              <button className="btn btn-secondary" onClick={onFinished}>Nuevo paseo</button>
+              <button className="btn btn-primary" onClick={onOpenNotebook}>{t("walk.seeNotebook")}</button>
+              <button className="btn btn-secondary" onClick={onFinished}>{t("walk.newWalk")}</button>
             </div>
           </div>
         </div>
@@ -91,11 +93,11 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
                 <Icon name={done ? "check" : category.icon} size={22} />
               </span>
               <div className="entry-body">
-                <p className="entry-category">{category.label}</p>
+                <p className="entry-category">{t(`cat.${CATEGORIES[c.category] ? c.category : "fallback"}` as TextKey)}</p>
                 <p className="entry-text">{c.text}</p>
 
                 {c.story && <blockquote className="entry-story">{c.story}</blockquote>}
-                {photos[c.id] && <img className="entry-photo" src={photos[c.id]} alt="Tu foto de este reto" />}
+                {photos[c.id] && <img className="entry-photo" src={photos[c.id]} alt={t("walk.photoAlt")} />}
                 {errors[c.id] && <p className="error" role="alert">{errors[c.id]}</p>}
 
                 {!done && telling === c.id && (
@@ -104,15 +106,15 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
 
                 {!done && telling !== c.id && (
                   <>
-                    {!c.accepts_photo && <p className="hint">A la gente no se la fotografía: cuéntalo.</p>}
+                    {!c.accepts_photo && <p className="hint">{t("walk.noPeoplePhotos")}</p>}
                     <div className="entry-actions">
                       <button className="btn btn-primary" disabled={busy} onClick={() => setTelling(c.id)}>
-                        <Icon name="pen" size={18} /> Contarlo
+                        <Icon name="pen" size={18} /> {t("walk.tell")}
                       </button>
                       {c.accepts_photo && (
                         <label className={busy ? "btn btn-secondary disabled" : "btn btn-secondary"}>
                           <Icon name="camera" size={18} />
-                          {busy ? "Mirando tu foto…" : errors[c.id] ? "Otra foto" : "Foto"}
+                          {busy ? t("walk.photoChecking") : errors[c.id] ? t("walk.photoAgain") : t("walk.photo")}
                           <input
                             type="file"
                             accept="image/*"
@@ -128,7 +130,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
                         </label>
                       )}
                       <button className="btn btn-link" disabled={busy || swapsLeft === 0} onClick={() => act(c, () => swapChallenge(walk.id, c.id))}>
-                        {swapsLeft === 0 ? "Sin cambios" : `Cambiar (${swapsLeft})`}
+                        {swapsLeft === 0 ? t("walk.noSwaps") : t("walk.swap", { n: swapsLeft })}
                       </button>
                     </div>
                   </>
@@ -141,8 +143,8 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
 
       {!allDone && (
         <>
-          <p className="hint">Si cambias un reto, el paseo ya no cuenta como perfecto.</p>
-          <button className="btn btn-link left" onClick={onFinished}>Terminar paseo</button>
+          <p className="hint">{t("walk.swapWarning")}</p>
+          <button className="btn btn-link left" onClick={onFinished}>{t("walk.finish")}</button>
         </>
       )}
     </section>

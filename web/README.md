@@ -14,6 +14,7 @@ The backend must be running on port 8000 (`make run` in the repo root). Vite for
 | File | What it does |
 | --- | --- |
 | `src/main.tsx` | Entry point: mounts React |
+| `src/i18n.tsx` | All the texts in Spanish and English, the language switch and `t()` |
 | `src/App.tsx` | Tabs (walk / notebook) and which walk is active |
 | `src/api.ts` | Every call to the backend |
 | `src/types.ts` | Types that mirror the API JSON |

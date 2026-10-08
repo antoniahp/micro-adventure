@@ -85,6 +85,16 @@ def test_a_walk_keeps_what_the_person_wrote():
     assert walk["note"] == "Día largo"
 
 
+def test_a_walk_remembers_its_language_and_defaults_to_spanish():
+    client = Client()
+
+    english = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "language": "en"})
+    default = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"})
+
+    assert client.get(f"/api/walks/{english.json()['id']}").json()["language"] == "en"
+    assert client.get(f"/api/walks/{default.json()['id']}").json()["language"] == "es"
+
+
 def test_a_challenge_can_be_completed_with_a_story():
     client = Client()
     walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 1}).json()["id"]

@@ -8,6 +8,7 @@ from tests.microadventures.object_mothers import a_challenge
 from microadventures.domain.models.challenge_brief import ChallengeBrief
 from microadventures.domain.models.challenge_category import ChallengeCategory
 from microadventures.domain.exceptions.challenge_generation_failed_exception import ChallengeGenerationFailedException
+from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
 from microadventures.infrastructure.fallback_challenge_generator import FallbackChallengeGenerator
 from microadventures.infrastructure.api.ollama_challenge_generator import OllamaChallengeGenerator
@@ -103,3 +104,24 @@ def test_fallback_warm_up_never_fails_when_the_model_is_down():
             raise RuntimeError("model is down")
 
     FallbackChallengeGenerator(DownGenerator([]), TemplateChallengeGenerator()).warm_up()
+
+
+def test_ollama_prompt_asks_for_english_when_the_walk_is_in_english():
+    http = FakeHttp(json.dumps({"challenges": [{"category": "nature", "text": "Look at a tree."}]}))
+    brief = ChallengeBrief(mood=Mood.CALM, minutes=30, weather="clear", count=1, note="Long day", language=Language.EN)
+
+    OllamaChallengeGenerator("http://ollama", "gemma", http=http).generate(brief)
+
+    prompt = http.requests[0][1]["prompt"]
+    assert "written in English" in prompt and "Long day" in prompt
+
+
+def test_template_generator_writes_in_the_requested_language():
+    from microadventures.infrastructure.template_challenge_generator import CHALLENGE_TEXTS_EN
+
+    brief = ChallengeBrief(mood=Mood.CALM, minutes=30, weather="clear", count=5, language=Language.EN)
+
+    challenges = TemplateChallengeGenerator().generate(brief)
+
+    assert all(c.text in CHALLENGE_TEXTS_EN[c.category] for c in challenges)
+

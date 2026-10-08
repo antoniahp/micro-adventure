@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { transcribe } from "../api";
+import { useI18n } from "../i18n";
 import Icon from "./Icon";
 
 const MIN_LENGTH = 10; // same minimum as the backend (MIN_STORY_LENGTH)
@@ -10,6 +11,7 @@ type Props = { busy: boolean; onSubmit: (story: string) => void; onCancel: () =>
 // Where the person tells the challenge: they write it, or record a voice note that
 // is turned into text they can still edit before sending.
 export default function StoryForm({ busy, onSubmit, onCancel }: Props) {
+  const { t } = useI18n();
   const [text, setText] = useState("");
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -53,7 +55,7 @@ export default function StoryForm({ busy, onSubmit, onCancel }: Props) {
       recorder.current = mediaRecorder;
       setRecording(true);
     } catch {
-      setError("No he podido usar el micrófono. Revisa el permiso del navegador o escríbelo.");
+      setError(t("story.micError"));
     }
   }
 
@@ -72,27 +74,27 @@ export default function StoryForm({ busy, onSubmit, onCancel }: Props) {
         maxLength={1000}
         disabled={transcribing}
         onChange={(e) => setText(e.target.value)}
-        placeholder={transcribing ? "Pasando tu voz a texto…" : "Cuéntalo con tus palabras: qué has visto, tocado, oído o pensado."}
-        aria-label="Tu respuesta"
+        placeholder={transcribing ? t("story.transcribing") : t("story.placeholder")}
+        aria-label={t("story.aria")}
       />
       {error && <p className="error" role="alert">{error}</p>}
       <div className="story-actions">
         {CAN_RECORD &&
           (recording ? (
             <button className="btn btn-record recording" onClick={stopRecording}>
-              <Icon name="stop" size={18} /> Parar ({seconds}s)
+              <Icon name="stop" size={18} /> {t("story.stop", { n: seconds })}
             </button>
           ) : (
             <button className="btn btn-secondary" onClick={startRecording} disabled={transcribing || busy}>
-              <Icon name="mic" size={18} /> Grabar voz
+              <Icon name="mic" size={18} /> {t("story.record")}
             </button>
           ))}
         <button className="btn btn-primary" disabled={!ready} onClick={() => onSubmit(text.trim())}>
-          {busy ? "Guardando…" : "Enviar"}
+          {busy ? t("story.saving") : t("story.send")}
         </button>
-        <button className="btn btn-link" onClick={onCancel} disabled={busy}>Cancelar</button>
+        <button className="btn btn-link" onClick={onCancel} disabled={busy}>{t("story.cancel")}</button>
       </div>
-      {text.trim().length < MIN_LENGTH && <p className="hint">Escribe al menos {MIN_LENGTH} caracteres.</p>}
+      {text.trim().length < MIN_LENGTH && <p className="hint">{t("story.minChars", { n: MIN_LENGTH })}</p>}
     </div>
   );
 }

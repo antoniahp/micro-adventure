@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "./components/Icon";
+import { LANGUAGES, useI18n } from "./i18n";
 import { currentWalk } from "./storage";
 import NotebookScreen from "./screens/NotebookScreen";
 import StartScreen from "./screens/StartScreen";
@@ -8,6 +9,7 @@ import WalkScreen from "./screens/WalkScreen";
 type Tab = "walk" | "notebook";
 
 export default function App() {
+  const { lang, setLang, t } = useI18n();
   // State = data that, when it changes, makes React redraw the screen.
   const [tab, setTab] = useState<Tab>("walk");
   const [walkId, setWalkId] = useState<string | null>(currentWalk.get());
@@ -27,6 +29,13 @@ export default function App() {
       <header className="topbar">
         <Icon name="compass" size={22} />
         <h1>MicroAdventures</h1>
+        <div className="lang" role="group" aria-label={t("app.language")}>
+          {LANGUAGES.map((code) => (
+            <button key={code} aria-pressed={lang === code} lang={code} onClick={() => setLang(code)}>
+              {code.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </header>
 
       <main>
@@ -39,10 +48,10 @@ export default function App() {
 
       <nav className="tabs">
         <button className={tab === "walk" ? "active" : ""} onClick={() => setTab("walk")}>
-          <Icon name="pin" size={22} /> Paseo
+          <Icon name="pin" size={22} /> {t("app.tabWalk")}
         </button>
         <button className={tab === "notebook" ? "active" : ""} onClick={() => setTab("notebook")}>
-          <Icon name="book" size={22} /> Cuaderno
+          <Icon name="book" size={22} /> {t("app.tabNotebook")}
         </button>
       </nav>
     </div>

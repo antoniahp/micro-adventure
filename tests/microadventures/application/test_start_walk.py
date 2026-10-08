@@ -4,6 +4,7 @@ from tests.fakes import InMemoryWalkRepository, StubChallengeGenerator
 from tests.microadventures.object_mothers import a_challenge
 from microadventures.application.commands.start_walk.start_walk_command import StartWalkCommand
 from microadventures.application.commands.start_walk.start_walk_command_handler import StartWalkCommandHandler
+from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
 
 
@@ -56,3 +57,18 @@ def test_it_passes_what_the_person_wrote_to_the_generator_and_keeps_it_in_the_wa
 
     assert generator.briefs[0].note == "Día de reuniones, necesito desconectar"
     assert repository.find_or_fail_by_id(walk_id).note == "Día de reuniones, necesito desconectar"
+
+
+def test_it_keeps_the_language_and_asks_the_generator_to_use_it():
+    repository, generator = InMemoryWalkRepository(), StubChallengeGenerator([a_challenge()])
+    walk_id = uuid4()
+
+    StartWalkCommandHandler(repository, generator).handle(
+        StartWalkCommand(
+            walk_id=walk_id, user_id="user-1", mood=Mood.CALM, minutes=20, weather="clear", challenges_count=1,
+            language=Language.EN,
+        )
+    )
+
+    assert generator.briefs[0].language == Language.EN
+    assert repository.find_or_fail_by_id(walk_id).language == Language.EN

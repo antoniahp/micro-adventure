@@ -18,6 +18,7 @@ class StartWalkCommandHandler:
             weather=command.weather,
             count=command.challenges_count,
             note=command.note,
+            language=command.language,
         )
         walk = Walk(
             id=command.walk_id,
@@ -26,6 +27,7 @@ class StartWalkCommandHandler:
             minutes=command.minutes,
             weather=command.weather,
             note=command.note,
+            language=command.language,
             challenges=self.challenge_generator.generate(brief),
         )
         self.walk_service.save(walk)
