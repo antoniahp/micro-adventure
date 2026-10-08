@@ -1,0 +1,8 @@
+.git
+.idea
+venv
+.venv
+**/node_modules
+**/__pycache__
+web/dist
+local.env
