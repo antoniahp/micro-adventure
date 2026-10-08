@@ -25,6 +25,8 @@ services:
       # Leave OLLAMA_URL out until the GPU Droplet exists: the app then answers with its template challenges.
       - key: OLLAMA_URL
         sync: false
+      - key: OLLAMA_API_KEY # the key the GPU server's proxy expects (printed by scripts/gpu-droplet-setup.sh)
+        sync: false
       - key: OLLAMA_MODEL
         value: gemma3:latest
       - key: OLLAMA_TIMEOUT_SECONDS

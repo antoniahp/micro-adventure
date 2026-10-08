@@ -1,5 +1,6 @@
 """Builds each handler with its real adapters. Routers stay free of infrastructure details."""
 
+import requests
 from django.conf import settings
 
 from microadventures.application.commands.complete_challenge.complete_challenge_command_handler import CompleteChallengeCommandHandler
@@ -27,12 +28,22 @@ def _walk_repository() -> WalkService:
     return DbWalkRepository()
 
 
+def _ollama_http():
+    """Ollama has no login of its own. A hosted one sits behind a proxy that expects this key."""
+    if not settings.OLLAMA_API_KEY:
+        return requests
+    session = requests.Session()
+    session.headers["Authorization"] = f"Bearer {settings.OLLAMA_API_KEY}"
+    return session
+
+
 def _challenge_generator() -> ChallengeGenerator:
     return FallbackChallengeGenerator(
         primary=OllamaChallengeGenerator(
             base_url=settings.OLLAMA_URL,
             model=settings.OLLAMA_MODEL,
             timeout_seconds=settings.OLLAMA_TIMEOUT_SECONDS,
+            http=_ollama_http(),
         ),
         fallback=TemplateChallengeGenerator(),
     )
@@ -45,6 +56,7 @@ def _photo_verifier() -> PhotoVerifier:
         base_url=settings.OLLAMA_URL,
         model=settings.OLLAMA_VISION_MODEL,
         timeout_seconds=settings.OLLAMA_TIMEOUT_SECONDS,
+        http=_ollama_http(),
     )
 
 
