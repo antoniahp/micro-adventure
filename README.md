@@ -153,14 +153,14 @@ Settings live in `local.env` (ignored by git). The file must exist, so the first
 
 ## Deployment
 
-Render web service from the repo root:
+One Render web service runs everything: the Django API, the admin and the built web client (`Dockerfile.render` builds the client and serves it with whitenoise). `render.yaml` describes the service.
 
-- Build: `pip install poetry==2.5.1 && poetry config virtualenvs.create false && poetry install --no-root --only main`
-- Start: `cd src && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT`
-- Environment: the variables above, with `MONGODB_URI` pointing at Atlas and `OLLAMA_URL` at the GPU server.
-- Run `python src/manage.py migrate` once against Atlas.
+1. **Atlas.** Create a free cluster, a database user, and under Network Access allow `0.0.0.0/0` (Render's IPs change). Copy the connection string (`mongodb+srv://...`).
+2. **Render.** New > Blueprint > pick the repository. When asked, paste `MONGODB_URI` (the Atlas string), `SENTRY_DSN` and, optionally, `ELEVENLABS_API_KEY`. Leave `OLLAMA_URL` empty until the GPU Droplet exists: the app then answers with its template challenges.
+3. The container applies the migrations to Atlas on every start. Create the admin user once from the service's Shell tab: `python src/manage.py createsuperuser`.
+4. When the GPU Droplet is up, set `OLLAMA_URL` to its address and redeploy.
 
-In Atlas, allow the service's IP under Network Access.
+Free Render services fall asleep after a while without traffic and take about a minute to wake up. Open the app before a demo.
 
 ## Decisions
 

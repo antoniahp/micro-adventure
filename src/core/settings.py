@@ -50,6 +50,21 @@ TEMPLATES = [
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# In production one service serves everything: the Django API and the built web client.
+# The Dockerfile.render image puts the client in web_dist/; whitenoise serves it at "/".
+# In local development the folder does not exist and Vite serves the client instead.
+WEB_DIST = BASE_DIR.parent / "web_dist"
+if WEB_DIST.is_dir():
+    WHITENOISE_ROOT = WEB_DIST
+    WHITENOISE_INDEX_FILE = True
+
+# Behind Render's HTTPS proxy: trust its header, and accept the service's own address for admin logins.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [
+    origin for origin in [os.environ.get("RENDER_EXTERNAL_URL", ""), *os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")] if origin
+]
+
 # MongoDB Atlas, through the official django-mongodb-backend.
 # In production MONGODB_URI is the Atlas connection string (mongodb+srv://...).
 DATABASES = {

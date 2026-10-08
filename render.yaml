@@ -1,0 +1,33 @@
+# Render Blueprint: one web service with the API, the admin and the web client.
+# Render > New > Blueprint > pick this repository. Secrets marked "sync: false" are asked for in the dashboard.
+services:
+  - type: web
+    name: micro-adventure
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    # Free services fall asleep after a while without traffic and take about a minute to wake up.
+    # Use a paid plan if the Telegram notification has to arrive on time.
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: MONGODB_URI # the Atlas connection string (mongodb+srv://...)
+        sync: false
+      - key: MONGODB_DB
+        value: micro_adventure
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      # Leave OLLAMA_URL out until the GPU Droplet exists: the app then answers with its template challenges.
+      - key: OLLAMA_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        value: gemma3:latest
+      - key: OLLAMA_TIMEOUT_SECONDS
+        value: "60"
+      - key: PHOTO_VERIFIER
+        value: trusting
