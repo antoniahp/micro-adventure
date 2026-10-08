@@ -90,6 +90,7 @@ USE_TZ = True
 
 # Open model served by Ollama. Check the exact tag with `ollama list`.
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_API_KEY = os.environ.get("OLLAMA_API_KEY", "")  # for a hosted Ollama behind a proxy that asks for it
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3:latest")
 OLLAMA_VISION_MODEL = os.environ.get("OLLAMA_VISION_MODEL", OLLAMA_MODEL)
 OLLAMA_TIMEOUT_SECONDS = float(os.environ.get("OLLAMA_TIMEOUT_SECONDS", "30"))

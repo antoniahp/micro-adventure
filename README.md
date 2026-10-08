@@ -142,6 +142,7 @@ Settings live in `local.env` (ignored by git). The file must exist, so the first
 | `MONGODB_URI` | `mongodb://localhost:27017` | Atlas connection string in production |
 | `MONGODB_DB` | `micro_adventure` | Database name |
 | `OLLAMA_URL` | `http://localhost:11434` | Ollama server |
+| `OLLAMA_API_KEY` | unset | Sent as `Authorization: Bearer ...` to a hosted Ollama whose proxy asks for it |
 | `OLLAMA_MODEL` | `gemma3:latest` | Model that writes challenges |
 | `OLLAMA_VISION_MODEL` | same as `OLLAMA_MODEL` | Model that checks photos |
 | `OLLAMA_TIMEOUT_SECONDS` | `30` | Per-request timeout |
@@ -158,7 +159,7 @@ One Render web service runs everything: the Django API, the admin and the built 
 1. **Atlas.** Create a free cluster, a database user, and under Network Access allow `0.0.0.0/0` (Render's IPs change). Copy the connection string (`mongodb+srv://...`).
 2. **Render.** New > Blueprint > pick the repository. When asked, paste `MONGODB_URI` (the Atlas string), `SENTRY_DSN` and, optionally, `ELEVENLABS_API_KEY`. Leave `OLLAMA_URL` empty until the GPU Droplet exists: the app then answers with its template challenges.
 3. The container applies the migrations to Atlas on every start. Create the admin user once from the service's Shell tab: `python src/manage.py createsuperuser`.
-4. When the GPU Droplet is up, set `OLLAMA_URL` to its address and redeploy.
+4. **GPU Droplet (Gemma).** Create a GPU Droplet on DigitalOcean (Ubuntu, AI/ML-ready image), open its console as root and run `scripts/gpu-droplet-setup.sh`. It installs Ollama (listening only on localhost), pulls the model and puts Caddy in front with HTTPS and a random key. It prints the two values for Render: set `OLLAMA_URL` (`https://<ip>.sslip.io`) and `OLLAMA_API_KEY`, and the service redeploys. Ollama has no login of its own, so never open its port directly. A Droplet bills for as long as it exists, even powered off: destroy it when the demo is over. If it is unreachable the app falls back to its template challenges.
 
 Free Render services fall asleep after a while without traffic and take about a minute to wake up. Open the app before a demo.
 
