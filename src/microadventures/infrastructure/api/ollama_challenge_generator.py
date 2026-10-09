@@ -44,7 +44,7 @@ class OllamaChallengeGenerator(ChallengeGenerator):
             response.raise_for_status()
             body = response.json()
             record_usage(span, body)
-        return _parse_challenges(body["response"], brief)
+        return _parse_challenges(body["response"], brief, self.model)
 
 
     def warm_up(self) -> None:
@@ -171,11 +171,11 @@ def _text(item: dict) -> str:
     raise KeyError("text")
 
 
-def _parse_challenges(raw: str, brief: ChallengeBrief) -> list[Challenge]:
+def _parse_challenges(raw: str, brief: ChallengeBrief, model: str) -> list[Challenge]:
     try:
         items = [_as_item(item) for item in _items(_load_json(raw))[: brief.count]]
         challenges = [
-            Challenge(id=uuid4(), category=_category(item.get("category"), position, brief.category), text=_text(item))
+            Challenge(id=uuid4(), category=_category(item.get("category"), position, brief.category), text=_text(item), source=model)
             for position, item in enumerate(items)
         ]
     except (ValueError, KeyError, TypeError, AttributeError) as error:
