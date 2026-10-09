@@ -19,7 +19,7 @@ export const ENERGIES = [
   { value: "active" },
 ] as const;
 
-export const MINUTES = [15, 30, 45, 60, 90];
+export const MINUTES = [15, 30, 45, 60];
 
 // How many challenges a walk can have for the time the person has. Same rule as the backend (WalkLength):
 // under 45 minutes, 3 simple ones; 45 to 59, 5; an hour or more, from 6 to 10 and they choose.

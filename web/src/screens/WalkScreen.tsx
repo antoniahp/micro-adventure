@@ -19,16 +19,25 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const [photos, setPhotos] = useState<Record<string, string>>({}); // preview of each photo sent
   const [justDone, setJustDone] = useState<string | null>(null); // which entry to animate
   const [telling, setTelling] = useState<string | null>(null); // which entry has its story form open
-  const [closing, setClosing] = useState(false); // the person chose "End walk" before finishing every challenge
-  const [skipped, setSkipped] = useState(false); // the person did not want to tell the walk
-  const [editing, setEditing] = useState(false); // reopening the form of a walk already told
+  // Three screens: the challenges, the "walk complete" page, and the page where the person tells the walk.
+  const [view, setView] = useState<"challenges" | "done" | "tell">("challenges");
   const [finishBusy, setFinishBusy] = useState(false);
   const [finishError, setFinishError] = useState("");
 
   // useEffect runs after the screen is drawn. Here: load the walk once per walkId.
   useEffect(() => {
-    getWalk(walkId).then(setWalk).catch((e: Error) => setLoadError(e.message));
+    getWalk(walkId)
+      .then((loaded) => {
+        setWalk(loaded);
+        if (loaded.challenges.every((c) => c.status === "completed")) setView("done"); // coming back to a finished walk
+      })
+      .catch((e: Error) => setLoadError(e.message));
   }, [walkId]);
+
+  // Each screen starts at the top.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
 
   // Runs an action on one challenge, then reloads the walk to show the new state.
   async function act(challenge: Challenge, action: () => Promise<void>, photo?: File) {
@@ -38,8 +47,10 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
       await action();
       setTelling(null);
       if (photo) setPhotos((current) => ({ ...current, [challenge.id]: URL.createObjectURL(photo) }));
-      setWalk(await getWalk(walkId));
+      const updated = await getWalk(walkId);
+      setWalk(updated);
       setJustDone(challenge.id);
+      if (updated.challenges.every((c) => c.status === "completed")) setView("done");
     } catch (e) {
       setErrors((current) => ({ ...current, [challenge.id]: (e as Error).message }));
     } finally {
@@ -53,8 +64,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
     try {
       await finishWalk(walkId, data);
       setWalk(await getWalk(walkId));
-      setClosing(false);
-      setEditing(false);
+      setView("done");
     } catch (e) {
       setFinishError((e as Error).message);
     } finally {
@@ -77,11 +87,54 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const total = walk.challenges.length;
   const allDone = doneCount === total;
   const told = walk.finished_at !== null;
-  const showFinishForm = editing || (!told && !skipped && (allDone || closing));
   const summaryParts = [
     walk.walked_minutes ? t("finish.summaryMinutes", { n: walk.walked_minutes }) : "",
     walk.distance_km ? t("finish.summaryKm", { n: String(walk.distance_km).replace(".", lang === "es" ? "," : ".") }) : "",
   ].filter(Boolean);
+
+  if (view === "tell") {
+    return (
+      <section>
+        <FinishForm
+          initial={told ? { walkedMinutes: walk.walked_minutes, distanceKm: walk.distance_km, diary: walk.diary } : undefined}
+          busy={finishBusy}
+          error={finishError}
+          skipLabel={told ? t("story.cancel") : allDone ? t("finish.later") : t("finish.leave")}
+          onSubmit={saveFinish}
+          onSkip={() => (told || allDone ? setView("done") : onFinished())}
+        />
+      </section>
+    );
+  }
+
+  if (view === "done") {
+    return (
+      <section>
+        <div className="celebration">
+          <span className="stamp big" aria-hidden="true"><Icon name="check" size={34} /></span>
+          <div>
+            <h3>{allDone ? t("walk.finishedTitle") : t("walk.endedTitle")}</h3>
+            <p>{allDone && walk.swaps_used === 0 ? t("walk.finishedPerfect") : t("walk.finishedNormal")}</p>
+            <div className="celebration-actions">
+              <button className="btn btn-primary" onClick={() => setView("tell")}>{told ? t("walk.editTold") : t("walk.tellWalk")}</button>
+              <button className="btn btn-secondary" onClick={onOpenNotebook}>{t("walk.seeNotebook")}</button>
+              <button className="btn btn-secondary" onClick={onFinished}>{t("walk.newWalk")}</button>
+            </div>
+          </div>
+        </div>
+
+        {told && (summaryParts.length > 0 || walk.diary) && (
+          <div className="walk-summary">
+            <p className="summary-title">{t("finish.summaryTitle")}</p>
+            {summaryParts.length > 0 && <p className="summary-numbers">{summaryParts.join(" · ")}</p>}
+            {walk.diary && <blockquote className="entry-story">{walk.diary}</blockquote>}
+          </div>
+        )}
+
+        <button className="btn btn-link left" onClick={() => setView("challenges")}>{t("walk.backToChallenges")}</button>
+      </section>
+    );
+  }
 
   return (
     <section>
@@ -94,45 +147,6 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
         </div>
         <span className="progress-text">{t("walk.progress", { done: doneCount, total })}</span>
       </div>
-
-      {allDone && (
-        <div className="celebration">
-          <span className="stamp big" aria-hidden="true"><Icon name="check" size={34} /></span>
-          <div>
-            <h3>{t("walk.finishedTitle")}</h3>
-            <p>{walk.swaps_used === 0 ? t("walk.finishedPerfect") : t("walk.finishedNormal")}</p>
-            <div className="celebration-actions">
-              <button className="btn btn-primary" onClick={onOpenNotebook}>{t("walk.seeNotebook")}</button>
-              <button className="btn btn-secondary" onClick={onFinished}>{t("walk.newWalk")}</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showFinishForm && (
-        <FinishForm
-          key={editing ? "edit" : "new"}
-          initial={editing ? { walkedMinutes: walk.walked_minutes, distanceKm: walk.distance_km, diary: walk.diary } : undefined}
-          busy={finishBusy}
-          error={finishError}
-          skipLabel={editing ? t("story.cancel") : allDone ? t("finish.later") : t("finish.leave")}
-          onSubmit={saveFinish}
-          onSkip={() => {
-            if (editing) setEditing(false);
-            else if (allDone) setSkipped(true);
-            else onFinished();
-          }}
-        />
-      )}
-
-      {told && !showFinishForm && (summaryParts.length > 0 || walk.diary) && (
-        <div className="walk-summary">
-          <p className="summary-title">{t("finish.summaryTitle")}</p>
-          {summaryParts.length > 0 && <p className="summary-numbers">{summaryParts.join(" · ")}</p>}
-          {walk.diary && <blockquote className="entry-story">{walk.diary}</blockquote>}
-          <button className="btn btn-link left" onClick={() => setEditing(true)}>{t("finish.edit")}</button>
-        </div>
-      )}
 
       <ol className="entries">
         {walk.challenges.map((c) => {
@@ -201,12 +215,12 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
         })}
       </ol>
 
-      {!allDone && (
+      {allDone ? (
+        <button className="btn btn-link left" onClick={() => setView("done")}>{t("walk.seeSummary")}</button>
+      ) : (
         <>
           <p className="hint">{t("walk.swapWarning")}</p>
-          {!showFinishForm && (
-            <button className="btn btn-link left" onClick={() => (told ? onFinished() : setClosing(true))}>{t("walk.finish")}</button>
-          )}
+          <button className="btn btn-link left" onClick={() => setView(told ? "done" : "tell")}>{t("walk.finish")}</button>
         </>
       )}
     </section>

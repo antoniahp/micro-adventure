@@ -65,6 +65,11 @@ const ES = {
   "walk.noSwaps": "Sin cambios",
   "walk.swapWarning": "Si cambias un reto, el paseo ya no cuenta como perfecto.",
   "walk.finish": "Terminar paseo",
+  "walk.endedTitle": "Paseo terminado",
+  "walk.tellWalk": "Contar mi paseo",
+  "walk.editTold": "Editar mi relato",
+  "walk.backToChallenges": "Ver mis retos",
+  "walk.seeSummary": "Ver el resumen del paseo",
 
   "finish.title": "Cuenta tu paseo",
   "finish.intro": "Todo es opcional. Es tu cuaderno.",
@@ -78,7 +83,6 @@ const ES = {
   "finish.summaryTitle": "Tu paseo",
   "finish.summaryMinutes": "{n} min caminando",
   "finish.summaryKm": "{n} km",
-  "finish.edit": "Editar",
 
   "story.aria": "Tu respuesta",
   "story.placeholder": "Cuéntalo con tus palabras: qué has visto, tocado, oído o pensado.",
@@ -175,6 +179,11 @@ const EN: Record<TextKey, string> = {
   "walk.noSwaps": "No swaps left",
   "walk.swapWarning": "If you swap a challenge, the walk no longer counts as perfect.",
   "walk.finish": "End walk",
+  "walk.endedTitle": "Walk ended",
+  "walk.tellWalk": "Tell my walk",
+  "walk.editTold": "Edit my story",
+  "walk.backToChallenges": "See my challenges",
+  "walk.seeSummary": "See the walk summary",
 
   "finish.title": "Tell your walk",
   "finish.intro": "Everything is optional. It's your notebook.",
@@ -188,7 +197,6 @@ const EN: Record<TextKey, string> = {
   "finish.summaryTitle": "Your walk",
   "finish.summaryMinutes": "{n} min walking",
   "finish.summaryKm": "{n} km",
-  "finish.edit": "Edit",
 
   "story.aria": "Your answer",
   "story.placeholder": "Tell it in your own words: what you saw, touched, heard or thought.",
