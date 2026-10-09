@@ -1,6 +1,6 @@
 // All the calls to the backend live in this file. Screens never use fetch directly.
 import { currentLanguage, translate } from "./i18n";
-import type { Mood, Progress, Reminders, Walk } from "./types";
+import type { Mood, Progress, Reminders, Walk, WeeklySummary, YearlySummary } from "./types";
 
 const MAX_SWAPS_PER_WALK = 2; // same rule as the backend (Walk.MAX_SWAPS_PER_WALK)
 export { MAX_SWAPS_PER_WALK };
@@ -68,8 +68,32 @@ export async function finishWalk(walkId: string, data: { walkedMinutes: number |
   });
 }
 
+// The days of a streak, a week or a year are the person's own days, so every summary carries the browser's time zone.
+function browserTimeZone() {
+  return encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+}
+
 export async function getProgress(userId: string) {
-  return (await request<Progress>(`/users/${userId}/progress`))!;
+  return (await request<Progress>(`/users/${userId}/progress?timezone=${browserTimeZone()}`))!;
+}
+
+// week: any day of the week, as YYYY-MM-DD. Without it, the current week.
+export async function getWeeklySummary(userId: string, week?: string) {
+  const day = week ? `week=${week}&` : "";
+  return (await request<WeeklySummary>(`/users/${userId}/summary/weekly?${day}timezone=${browserTimeZone()}`))!;
+}
+
+export async function saveWeeklyFeeling(userId: string, week: string, feeling: number, note: string) {
+  await request(`/users/${userId}/summary/weekly/feeling`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ week, feeling, note }),
+  });
+}
+
+export async function getYearlySummary(userId: string, year?: number) {
+  const y = year ? `year=${year}&` : "";
+  return (await request<YearlySummary>(`/users/${userId}/summary/yearly?${y}timezone=${browserTimeZone()}`))!;
 }
 
 // Turns a voice note into text. The person reads and fixes the text before sending it.

@@ -3,12 +3,13 @@ import Icon from "./components/Icon";
 import Logo from "./components/Logo";
 import { LANGUAGES, useI18n } from "./i18n";
 import { currentWalk } from "./storage";
+import DashboardScreen from "./screens/DashboardScreen";
 import NotebookScreen from "./screens/NotebookScreen";
 import RemindersScreen from "./screens/RemindersScreen";
 import StartScreen from "./screens/StartScreen";
 import WalkScreen from "./screens/WalkScreen";
 
-type Tab = "walk" | "notebook" | "reminders";
+type Tab = "walk" | "dashboard" | "notebook" | "reminders";
 
 export default function App() {
   const { lang, setLang, t } = useI18n();
@@ -41,6 +42,7 @@ export default function App() {
       </header>
 
       <main>
+        {tab === "dashboard" && <DashboardScreen />}
         {tab === "notebook" && <NotebookScreen onStartWalk={() => setTab("walk")} />}
         {tab === "reminders" && <RemindersScreen />}
         {tab === "walk" && !walkId && <StartScreen onStarted={startedWalk} />}
@@ -52,6 +54,9 @@ export default function App() {
       <nav className="tabs">
         <button className={tab === "walk" ? "active" : ""} onClick={() => setTab("walk")}>
           <Icon name="pin" size={22} /> {t("app.tabWalk")}
+        </button>
+        <button className={tab === "dashboard" ? "active" : ""} onClick={() => setTab("dashboard")}>
+          <Icon name="chart" size={22} /> {t("app.tabDashboard")}
         </button>
         <button className={tab === "notebook" ? "active" : ""} onClick={() => setTab("notebook")}>
           <Icon name="book" size={22} /> {t("app.tabNotebook")}

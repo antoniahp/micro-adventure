@@ -10,6 +10,8 @@ from microadventures.domain.models.reminder_settings import ReminderSettings
 from microadventures.domain.services.bot_webhook import BotWebhook
 from microadventures.domain.services.notification_sender import NotificationSender
 from microadventures.domain.services.reminder_service import ReminderService
+from microadventures.domain.models.weekly_reflection import WeeklyReflection
+from microadventures.domain.services.reflection_service import ReflectionService
 from microadventures.domain.models.photo_verdict import PhotoVerdict
 from microadventures.domain.services.photo_verifier import PhotoVerifier
 from microadventures.domain.services.walk_criteria import WalkCriteria
@@ -93,3 +95,18 @@ class SpyNotificationSender(NotificationSender, BotWebhook):
 
     def register(self, url: str, secret: str) -> None:
         self.registered.append((url, secret))
+
+
+class InMemoryReflectionRepository(ReflectionService):
+    def __init__(self):
+        self.reflections: list[WeeklyReflection] = []
+
+    def save(self, reflection: WeeklyReflection) -> None:
+        self.reflections = [r for r in self.reflections if r.id != reflection.id]
+        self.reflections.append(deepcopy(reflection))
+
+    def find_by_week(self, user_id: str, week_start) -> WeeklyReflection | None:
+        return next((deepcopy(r) for r in self.reflections if r.user_id == user_id and r.week_start == week_start), None)
+
+    def find_by_user_id(self, user_id: str) -> list[WeeklyReflection]:
+        return [deepcopy(r) for r in self.reflections if r.user_id == user_id]

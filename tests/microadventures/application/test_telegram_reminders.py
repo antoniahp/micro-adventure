@@ -66,6 +66,61 @@ def test_it_creates_the_settings_the_first_time_they_are_saved():
     assert repository.find_by_user_id("user-9") is not None
 
 
+def test_the_bot_confirms_a_new_schedule_when_telegram_is_connected():
+    sender = SpyNotificationSender()
+    repository = _repository_with(a_reminder())
+
+    SaveReminderSettingsCommandHandler(repository, sender).handle(
+        SaveReminderSettingsCommand("user-1", True, "23:40", "10:00", "Europe/Madrid", Language.ES)
+    )
+
+    assert len(sender.sent) == 1
+    assert sender.sent[0][0] == "555" and "23:40" in sender.sent[0][1]
+
+
+def test_the_bot_says_nothing_when_nothing_changed():
+    sender = SpyNotificationSender()
+    repository = _repository_with(a_reminder())
+    command = SaveReminderSettingsCommand("user-1", True, "19:30", "10:00", "Europe/Madrid", Language.ES)
+    SaveReminderSettingsCommandHandler(repository).handle(command)
+
+    SaveReminderSettingsCommandHandler(repository, sender).handle(command)
+
+    assert sender.sent == []
+
+
+def test_the_bot_says_it_is_off_when_the_reminders_are_switched_off():
+    sender = SpyNotificationSender()
+    repository = _repository_with(a_reminder())
+
+    SaveReminderSettingsCommandHandler(repository, sender).handle(
+        SaveReminderSettingsCommand("user-1", False, "19:30", "10:00", "Europe/Madrid", Language.EN)
+    )
+
+    assert len(sender.sent) == 1 and "off" in sender.sent[0][1]
+
+
+def test_it_saves_the_schedule_even_when_the_confirmation_cannot_be_sent():
+    repository = _repository_with(a_reminder())
+
+    SaveReminderSettingsCommandHandler(repository, SpyNotificationSender(fail=True)).handle(
+        SaveReminderSettingsCommand("user-1", True, "23:40", "10:00", "Europe/Madrid", Language.ES)
+    )
+
+    assert repository.find_by_user_id("user-1").weekday_time == "23:40"
+
+
+def test_nobody_is_written_to_before_connecting_telegram():
+    sender = SpyNotificationSender()
+    repository = InMemoryReminderRepository()
+
+    SaveReminderSettingsCommandHandler(repository, sender).handle(
+        SaveReminderSettingsCommand("user-9", True, "20:00", "11:00", "Europe/Madrid", Language.ES)
+    )
+
+    assert sender.sent == []
+
+
 # --- connecting Telegram ---
 
 def test_the_link_code_is_kept_until_the_chat_uses_it():

@@ -35,6 +35,47 @@ export type Progress = {
   challenges_completed: number;
   perfect_walks: number;
   stickers: string[];
+  sticker_book: { code: string; current: number; goal: number; unlocked: boolean }[];
+  current_streak: number;
+};
+
+export type WeeklySummary = {
+  week_start: string;
+  week_end: string;
+  walks_count: number;
+  days_walked: number;
+  challenges_completed: number;
+  perfect_walks: number;
+  minutes: number;
+  km: number;
+  stories: number;
+  days: { day: string; walks: number; challenges: number }[];
+  moods: Record<string, number>;
+  categories: Record<string, number>;
+  previous_walks: number;
+  previous_challenges: number;
+  previous_minutes: number;
+  previous_km: number;
+  feeling: number | null;
+  feeling_note: string;
+};
+
+export type YearlySummary = {
+  year: number;
+  years: number[];
+  walks_count: number;
+  days_walked: number;
+  challenges_completed: number;
+  perfect_walks: number;
+  minutes: number;
+  km: number;
+  stories: number;
+  longest_streak: number;
+  best_month: number | null;
+  months: { month: number; walks: number; challenges: number; minutes: number; km: number; feeling: number | null }[];
+  moods: Record<string, number>;
+  categories: Record<string, number>;
+  weekdays: number[];
 };
 
 export type Reminders = {

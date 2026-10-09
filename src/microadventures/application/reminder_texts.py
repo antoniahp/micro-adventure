@@ -8,6 +8,8 @@ TEXTS = {
         "weekend": "🌿 Buen momento para salir un rato. Te espera un paseo con retos: {url}",
         "linked": "✅ Conectado. Te avisaré a las {weekday} entre semana y a las {weekend} en fin de semana. "
         "Puedes cambiarlo en la app. Para dejar de recibir avisos escribe /stop.",
+        "schedule_saved": "⏰ Listo. Te avisaré a las {weekday} entre semana y a las {weekend} en fin de semana.",
+        "schedule_paused": "🔕 Avisos desactivados. Puedes volver a activarlos en la app.",
         "stopped": "Hecho, no te escribiré más. Puedes volver a conectarme desde la app.",
         "unknown_code": "Ese código ya no vale. Abre MicroAdventures, entra en Avisos y pulsa «Conectar Telegram».",
         "help": "Soy el aviso de MicroAdventures. Para conectarme abre la app, entra en Avisos y pulsa «Conectar Telegram».",
@@ -17,6 +19,8 @@ TEXTS = {
         "weekend": "🌿 A good moment to head out. A walk with challenges is waiting: {url}",
         "linked": "✅ Connected. I'll remind you at {weekday} on weekdays and at {weekend} on weekends. "
         "You can change it in the app. Send /stop to stop the reminders.",
+        "schedule_saved": "⏰ Done. I'll remind you at {weekday} on weekdays and at {weekend} on weekends.",
+        "schedule_paused": "🔕 Reminders are off. You can turn them back on in the app.",
         "stopped": "Done, I won't write to you again. You can connect me again from the app.",
         "unknown_code": "That code is no longer valid. Open MicroAdventures, go to Reminders and tap “Connect Telegram”.",
         "help": "I'm the MicroAdventures reminder. To connect me, open the app, go to Reminders and tap “Connect Telegram”.",
