@@ -13,6 +13,7 @@ from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
 
 MAX_SWAPS_PER_WALK = 2
+MAX_DIARY_LENGTH = 2000
 
 
 class Walk(models.Model):
@@ -24,6 +25,11 @@ class Walk(models.Model):
     note = models.CharField(max_length=500, blank=True, default="")
     language = models.CharField(max_length=5, choices=Language.choices, default=Language.ES)
     swaps_used = models.PositiveSmallIntegerField(default=0)
+    # What the person tells when the walk ends. All optional.
+    walked_minutes = models.PositiveSmallIntegerField(null=True, blank=True)
+    distance_km = models.FloatField(null=True, blank=True)
+    diary = models.CharField(max_length=MAX_DIARY_LENGTH, blank=True, default="")
+    finished_at = models.DateTimeField(null=True, blank=True)
     challenges = EmbeddedModelArrayField(Challenge)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -37,6 +43,17 @@ class Walk(models.Model):
         challenge = self.find_challenge(challenge_id)
         challenge.status = ChallengeStatus.COMPLETED
         challenge.story = story
+
+    def finish(self, walked_minutes: int | None = None, distance_km: float | None = None, diary: str = "") -> None:
+        """Closes the walk with what the person says about it. Telling it again replaces what they said before."""
+        self.walked_minutes = walked_minutes
+        self.distance_km = distance_km
+        self.diary = diary.strip()
+        self.finished_at = timezone.now()
+
+    @property
+    def is_finished(self) -> bool:
+        return self.finished_at is not None
 
     def ensure_can_swap(self, challenge_id: UUID) -> None:
         if self.find_challenge(challenge_id).is_completed:

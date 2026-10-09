@@ -101,7 +101,12 @@ textarea {
   width: 100%; padding: 14px; resize: vertical; min-height: 110px;
   border: 2px solid var(--line); border-radius: 14px; background: var(--paper); line-height: 1.45;
 }
-textarea::placeholder { color: #8f8ca6; }
+input[type="text"], input[type="number"] {
+  width: 100%; min-height: 48px; padding: 10px 14px;
+  border: 2px solid var(--line); border-radius: 14px; background: var(--paper);
+}
+input::placeholder, textarea::placeholder { color: #8f8ca6; }
+input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px rgb(115 87 232 / 0.18); }
 textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px rgb(115 87 232 / 0.18); }
 .count { float: right; }
 
@@ -110,6 +115,8 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 9px 8px;
   border: 2px solid var(--line); border-radius: 12px; background: var(--paper); font-weight: 700; cursor: pointer;
 }
+.segments.counts { grid-auto-flow: row; grid-template-columns: repeat(5, 1fr); }
+.count-line { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--paper); border: 2px dashed var(--line); }
 .segment.selected { background: var(--dusk); border-color: var(--dusk); color: #fff; }
 
 /* ---------- Loader ---------- */
@@ -149,12 +156,7 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
   100% { transform: scale(1) rotate(0); opacity: 1; }
 }
 
-.celebration { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; padding: 20px; border-radius: 24px; background: var(--dusk); color: #fff; }
-.celebration p { opacity: 0.85; margin-top: 2px; }
-.stamp.big { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%; background: var(--sun); color: var(--dusk); transform: rotate(-8deg); }
-.celebration-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
-.celebration .btn-primary { background: var(--sun); color: var(--dusk); }
-.celebration .btn-secondary { border-color: #fff; color: #fff; }
+.stamp.big { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; background: var(--sun); color: var(--dusk); transform: rotate(-8deg); }
 
 /* ---------- Telling a challenge ---------- */
 .story-form { display: grid; gap: 10px; }
@@ -186,3 +188,28 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Telling the walk ---------- */
+.finish-form { display: grid; gap: 14px; padding: 18px; border-radius: 22px; background: var(--paper); border: 2px solid var(--line); }
+.finish-form h3 { margin: 0; }
+.finish-form .hint { margin: 0; }
+.finish-numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.finish-numbers .field label { font-size: 0.9rem; }
+@media (max-width: 380px) { .finish-numbers { grid-template-columns: 1fr; } }
+
+/* ---------- Walk complete ---------- */
+.done-page { display: grid; justify-items: center; gap: 22px; padding-top: 12px; text-align: center; }
+.done-page h2 { margin: 0 0 4px; }
+.done-page .hint { margin: 0; }
+.done-stats { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; margin: 0; padding: 14px 0; border-block: 2px solid var(--line); }
+.stat { display: grid; gap: 2px; padding-inline: 6px; }
+.stat + .stat { border-left: 2px solid var(--line); }
+.stat dd { margin: 0; font-size: 2rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--dusk); }
+.stat dt { color: var(--muted); font-size: 0.9rem; font-weight: 700; }
+.stat.empty dd { color: var(--line); }
+.done-story { width: 100%; margin: 0; text-align: left; font-size: 1.05rem; }
+.done-actions { display: grid; justify-items: center; gap: 6px; width: 100%; }
+.done-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 16px; }
+.btn-link.small { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+.btn-big:hover:not(:disabled):not(.disabled) { background: #e6a200; color: var(--dusk); }
+.done-story { --c: var(--sun); }

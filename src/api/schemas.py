@@ -5,6 +5,7 @@ from ninja import Field, Schema
 
 from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
+from microadventures.domain.models.walk import MAX_DIARY_LENGTH
 
 
 class StartWalkIn(Schema):
@@ -12,9 +13,15 @@ class StartWalkIn(Schema):
     mood: Mood
     minutes: int = Field(30, ge=5, le=240)
     weather: str = "unknown"
-    challenges_count: int = Field(3, ge=1, le=10)
+    challenges_count: int | None = Field(None, ge=1, le=10)  # None: the usual number for that much time
     note: str = Field("", max_length=500)
     language: Language = Language.ES
+
+
+class FinishWalkIn(Schema):
+    walked_minutes: int | None = Field(None, ge=1, le=720)
+    distance_km: float | None = Field(None, ge=0, le=200)
+    diary: str = Field("", max_length=MAX_DIARY_LENGTH)
 
 
 class WalkCreatedOut(Schema):
@@ -40,8 +47,16 @@ class WalkOut(Schema):
     note: str
     language: str
     swaps_used: int
+    walked_minutes: int | None
+    distance_km: float | None
+    diary: str
+    finished_at: datetime | None
     created_at: datetime
     challenges: list[ChallengeOut]
+
+    @staticmethod
+    def resolve_diary(walk) -> str:
+        return walk.diary or ""  # walks saved before this field existed have none
 
 
 class ProgressOut(Schema):

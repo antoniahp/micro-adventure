@@ -7,6 +7,7 @@ from microadventures.application.commands.complete_challenge.complete_challenge_
 from microadventures.application.queries.find_progress.find_progress_query_handler import FindProgressQueryHandler
 from microadventures.application.queries.transcribe_audio.transcribe_audio_query_handler import TranscribeAudioQueryHandler
 from microadventures.application.queries.find_walk.find_walk_query_handler import FindWalkQueryHandler
+from microadventures.application.commands.finish_walk.finish_walk_command_handler import FinishWalkCommandHandler
 from microadventures.application.commands.start_walk.start_walk_command_handler import StartWalkCommandHandler
 from microadventures.application.commands.swap_challenge.swap_challenge_command_handler import SwapChallengeCommandHandler
 from microadventures.application.commands.warm_up_generator.warm_up_generator_command_handler import WarmUpGeneratorCommandHandler
@@ -76,6 +77,10 @@ def warm_up_generator_handler() -> WarmUpGeneratorCommandHandler:
 
 def complete_challenge_handler() -> CompleteChallengeCommandHandler:
     return CompleteChallengeCommandHandler(walk_service=_walk_repository(), photo_verifier=_photo_verifier())
+
+
+def finish_walk_handler() -> FinishWalkCommandHandler:
+    return FinishWalkCommandHandler(walk_service=_walk_repository())
 
 
 def swap_challenge_handler() -> SwapChallengeCommandHandler:

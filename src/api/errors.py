@@ -3,6 +3,7 @@ from ninja import NinjaAPI
 from microadventures.domain.exceptions.challenge_already_completed_exception import ChallengeAlreadyCompletedException
 from microadventures.domain.exceptions.challenge_generation_failed_exception import ChallengeGenerationFailedException
 from microadventures.domain.exceptions.challenge_not_found_exception import ChallengeNotFoundException
+from microadventures.domain.exceptions.invalid_challenges_count_exception import InvalidChallengesCountException
 from microadventures.domain.exceptions.photo_rejected_exception import PhotoRejectedException
 from microadventures.domain.exceptions.challenge_response_required_exception import ChallengeResponseRequiredException
 from microadventures.domain.exceptions.photo_verification_failed_exception import PhotoVerificationFailedException
@@ -17,6 +18,7 @@ STATUS_BY_EXCEPTION = {
     ChallengeAlreadyCompletedException: 409,
     SwapLimitReachedException: 409,
     ChallengeResponseRequiredException: 422,
+    InvalidChallengesCountException: 422,
     PhotoRejectedException: 422,
     PhotoVerificationFailedException: 502,
     ChallengeGenerationFailedException: 502,

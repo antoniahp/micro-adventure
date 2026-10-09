@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { completeChallenge, getWalk, MAX_SWAPS_PER_WALK, swapChallenge } from "../api";
+import { completeChallenge, finishWalk, getWalk, MAX_SWAPS_PER_WALK, swapChallenge } from "../api";
+import FinishForm, { type FinishData } from "../components/FinishForm";
 import Icon from "../components/Icon";
 import Loader from "../components/Loader";
 import StoryForm from "../components/StoryForm";
@@ -18,11 +19,25 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const [photos, setPhotos] = useState<Record<string, string>>({}); // preview of each photo sent
   const [justDone, setJustDone] = useState<string | null>(null); // which entry to animate
   const [telling, setTelling] = useState<string | null>(null); // which entry has its story form open
+  // Three screens: the challenges, the "walk complete" page, and the page where the person tells the walk.
+  const [view, setView] = useState<"challenges" | "done" | "tell">("challenges");
+  const [finishBusy, setFinishBusy] = useState(false);
+  const [finishError, setFinishError] = useState("");
 
   // useEffect runs after the screen is drawn. Here: load the walk once per walkId.
   useEffect(() => {
-    getWalk(walkId).then(setWalk).catch((e: Error) => setLoadError(e.message));
+    getWalk(walkId)
+      .then((loaded) => {
+        setWalk(loaded);
+        if (loaded.challenges.every((c) => c.status === "completed")) setView("done"); // coming back to a finished walk
+      })
+      .catch((e: Error) => setLoadError(e.message));
   }, [walkId]);
+
+  // Each screen starts at the top.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
 
   // Runs an action on one challenge, then reloads the walk to show the new state.
   async function act(challenge: Challenge, action: () => Promise<void>, photo?: File) {
@@ -32,12 +47,28 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
       await action();
       setTelling(null);
       if (photo) setPhotos((current) => ({ ...current, [challenge.id]: URL.createObjectURL(photo) }));
-      setWalk(await getWalk(walkId));
+      const updated = await getWalk(walkId);
+      setWalk(updated);
       setJustDone(challenge.id);
+      if (updated.challenges.every((c) => c.status === "completed")) setView("done");
     } catch (e) {
       setErrors((current) => ({ ...current, [challenge.id]: (e as Error).message }));
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function saveFinish(data: FinishData) {
+    setFinishBusy(true);
+    setFinishError("");
+    try {
+      await finishWalk(walkId, data);
+      setWalk(await getWalk(walkId));
+      setView("done");
+    } catch (e) {
+      setFinishError((e as Error).message);
+    } finally {
+      setFinishBusy(false);
     }
   }
 
@@ -55,6 +86,64 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const doneCount = walk.challenges.filter((c) => c.status === "completed").length;
   const total = walk.challenges.length;
   const allDone = doneCount === total;
+  const told = walk.finished_at !== null;
+  const decimal = lang === "es" ? "," : ".";
+  const stats = [
+    { value: `${doneCount}/${total}`, label: t("done.challenges") },
+    { value: walk.walked_minutes ? String(walk.walked_minutes) : "–", label: t("done.minutes") },
+    { value: walk.distance_km ? String(walk.distance_km).replace(".", decimal) : "–", label: t("done.km") },
+  ];
+
+  if (view === "tell") {
+    return (
+      <section>
+        <FinishForm
+          initial={told ? { walkedMinutes: walk.walked_minutes, distanceKm: walk.distance_km, diary: walk.diary } : undefined}
+          busy={finishBusy}
+          error={finishError}
+          skipLabel={told ? t("story.cancel") : allDone ? t("finish.later") : t("finish.leave")}
+          onSubmit={saveFinish}
+          onSkip={() => (told || allDone ? setView("done") : onFinished())}
+        />
+      </section>
+    );
+  }
+
+  if (view === "done") {
+    return (
+      <section className="done-page">
+        <span className="stamp big" aria-hidden="true"><Icon name="check" size={34} /></span>
+        <div>
+          <h2>{allDone ? t("walk.finishedTitle") : t("walk.endedTitle")}</h2>
+          <p className="hint">{allDone && walk.swaps_used === 0 ? t("walk.finishedPerfect") : t("walk.finishedNormal")}</p>
+        </div>
+
+        <dl className="done-stats">
+          {stats.map((stat) => (
+            <div key={stat.label} className={stat.value === "–" ? "stat empty" : "stat"}>
+              <dd>{stat.value}</dd>
+              <dt>{stat.label}</dt>
+            </div>
+          ))}
+        </dl>
+
+        {walk.diary ? (
+          <blockquote className="entry-story done-story">{walk.diary}</blockquote>
+        ) : (
+          <p className="hint">{t("done.storyPrompt")}</p>
+        )}
+
+        <div className="done-actions">
+          <button className="btn btn-primary btn-big" onClick={() => setView("tell")}>{told ? t("walk.editTold") : t("walk.tellWalk")}</button>
+          <div className="done-links">
+            <button className="btn btn-link" onClick={onOpenNotebook}>{t("walk.seeNotebook")}</button>
+            <button className="btn btn-link" onClick={onFinished}>{t("walk.newWalk")}</button>
+          </div>
+          <button className="btn btn-link small" onClick={() => setView("challenges")}>{t("walk.backToChallenges")}</button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section>
@@ -68,20 +157,6 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
         </div>
         <span className="progress-text">{t("walk.progress", { done: doneCount, total })}</span>
       </div>
-
-      {allDone && (
-        <div className="celebration">
-          <span className="stamp big" aria-hidden="true"><Icon name="check" size={34} /></span>
-          <div>
-            <h3>{t("walk.finishedTitle")}</h3>
-            <p>{walk.swaps_used === 0 ? t("walk.finishedPerfect") : t("walk.finishedNormal")}</p>
-            <div className="celebration-actions">
-              <button className="btn btn-primary" onClick={onOpenNotebook}>{t("walk.seeNotebook")}</button>
-              <button className="btn btn-secondary" onClick={onFinished}>{t("walk.newWalk")}</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <ol className="entries">
         {walk.challenges.map((c) => {
@@ -150,10 +225,12 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
         })}
       </ol>
 
-      {!allDone && (
+      {allDone ? (
+        <button className="btn btn-link left" onClick={() => setView("done")}>{t("walk.seeSummary")}</button>
+      ) : (
         <>
           <p className="hint">{t("walk.swapWarning")}</p>
-          <button className="btn btn-link left" onClick={onFinished}>{t("walk.finish")}</button>
+          <button className="btn btn-link left" onClick={() => setView(told ? "done" : "tell")}>{t("walk.finish")}</button>
         </>
       )}
     </section>

@@ -12,6 +12,6 @@ class StartWalkCommand:
     mood: Mood
     minutes: int
     weather: str
-    challenges_count: int
+    challenges_count: int | None = None  # None: the usual number for that much time (WalkLength)
     note: str = ""
     language: Language = Language.ES

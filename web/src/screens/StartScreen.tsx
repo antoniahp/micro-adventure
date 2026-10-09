@@ -7,7 +7,7 @@ import { useI18n, type TextKey } from "../i18n";
 import { useSky } from "../sky";
 import { getUserId } from "../storage";
 import type { Mood } from "../types";
-import { ENERGIES, MINUTES, WEATHERS } from "../ui";
+import { challengeRange, ENERGIES, MINUTES, WEATHERS } from "../ui";
 
 const MAX_NOTE = 500;
 
@@ -18,6 +18,7 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
   const [mood, setMood] = useState<Mood>("calm");
   const [minutes, setMinutes] = useState(30);
   const [weather, setWeather] = useState("sunny");
+  const [chosenCount, setChosenCount] = useState<number | null>(null); // only chosen when the walk is an hour or more
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,11 +28,16 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
     warmUp().catch(() => {}); // not essential: if it fails, the walk still starts
   }, []);
 
+  const range = challengeRange(minutes);
+  const canChoose = range.min !== range.max;
+  const count = canChoose && chosenCount !== null && chosenCount >= range.min && chosenCount <= range.max ? chosenCount : range.usual;
+  const counts = Array.from({ length: range.max - range.min + 1 }, (_, i) => range.min + i);
+
   async function submit() {
     setLoading(true);
     setError("");
     try {
-      onStarted(await startWalk(getUserId(), mood, minutes, weather, note.trim()));
+      onStarted(await startWalk(getUserId(), mood, minutes, weather, note.trim(), count));
     } catch (e) {
       setError((e as Error).message);
       setLoading(false);
@@ -71,6 +77,24 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
             </button>
           ))}
         </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>{t("start.count")}</legend>
+        {canChoose ? (
+          <>
+            <div className="segments counts">
+              {counts.map((n) => (
+                <button key={n} className={count === n ? "segment selected" : "segment"} aria-pressed={count === n} onClick={() => setChosenCount(n)}>
+                  {n}
+                </button>
+              ))}
+            </div>
+            <p className="hint">{t("start.countChoose")}</p>
+          </>
+        ) : (
+          <p className="hint count-line">{range.usual === 3 ? t("start.countShort", { n: count }) : t("start.countFixed", { n: count })}</p>
+        )}
       </fieldset>
 
       <fieldset>

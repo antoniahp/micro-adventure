@@ -21,6 +21,14 @@ export const ENERGIES = [
 
 export const MINUTES = [15, 30, 45, 60];
 
+// How many challenges a walk can have for the time the person has. Same rule as the backend (WalkLength):
+// under 45 minutes, 3 simple ones; 45 to 59, 5; an hour or more, from 6 to 10 and they choose.
+export function challengeRange(minutes: number) {
+  if (minutes < 45) return { min: 3, max: 3, usual: 3 };
+  if (minutes < 60) return { min: 5, max: 5, usual: 5 };
+  return { min: 6, max: 10, usual: 6 };
+}
+
 export const WEATHERS: { value: string; icon: IconName }[] = [
   { value: "sunny", icon: "sun" },
   { value: "cloudy", icon: "cloud" },
