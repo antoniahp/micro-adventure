@@ -36,3 +36,51 @@ def text(language: str, key: str, **values) -> str:
 def both_languages(key: str) -> str:
     """For a person we cannot tell the language of (they have not linked yet)."""
     return f"{text(Language.ES, key)}\n\n{text(Language.EN, key)}"
+
+
+# --- The reminder card: a picture, a few lines and three buttons ---
+
+CARD_TEXTS = {
+    Language.ES: {
+        "weekday_title": "🌿 <b>Tu jornada ha terminado.</b>",
+        "weekend_title": "☀️ <b>Buena hora para salir.</b>",
+        "weekday_invite": "Un paseo corto con retos te sienta bien.",
+        "weekend_invite": "Unos minutos fuera y vuelves con una historia.",
+        "light": "Quedan <b>{light}</b> de luz · {temperature} °C, {sky}.",
+        "dark": "Ya es de noche · {temperature} °C, {sky}. Mejor un paseo corto por calles con luz.",
+        "rain": "Llueve: hay retos para hacer bajo cubierto.",
+        "open": "🚶 Salir a caminar",
+        "snooze": "⏰ En 1 hora",
+        "skip": "😴 Hoy no",
+        "snoozed": "Vale, te aviso en 1 hora ⏰",
+        "skipped": "Hecho, hoy no te molesto más 😴",
+        "sky_clear": "despejado", "sky_cloudy": "nublado", "sky_fog": "niebla", "sky_rain": "lluvia", "sky_snow": "nieve", "sky_storm": "tormenta",
+    },
+    Language.EN: {
+        "weekday_title": "🌿 <b>You're done for today.</b>",
+        "weekend_title": "☀️ <b>A good time to head out.</b>",
+        "weekday_invite": "A short walk with challenges will do you good.",
+        "weekend_invite": "A few minutes outside and you come back with a story.",
+        "light": "<b>{light}</b> of daylight left · {temperature} °C, {sky}.",
+        "dark": "It is dark already · {temperature} °C, {sky}. Better a short walk along lit streets.",
+        "rain": "It is raining: there are challenges to do under cover.",
+        "open": "🚶 Go for a walk",
+        "snooze": "⏰ In 1 hour",
+        "skip": "😴 Not today",
+        "snoozed": "Okay, I'll remind you in 1 hour ⏰",
+        "skipped": "Done, I won't bother you again today 😴",
+        "sky_clear": "clear", "sky_cloudy": "cloudy", "sky_fog": "fog", "sky_rain": "rain", "sky_snow": "snow", "sky_storm": "storm",
+    },
+}
+
+
+def card_text(language: str, key: str, **values) -> str:
+    texts = CARD_TEXTS.get(Language(language), CARD_TEXTS[Language.ES])
+    return texts[key].format(**values)
+
+
+def format_light(minutes: int, language: str) -> str:
+    hours, rest = divmod(minutes, 60)
+    if not hours:
+        return f"{rest} min"
+    return f"{hours} h {rest} min" if rest else f"{hours} h"

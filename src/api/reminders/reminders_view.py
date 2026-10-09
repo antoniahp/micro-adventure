@@ -22,6 +22,7 @@ def _out(reminder) -> dict:
         "timezone": reminder.timezone,
         "language": reminder.language,
         "telegram_connected": reminder.is_linked,
+        "has_place": reminder.has_place,
         "telegram_available": bool(settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_BOT_USERNAME),
     }
 
@@ -41,6 +42,9 @@ def save_reminders(request, user_id: str, payload: ReminderSettingsIn):
             weekend_time=payload.weekend_time,
             timezone=payload.timezone,
             language=payload.language,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+            clear_place=payload.clear_place,
         )
     )
     return _out(wiring.find_reminder_settings_handler().handle(FindReminderSettingsQuery(user_id=user_id)))

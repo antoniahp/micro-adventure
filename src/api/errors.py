@@ -15,6 +15,7 @@ from microadventures.domain.exceptions.speech_transcription_failed_exception imp
 from microadventures.domain.exceptions.speech_transcription_unavailable_exception import SpeechTranscriptionUnavailableException
 from microadventures.domain.exceptions.swap_limit_reached_exception import SwapLimitReachedException
 from microadventures.domain.exceptions.walk_not_found_exception import WalkNotFoundException
+from microadventures.domain.exceptions.weather_unavailable_exception import WeatherUnavailableException
 
 STATUS_BY_EXCEPTION = {
     WalkNotFoundException: 404,
@@ -26,6 +27,7 @@ STATUS_BY_EXCEPTION = {
     InvalidWeeklyReflectionException: 422,
     NotificationFailedException: 502,
     NotificationUnavailableException: 503,
+    WeatherUnavailableException: 503,
     InvalidChallengesCountException: 422,
     PhotoRejectedException: 422,
     PhotoVerificationFailedException: 502,

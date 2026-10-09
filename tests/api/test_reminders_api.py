@@ -40,7 +40,7 @@ def test_someone_new_gets_the_defaults_switched_off():
 
     assert body == {
         "enabled": False, "weekday_time": "18:00", "weekend_time": "11:00", "timezone": "Europe/Madrid",
-        "language": "es", "telegram_connected": False, "telegram_available": True,
+        "language": "es", "telegram_connected": False, "has_place": False, "telegram_available": True,
     }
 
 
@@ -144,4 +144,4 @@ def test_the_clock_sends_the_reminders_that_are_due(adapters, monkeypatch):
 
     assert client.post(f"/api/reminders/run?key={KEY}").json() == {"sent": 1}
     assert client.post(f"/api/reminders/run?key={KEY}").json() == {"sent": 0}
-    assert "terminado por hoy" in adapters["sender"].sent[0][1]
+    assert "Tu jornada ha terminado" in adapters["sender"].cards[0][1].caption

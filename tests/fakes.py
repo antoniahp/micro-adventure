@@ -8,7 +8,11 @@ from microadventures.domain.exceptions.notification_failed_exception import Noti
 from microadventures.domain.exceptions.walk_not_found_exception import WalkNotFoundException
 from microadventures.domain.models.reminder_settings import ReminderSettings
 from microadventures.domain.services.bot_webhook import BotWebhook
+from microadventures.domain.exceptions.weather_unavailable_exception import WeatherUnavailableException
+from microadventures.domain.models.reminder_card import ReminderCard
+from microadventures.domain.models.weather import Weather
 from microadventures.domain.services.notification_sender import NotificationSender
+from microadventures.domain.services.weather_service import WeatherService
 from microadventures.domain.services.reminder_service import ReminderService
 from microadventures.domain.models.weekly_reflection import WeeklyReflection
 from microadventures.domain.services.reflection_service import ReflectionService
@@ -87,14 +91,37 @@ class SpyNotificationSender(NotificationSender, BotWebhook):
         self.fail = fail
         self.sent: list[tuple[str, str]] = []
         self.registered: list[tuple[str, str]] = []
+        self.cards: list[tuple[str, ReminderCard]] = []
+        self.answers: list[tuple[str, str]] = []
 
     def send(self, chat_id: str, text: str) -> None:
         if self.fail:
             raise NotificationFailedException("Telegram answered 500")
         self.sent.append((chat_id, text))
 
+    def send_card(self, chat_id: str, card: ReminderCard) -> None:
+        if self.fail:
+            raise NotificationFailedException("Telegram answered 500")
+        self.cards.append((chat_id, card))
+
+    def answer(self, callback_id: str, text: str) -> None:
+        self.answers.append((callback_id, text))
+
     def register(self, url: str, secret: str) -> None:
         self.registered.append((url, secret))
+
+
+class FakeWeatherService(WeatherService):
+    def __init__(self, weather: Weather | None = None, fail: bool = False):
+        self.weather = weather
+        self.fail = fail
+        self.asked: list[tuple[float, float]] = []
+
+    def at(self, latitude: float, longitude: float) -> Weather:
+        self.asked.append((latitude, longitude))
+        if self.fail or self.weather is None:
+            raise WeatherUnavailableException("fake")
+        return self.weather
 
 
 class InMemoryReflectionRepository(ReflectionService):

@@ -1,6 +1,6 @@
 // All the calls to the backend live in this file. Screens never use fetch directly.
 import { currentLanguage, translate } from "./i18n";
-import type { Mood, Progress, Reminders, Walk, WeeklySummary, YearlySummary } from "./types";
+import type { Mood, Place, Progress, Reminders, Walk, WalkContext, WeeklySummary, YearlySummary } from "./types";
 
 const MAX_SWAPS_PER_WALK = 2; // same rule as the backend (Walk.MAX_SWAPS_PER_WALK)
 export { MAX_SWAPS_PER_WALK };
@@ -33,12 +33,16 @@ export async function warmUp() {
   await request("/warmup", { method: "POST" });
 }
 
-export async function startWalk(userId: string, mood: Mood, minutes: number, weather: string, note: string, challengesCount: number) {
+export async function getContext(place: Place) {
+  return (await request<WalkContext>(`/context?latitude=${place.latitude}&longitude=${place.longitude}`))!;
+}
+
+export async function startWalk(userId: string, mood: Mood, minutes: number, weather: string, note: string, challengesCount: number, place?: Place) {
   const language = currentLanguage(); // the challenges are written in the language the person is using
   const created = await request<{ id: string }>("/walks", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id: userId, mood, minutes, weather, note, language, challenges_count: challengesCount }),
+    body: JSON.stringify({ user_id: userId, mood, minutes, weather, note, language, challenges_count: challengesCount, latitude: place?.latitude, longitude: place?.longitude }),
   });
   return created!.id;
 }
@@ -115,7 +119,7 @@ export async function getReminders(userId: string) {
 }
 
 // The time zone comes from the browser, so "18:00" means 18:00 where the person is.
-export async function saveReminders(userId: string, data: { enabled: boolean; weekdayTime: string; weekendTime: string }) {
+export async function saveReminders(userId: string, data: { enabled: boolean; weekdayTime: string; weekendTime: string; place?: Place | null }) {
   try {
     return (await request<Reminders>(`/users/${userId}/reminders`, {
       method: "PUT",
@@ -126,6 +130,9 @@ export async function saveReminders(userId: string, data: { enabled: boolean; we
         weekend_time: data.weekendTime,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Madrid",
         language: currentLanguage(),
+        latitude: data.place?.latitude,
+        longitude: data.place?.longitude,
+        clear_place: data.place === null, // null = take the place away; undefined = leave it as it is
       }),
     }))!;
   } catch (e) {

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { getReminders, linkTelegram, saveReminders, unlinkTelegram } from "../api";
+import { getPlace } from "../location";
 import Icon from "../components/Icon";
 import { useI18n } from "../i18n";
 import { useInstall } from "../pwa";
 import { getUserId } from "../storage";
-import type { Reminders } from "../types";
+import type { Place, Reminders } from "../types";
 
 const POLL_EVERY_MS = 3000;
 const POLL_FOR_MS = 3 * 60 * 1000; // the person has three minutes to press Start in Telegram
@@ -17,6 +18,7 @@ export default function RemindersScreen() {
   const [enabled, setEnabled] = useState(false);
   const [weekday, setWeekday] = useState("18:00");
   const [weekend, setWeekend] = useState("11:00");
+  const [shareWeather, setShareWeather] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -28,6 +30,7 @@ export default function RemindersScreen() {
     setEnabled(loaded.enabled);
     setWeekday(loaded.weekday_time);
     setWeekend(loaded.weekend_time);
+    setShareWeather(loaded.has_place);
   }
 
   useEffect(() => {
@@ -82,7 +85,20 @@ export default function RemindersScreen() {
     setSaved(false);
     setError("");
     try {
-      show(await saveReminders(userId, { enabled, weekdayTime: weekday, weekendTime: weekend }));
+      // The place is only asked for when the person wants the weather in the reminder, and it is taken away when they do not.
+      let place: Place | null | undefined = undefined;
+      if (shareWeather) {
+        try {
+          place = await getPlace();
+        } catch {
+          setShareWeather(false);
+          setError(t("error.noPlace"));
+          place = settings?.has_place ? null : undefined;
+        }
+      } else if (settings?.has_place) {
+        place = null;
+      }
+      show(await saveReminders(userId, { enabled, weekdayTime: weekday, weekendTime: weekend, place }));
       setSaved(true);
     } catch (e) {
       setError((e as Error).message);
@@ -139,6 +155,12 @@ export default function RemindersScreen() {
             </div>
           </div>
           <p className="hint">{t("reminders.hint")}</p>
+          <label className="switch">
+            <span>{t("reminders.weather")}</span>
+            <input type="checkbox" role="switch" checked={shareWeather} onChange={(e) => { setShareWeather(e.target.checked); setSaved(false); }} />
+            <span className="track" aria-hidden="true" />
+          </label>
+          <p className="hint">{t("reminders.weatherHint")}</p>
           {!settings.telegram_connected && <p className="hint">{t("reminders.needTelegram")}</p>}
           <div className="story-actions">
             <button className="btn btn-primary" disabled={saving || !weekday || !weekend} onClick={save}>

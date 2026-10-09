@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from ninja import File, Form, Router, Status
@@ -28,6 +29,9 @@ def start_walk(request, payload: StartWalkIn):
             challenges_count=payload.challenges_count,
             note=payload.note.strip(),
             language=payload.language,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+            now=datetime.now(timezone.utc),
         )
     )
     return Status(201, {"id": walk_id})

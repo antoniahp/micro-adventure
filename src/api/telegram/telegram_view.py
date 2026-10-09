@@ -1,5 +1,6 @@
 import hmac
 import secrets
+from datetime import datetime, timezone
 
 from django.conf import settings
 from ninja import Router, Status
@@ -9,6 +10,7 @@ from api import wiring
 from api.key_guard import check_key, webhook_secret
 from api.telegram.telegram_serializer import TelegramLinkOut, TelegramUpdate
 from microadventures.application.commands.create_telegram_link.create_telegram_link_command import CreateTelegramLinkCommand
+from microadventures.application.commands.handle_telegram_callback.handle_telegram_callback_command import HandleTelegramCallbackCommand
 from microadventures.application.commands.handle_telegram_message.handle_telegram_message_command import HandleTelegramMessageCommand
 from microadventures.application.commands.register_bot_webhook.register_bot_webhook_command import RegisterBotWebhookCommand
 from microadventures.application.commands.unlink_telegram.unlink_telegram_command import UnlinkTelegramCommand
@@ -30,6 +32,14 @@ def webhook(request, update: TelegramUpdate):
     chat_id, text = (message.get("chat") or {}).get("id"), message.get("text")
     if chat_id is not None and text:
         wiring.handle_telegram_message_handler().handle(HandleTelegramMessageCommand(chat_id=str(chat_id), text=text))
+    callback = update.callback_query or {}
+    callback_chat = ((callback.get("message") or {}).get("chat") or {}).get("id")
+    if callback.get("id") and callback_chat is not None:
+        wiring.handle_telegram_callback_handler().handle(
+            HandleTelegramCallbackCommand(
+                chat_id=str(callback_chat), callback_id=str(callback["id"]), data=str(callback.get("data", "")), now=datetime.now(timezone.utc)
+            )
+        )
     return Status(204, None)  # always 204: Telegram must not retry a message we did not understand
 
 

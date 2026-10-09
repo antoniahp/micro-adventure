@@ -11,3 +11,6 @@ class SaveReminderSettingsCommand:
     weekend_time: str
     timezone: str
     language: Language
+    latitude: float | None = None  # shared only if the person wants the weather in the reminder
+    longitude: float | None = None
+    clear_place: bool = False

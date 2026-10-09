@@ -3,6 +3,10 @@
 import requests
 from django.conf import settings
 
+from microadventures.application.queries.find_walk_context.find_walk_context_query_handler import FindWalkContextQueryHandler
+from microadventures.domain.services.weather_service import WeatherService
+from microadventures.infrastructure.api.open_meteo_weather_service import OpenMeteoWeatherService
+
 from microadventures.application.commands.complete_challenge.complete_challenge_command_handler import CompleteChallengeCommandHandler
 from microadventures.application.commands.save_weekly_reflection.save_weekly_reflection_command_handler import SaveWeeklyReflectionCommandHandler
 from microadventures.application.queries.find_progress.find_progress_query_handler import FindProgressQueryHandler
@@ -12,6 +16,7 @@ from microadventures.application.queries.transcribe_audio.transcribe_audio_query
 from microadventures.application.queries.find_walk.find_walk_query_handler import FindWalkQueryHandler
 from microadventures.application.commands.finish_walk.finish_walk_command_handler import FinishWalkCommandHandler
 from microadventures.application.commands.create_telegram_link.create_telegram_link_command_handler import CreateTelegramLinkCommandHandler
+from microadventures.application.commands.handle_telegram_callback.handle_telegram_callback_command_handler import HandleTelegramCallbackCommandHandler
 from microadventures.application.commands.handle_telegram_message.handle_telegram_message_command_handler import HandleTelegramMessageCommandHandler
 from microadventures.application.commands.register_bot_webhook.register_bot_webhook_command_handler import RegisterBotWebhookCommandHandler
 from microadventures.application.commands.save_reminder_settings.save_reminder_settings_command_handler import SaveReminderSettingsCommandHandler
@@ -83,6 +88,13 @@ def _reflection_repository() -> ReflectionService:
     return DbReflectionRepository()
 
 
+_weather_service_instance = OpenMeteoWeatherService()  # one for the whole server, so its short memory is shared
+
+
+def _weather_service() -> WeatherService:
+    return _weather_service_instance
+
+
 def _reminder_repository() -> ReminderService:
     return DbReminderRepository()
 
@@ -100,7 +112,7 @@ def _speech_transcriber() -> SpeechTranscriber:
 
 
 def start_walk_handler() -> StartWalkCommandHandler:
-    return StartWalkCommandHandler(walk_service=_walk_repository(), challenge_generator=_challenge_generator())
+    return StartWalkCommandHandler(walk_service=_walk_repository(), challenge_generator=_challenge_generator(), weather_service=_weather_service())
 
 
 def warm_up_generator_handler() -> WarmUpGeneratorCommandHandler:
@@ -127,6 +139,10 @@ def find_walk_handler() -> FindWalkQueryHandler:
     return FindWalkQueryHandler(walk_service=_walk_repository())
 
 
+def find_walk_context_handler() -> FindWalkContextQueryHandler:
+    return FindWalkContextQueryHandler(weather_service=_weather_service())
+
+
 def find_progress_handler() -> FindProgressQueryHandler:
     return FindProgressQueryHandler(walk_service=_walk_repository())
 
@@ -147,12 +163,17 @@ def handle_telegram_message_handler() -> HandleTelegramMessageCommandHandler:
     return HandleTelegramMessageCommandHandler(reminder_service=_reminder_repository(), notification_sender=_notification_sender())
 
 
+def handle_telegram_callback_handler() -> HandleTelegramCallbackCommandHandler:
+    return HandleTelegramCallbackCommandHandler(reminder_service=_reminder_repository(), notification_sender=_notification_sender())
+
+
 def send_due_reminders_handler() -> SendDueRemindersCommandHandler:
     return SendDueRemindersCommandHandler(
         reminder_service=_reminder_repository(),
         walk_service=_walk_repository(),
         notification_sender=_notification_sender(),
         app_url=settings.APP_URL,
+        weather_service=_weather_service(),
     )
 
 

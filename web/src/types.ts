@@ -78,6 +78,20 @@ export type YearlySummary = {
   weekdays: number[];
 };
 
+export type WalkContext = {
+  temperature_c: number;
+  sky: "clear" | "cloudy" | "fog" | "rain" | "snow" | "storm";
+  rain_mm: number;
+  wind_kmh: number;
+  sunrise: string;
+  sunset: string;
+  minutes_of_light: number;
+  suggested_weather: "sunny" | "cloudy" | "rainy";
+  conditions: { dark: boolean; rain: boolean; storm: boolean; cold: boolean; hot: boolean; windy: boolean };
+};
+
+export type Place = { latitude: number; longitude: number };
+
 export type Reminders = {
   enabled: boolean;
   weekday_time: string; // "18:00"
@@ -85,5 +99,6 @@ export type Reminders = {
   timezone: string; // "Europe/Madrid"
   language: string;
   telegram_connected: boolean;
+  has_place: boolean; // the reminder tells the weather where the person is
   telegram_available: boolean; // false when the server has no bot
 };
