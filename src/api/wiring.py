@@ -170,7 +170,6 @@ def handle_telegram_callback_handler() -> HandleTelegramCallbackCommandHandler:
 def send_due_reminders_handler() -> SendDueRemindersCommandHandler:
     return SendDueRemindersCommandHandler(
         reminder_service=_reminder_repository(),
-        walk_service=_walk_repository(),
         notification_sender=_notification_sender(),
         app_url=settings.APP_URL,
         weather_service=_weather_service(),
