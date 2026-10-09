@@ -28,6 +28,7 @@ class ChallengeOut(Schema):
     status: str
     accepts_photo: bool
     story: str
+    source: str  # "template" or the name of the model that wrote the challenge
 
 
 class WalkOut(Schema):

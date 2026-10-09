@@ -9,3 +9,7 @@ local.env
 .vscode/
 node_modules/
 dist/
+
+# Local secrets: never commit these (sample.env is the template that is committed)
+local.env
+*.local.env

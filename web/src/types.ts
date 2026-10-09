@@ -9,6 +9,7 @@ export type Challenge = {
   status: "pending" | "completed";
   accepts_photo: boolean;
   story: string;
+  source: string; // "template" or the model that wrote it, e.g. "gemma4:31b"
 };
 
 export type Walk = {

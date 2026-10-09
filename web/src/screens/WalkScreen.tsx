@@ -94,7 +94,15 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
                 <Icon name={done ? "check" : category.icon} size={22} />
               </span>
               <div className="entry-body">
-                <p className="entry-category">{t(`cat.${CATEGORIES[c.category] ? c.category : "fallback"}` as TextKey)}</p>
+                <p className="entry-category">
+                  {t(`cat.${CATEGORIES[c.category] ? c.category : "fallback"}` as TextKey)}
+                  <span
+                    className={c.source === "template" ? "source-dot" : "source-dot model"}
+                    role="img"
+                    title={c.source === "template" ? t("walk.sourceTemplate") : t("walk.sourceModel", { model: c.source })}
+                    aria-label={c.source === "template" ? t("walk.sourceTemplate") : t("walk.sourceModel", { model: c.source })}
+                  />
+                </p>
                 <p className="entry-text">{c.text}</p>
 
                 {c.story && <blockquote className="entry-story">{c.story}</blockquote>}

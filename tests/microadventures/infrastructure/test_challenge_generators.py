@@ -196,3 +196,19 @@ def test_ollama_accepts_challenges_given_as_plain_sentences():
 
     assert [c.text for c in challenges] == ["Encuentra tres tipos de hojas.", "Fotografía algo de color rojo."]
     assert len({c.category for c in challenges}) == 2  # no category given: they are spread over the categories
+
+
+def test_ollama_marks_each_challenge_with_the_model_that_wrote_it():
+    output = '{"challenges": [{"category": "sound", "text": "Escucha un pájaro."}, {"category": "nature", "text": "Busca un árbol viejo."}]}'
+
+    challenges = OllamaChallengeGenerator("http://ollama:11434", "gemma4:31b", http=FakeHttp(output)).generate(BRIEF)
+
+    assert [c.source for c in challenges] == ["gemma4:31b", "gemma4:31b"]
+    assert all(c.written_by_model for c in challenges)
+
+
+def test_template_challenges_are_marked_as_templates():
+    challenges = TemplateChallengeGenerator().generate(BRIEF)
+
+    assert {c.source for c in challenges} == {"template"}
+    assert not any(c.written_by_model for c in challenges)

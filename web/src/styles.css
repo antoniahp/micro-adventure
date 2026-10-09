@@ -134,6 +134,9 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
 .entry { display: grid; grid-template-columns: 46px 1fr; gap: 14px; padding: 16px; border-radius: 20px; background: var(--tint); }
 .badge { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--c); color: var(--on, #fff); }
 .entry-category { font-size: 0.85rem; font-weight: 700; color: var(--ink-c); }
+/* A small dot beside the category: green when a model wrote the challenge, grey when it is a fallback. */
+.source-dot { display: inline-block; width: 8px; height: 8px; margin-left: 8px; border-radius: 50%; background: var(--muted); opacity: 0.55; vertical-align: middle; }
+.source-dot.model { background: #10A878; opacity: 1; box-shadow: 0 0 0 3px rgba(16, 168, 120, 0.22); }
 .entry-text { font-size: 1.15rem; line-height: 1.3; font-weight: 700; letter-spacing: -0.01em; margin-top: 2px; }
 .entry.done .entry-text { color: var(--muted); font-weight: 600; }
 .entry-body { display: grid; gap: 10px; }

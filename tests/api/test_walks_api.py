@@ -129,6 +129,15 @@ def test_transcribing_returns_the_text(monkeypatch):
     assert response.json() == {"text": "Se oye una fuente."}
 
 
+def test_the_walk_says_who_wrote_each_challenge():
+    client = Client()
+    created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 2})
+
+    walk = client.get(f"/api/walks/{created.json()['id']}").json()
+
+    assert [c["source"] for c in walk["challenges"]] == ["template", "template"]  # the test setup uses the templates
+
+
 def test_a_swap_can_ask_for_the_language_on_screen():
     client = Client()
     created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 1, "language": "es"})
