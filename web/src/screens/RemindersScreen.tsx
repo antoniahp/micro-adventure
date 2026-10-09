@@ -120,7 +120,7 @@ export default function RemindersScreen() {
         )}
       </div>
 
-      {settings.telegram_available && settings.telegram_connected && (
+      {(
         <div className="panel">
           <h3><Icon name="bell" size={20} /> {t("reminders.when")}</h3>
           <label className="switch">
@@ -139,6 +139,7 @@ export default function RemindersScreen() {
             </div>
           </div>
           <p className="hint">{t("reminders.hint")}</p>
+          {!settings.telegram_connected && <p className="hint">{t("reminders.needTelegram")}</p>}
           <div className="story-actions">
             <button className="btn btn-primary" disabled={saving || !weekday || !weekend} onClick={save}>
               {saving ? t("reminders.saving") : t("reminders.save")}
