@@ -35,8 +35,17 @@ export const WEATHERS: { value: string; icon: IconName }[] = [
   { value: "rainy", icon: "rain" },
 ];
 
-// Badges the backend can award.
-export const BADGES: { code: string; icon: IconName; color: string }[] = [
-  { code: "first_walk", icon: "pin", color: "#10A878" },
-  { code: "perfect_walk", icon: "star", color: "#FFB300" },
-];
+// The stickers of the notebook. The backend sends the code, the goal and how far the person is; the look is here.
+export const STICKERS: Record<string, { icon: IconName; color: string }> = {
+  first_walk: { icon: "pin", color: "#10A878" },
+  perfect_walk: { icon: "star", color: "#FFB300" },
+  five_walks: { icon: "compass", color: "#2E8BEA" },
+  twenty_walks: { icon: "trophy", color: "#7357E8" },
+  fifty_challenges: { icon: "check", color: "#F25C54" },
+  all_categories: { icon: "grid", color: "#10A878" },
+  streak_3: { icon: "flame", color: "#F25C54" },
+  streak_7: { icon: "flame", color: "#FFB300" },
+  storyteller: { icon: "quote", color: "#7357E8" },
+  ten_km: { icon: "route", color: "#2E8BEA" },
+  five_hours: { icon: "clock", color: "#10A878" },
+};

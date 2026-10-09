@@ -173,15 +173,58 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
 .stats dd { font-size: 2.4rem; line-height: 1; font-weight: 800; letter-spacing: -0.03em; color: var(--n); font-variant-numeric: tabular-nums; }
 .stats dt { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
 
-.badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 14px; }
-.pin { display: grid; justify-items: center; align-content: start; gap: 6px; text-align: center; color: var(--muted); }
-.pin-icon { display: grid; place-items: center; width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #b5b1cc; }
-.pin small { font-size: 0.82rem; line-height: 1.3; }
-.pin.earned { color: var(--ink); }
-.pin.earned .pin-icon { border: 0; background: var(--c); color: var(--on, #fff); box-shadow: 0 0 0 4px var(--mist), 0 0 0 6.5px var(--c); }
+/* ---------- Notebook: the page of stickers ---------- */
+.notebook-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.streak { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px 4px 8px; border-radius: 999px; background: #fff0d6; color: #8a4b00; font-weight: 800; font-size: 0.9rem; }
+.page { list-style: none; margin: 0; padding: 18px 14px 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; border-radius: 18px; background: var(--paper); border: 1px solid var(--line); background-image: repeating-linear-gradient(transparent 0 31px, #ece9f5 31px 32px); }
+.sticker { display: grid; justify-items: center; align-content: start; gap: 6px; text-align: center; color: var(--muted); min-width: 0; }
+.sticker strong { color: var(--ink); line-height: 1.2; }
+.sticker small { font-size: 0.8rem; line-height: 1.3; }
+.sticker-art { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; border: 2px dashed #b5b1cc; background: var(--paper); }
+.sticker.earned { color: var(--ink); }
+.sticker.earned .sticker-art { border: 0; background: var(--c); color: var(--on, #fff); box-shadow: 0 0 0 4px var(--paper), 0 0 0 6.5px var(--c); transform: rotate(-4deg); }
+.sticker.earned:nth-child(even) .sticker-art { transform: rotate(5deg); }
+.sticker .meter { width: 100%; max-width: 120px; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.sticker .meter i { display: block; width: var(--p); height: 100%; border-radius: 4px; background: var(--c); }
+.sticker .count { font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.sticker .ok-line { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; }
+
+/* ---------- Dashboard ---------- */
+.segmented { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 16px; background: #e9e6f3; }
+.segmented button { min-height: 44px; border: 0; border-radius: 12px; background: transparent; font-weight: 800; color: var(--muted); cursor: pointer; }
+.segmented button[aria-pressed="true"] { background: var(--paper); color: var(--dusk); box-shadow: 0 1px 4px rgb(37 35 95 / 0.18); }
+.stepper { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; text-align: center; }
+.stepper button { min-height: 48px; border: 0; border-radius: 14px; background: transparent; font-size: 1.6rem; line-height: 1; color: var(--dusk); cursor: pointer; }
+.stepper button:disabled { opacity: 0.3; cursor: default; }
+.stepper strong { font-size: 1.05rem; text-transform: capitalize; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tile { display: grid; align-content: start; gap: 2px; padding: 14px; border-radius: 18px; background: var(--paper); min-width: 0; }
+.tile-icon { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 6px; border-radius: 50%; background: var(--c); color: #fff; }
+.tile-label { color: var(--muted); font-size: 0.88rem; font-weight: 700; }
+.tile-value { font-size: 1.7rem; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tile-note { color: var(--muted); font-size: 0.8rem; line-height: 1.3; }
+.dashboard .hint { margin: 0; }
+.dashboard .panel h3 { display: flex; align-items: center; gap: 8px; }
+.chart { display: block; width: 100%; height: auto; }
+.share-bar { display: flex; height: 16px; border-radius: 8px; overflow: hidden; background: var(--line); }
+.share-bar span { display: block; min-width: 4px; }
+.share-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; list-style: none; font-size: 0.9rem; color: var(--muted); }
+.share-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; border-radius: 50%; }
+.share-legend b { color: var(--ink); margin-left: 2px; }
+.row-bars { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.row-bars li { display: grid; grid-template-columns: minmax(0, 7.5rem) 1fr 2rem; align-items: center; gap: 10px; font-size: 0.92rem; }
+.row-track { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.row-track span { display: block; height: 100%; border-radius: 5px; background: var(--c); }
+.row-bars b { text-align: right; font-variant-numeric: tabular-nums; }
+.scale { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.scale button { display: grid; justify-items: center; gap: 2px; min-height: 64px; padding: 8px 2px; border: 2px solid var(--line); border-radius: 14px; background: var(--paper); cursor: pointer; }
+.scale button b { font-size: 1.25rem; line-height: 1; }
+.scale button span { font-size: 0.72rem; color: var(--muted); }
+.scale button.on { border-color: var(--dusk); background: var(--dusk); color: #fff; }
+.scale button.on span { color: #fff; }
 
 /* ---------- Tab bar ---------- */
-.tabs { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); padding-bottom: env(safe-area-inset-bottom); background: var(--paper); border-top: 1px solid var(--line); }
+.tabs { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding-bottom: env(safe-area-inset-bottom); background: var(--paper); border-top: 1px solid var(--line); }
 .tabs button { display: grid; justify-items: center; gap: 2px; min-height: 56px; padding: 8px; border: 0; background: transparent; font-size: 0.82rem; font-weight: 700; color: var(--muted); cursor: pointer; }
 .tabs button.active { color: var(--dusk); box-shadow: inset 0 3px 0 var(--sun); }
 

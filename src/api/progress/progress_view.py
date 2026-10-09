@@ -8,5 +8,5 @@ router = Router()
 
 
 @router.get("/{user_id}/progress", response=ProgressOut)
-def get_progress(request, user_id: str):
-    return wiring.find_progress_handler().handle(FindProgressQuery(user_id=user_id))
+def get_progress(request, user_id: str, timezone: str = "UTC"):
+    return wiring.find_progress_handler().handle(FindProgressQuery(user_id=user_id, timezone=timezone))

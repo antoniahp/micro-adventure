@@ -6,6 +6,7 @@ from api.errors import register_error_handlers
 from api.progress.progress_view import router as progress_router
 from api.reminders.reminders_view import clock_router, router as reminders_router
 from api.telegram.telegram_view import router as telegram_router, user_router as telegram_user_router
+from api.summary.summary_view import router as summary_router
 from api.walks.walks_view import router as walks_router
 from microadventures.application.commands.warm_up_generator.warm_up_generator_command import WarmUpGeneratorCommand
 from microadventures.application.queries.transcribe_audio.transcribe_audio_query import TranscribeAudioQuery
@@ -13,6 +14,7 @@ from microadventures.application.queries.transcribe_audio.transcribe_audio_query
 api = NinjaAPI(title="MicroAdventures API", urls_namespace="walks_api")
 api.add_router("/walks", walks_router)
 api.add_router("/users", progress_router)
+api.add_router("/users", summary_router)
 api.add_router("/users", reminders_router)
 api.add_router("/users", telegram_user_router)
 api.add_router("/telegram", telegram_router)

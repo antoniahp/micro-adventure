@@ -4,7 +4,10 @@ import requests
 from django.conf import settings
 
 from microadventures.application.commands.complete_challenge.complete_challenge_command_handler import CompleteChallengeCommandHandler
+from microadventures.application.commands.save_weekly_reflection.save_weekly_reflection_command_handler import SaveWeeklyReflectionCommandHandler
 from microadventures.application.queries.find_progress.find_progress_query_handler import FindProgressQueryHandler
+from microadventures.application.queries.find_weekly_summary.find_weekly_summary_query_handler import FindWeeklySummaryQueryHandler
+from microadventures.application.queries.find_yearly_summary.find_yearly_summary_query_handler import FindYearlySummaryQueryHandler
 from microadventures.application.queries.transcribe_audio.transcribe_audio_query_handler import TranscribeAudioQueryHandler
 from microadventures.application.queries.find_walk.find_walk_query_handler import FindWalkQueryHandler
 from microadventures.application.commands.finish_walk.finish_walk_command_handler import FinishWalkCommandHandler
@@ -21,6 +24,7 @@ from microadventures.application.commands.warm_up_generator.warm_up_generator_co
 from microadventures.domain.services.bot_webhook import BotWebhook
 from microadventures.domain.services.challenge_generator import ChallengeGenerator
 from microadventures.domain.services.notification_sender import NotificationSender
+from microadventures.domain.services.reflection_service import ReflectionService
 from microadventures.domain.services.reminder_service import ReminderService
 from microadventures.domain.services.photo_verifier import PhotoVerifier
 from microadventures.domain.services.speech_transcriber import SpeechTranscriber
@@ -30,6 +34,7 @@ from microadventures.infrastructure.api.ollama_challenge_generator import Ollama
 from microadventures.infrastructure.api.elevenlabs_speech_transcriber import ElevenLabsSpeechTranscriber
 from microadventures.infrastructure.api.ollama_photo_verifier import OllamaPhotoVerifier
 from microadventures.infrastructure.api.telegram_notification_sender import TelegramNotificationSender
+from microadventures.infrastructure.repositories.db_reflection_repository import DbReflectionRepository
 from microadventures.infrastructure.repositories.db_reminder_repository import DbReminderRepository
 from microadventures.infrastructure.unavailable_notification_sender import UnavailableNotificationSender
 from microadventures.infrastructure.repositories.db_walk_repository import DbWalkRepository
@@ -72,6 +77,10 @@ def _photo_verifier() -> PhotoVerifier:
         timeout_seconds=settings.OLLAMA_TIMEOUT_SECONDS,
         http=_ollama_http(),
     )
+
+
+def _reflection_repository() -> ReflectionService:
+    return DbReflectionRepository()
 
 
 def _reminder_repository() -> ReminderService:
@@ -123,7 +132,7 @@ def find_progress_handler() -> FindProgressQueryHandler:
 
 
 def save_reminder_settings_handler() -> SaveReminderSettingsCommandHandler:
-    return SaveReminderSettingsCommandHandler(reminder_service=_reminder_repository())
+    return SaveReminderSettingsCommandHandler(reminder_service=_reminder_repository(), notification_sender=_notification_sender())
 
 
 def create_telegram_link_handler() -> CreateTelegramLinkCommandHandler:
@@ -153,3 +162,15 @@ def register_bot_webhook_handler() -> RegisterBotWebhookCommandHandler:
 
 def find_reminder_settings_handler() -> FindReminderSettingsQueryHandler:
     return FindReminderSettingsQueryHandler(reminder_service=_reminder_repository())
+
+
+def find_weekly_summary_handler() -> FindWeeklySummaryQueryHandler:
+    return FindWeeklySummaryQueryHandler(walk_service=_walk_repository(), reflection_service=_reflection_repository())
+
+
+def find_yearly_summary_handler() -> FindYearlySummaryQueryHandler:
+    return FindYearlySummaryQueryHandler(walk_service=_walk_repository(), reflection_service=_reflection_repository())
+
+
+def save_weekly_reflection_handler() -> SaveWeeklyReflectionCommandHandler:
+    return SaveWeeklyReflectionCommandHandler(reflection_service=_reflection_repository())
