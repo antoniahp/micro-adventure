@@ -52,6 +52,24 @@ def test_it_is_due_once_a_day():
     assert reminder.is_due(utc((2026, 10, 12), 16, 30))  # Monday
 
 
+def test_a_new_time_can_fire_again_the_same_day():
+    reminder = a_reminder()  # 18:30 in Madrid on weekdays
+    reminder.mark_sent(utc(FRIDAY, 16, 30))
+
+    reminder.change(True, "19:00", reminder.weekend_time, reminder.timezone, reminder.language)
+
+    assert reminder.is_due(utc(FRIDAY, 17, 5))  # 19:05 in Madrid
+
+
+def test_saving_the_same_settings_does_not_repeat_the_reminder():
+    reminder = a_reminder()
+    reminder.mark_sent(utc(FRIDAY, 16, 30))
+
+    reminder.change(reminder.enabled, reminder.weekday_time, reminder.weekend_time, reminder.timezone, reminder.language)
+
+    assert not reminder.is_due(utc(FRIDAY, 17, 0))
+
+
 def test_the_day_is_the_local_one():
     reminder = a_reminder(timezone="Asia/Tokyo")  # UTC+9: 23:30 UTC on Friday is already Saturday morning
 

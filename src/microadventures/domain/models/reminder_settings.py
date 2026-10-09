@@ -47,6 +47,9 @@ class ReminderSettings(models.Model):
 
     def change(self, enabled: bool, weekday_time: str, weekend_time: str, timezone: str, language: Language) -> None:
         parse_time(weekday_time), parse_time(weekend_time), parse_timezone(timezone)  # raise when wrong
+        schedule = (enabled, weekday_time, weekend_time, timezone)
+        if schedule != (self.enabled, self.weekday_time, self.weekend_time, self.timezone):
+            self.last_sent_on = None  # a new schedule may fire again today, even if one reminder already went out
         self.enabled = enabled
         self.weekday_time = weekday_time
         self.weekend_time = weekend_time
