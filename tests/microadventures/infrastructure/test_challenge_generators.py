@@ -212,3 +212,26 @@ def test_template_challenges_are_marked_as_templates():
 
     assert {c.source for c in challenges} == {"template"}
     assert not any(c.written_by_model for c in challenges)
+
+
+def _prompt_for(minutes, language=Language.ES):
+    http = FakeHttp(json.dumps({"challenges": [{"category": "nature", "text": "Mira un árbol."}]}))
+    brief = ChallengeBrief(mood=Mood.TIRED, minutes=minutes, weather="clear", count=3, language=language)
+    OllamaChallengeGenerator("http://ollama", "gemma", http=http).generate(brief)
+    return http.requests[0][1]["prompt"]
+
+
+def test_a_short_walk_asks_for_simple_challenges():
+    assert "sencillos y rápidos" in _prompt_for(30)
+    assert "simple and quick" in _prompt_for(30, Language.EN)
+
+
+def test_a_longer_walk_does_not_ask_for_them():
+    assert "sencillos y rápidos" not in _prompt_for(60)
+    assert "simple and quick" not in _prompt_for(60, Language.EN)
+
+
+def test_the_templates_can_fill_the_longest_walk():
+    brief = ChallengeBrief(mood=Mood.ACTIVE, minutes=120, weather="clear", count=10)
+
+    assert len(TemplateChallengeGenerator().generate(brief)) == 10

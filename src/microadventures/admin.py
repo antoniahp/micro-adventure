@@ -5,7 +5,7 @@ from microadventures.domain.models.walk import Walk
 
 @admin.register(Walk)
 class WalkAdmin(admin.ModelAdmin):
-    list_display = ("created_at", "user_id", "mood", "minutes", "weather", "language", "swaps_used", "completed")
+    list_display = ("created_at", "user_id", "mood", "minutes", "weather", "language", "swaps_used", "walked_minutes", "distance_km", "completed")
     list_filter = ("mood", "weather")
     search_fields = ("user_id",)
     ordering = ("-created_at",)

@@ -21,6 +21,10 @@ export type Walk = {
   note: string;
   language: string;
   swaps_used: number;
+  walked_minutes: number | null;
+  distance_km: number | null;
+  diary: string;
+  finished_at: string | null;
   created_at: string;
   challenges: Challenge[];
 };

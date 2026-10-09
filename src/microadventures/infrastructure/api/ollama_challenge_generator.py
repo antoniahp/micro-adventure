@@ -9,6 +9,7 @@ from microadventures.domain.models.challenge import Challenge
 from microadventures.domain.models.challenge_brief import ChallengeBrief
 from microadventures.domain.models.challenge_category import ChallengeCategory
 from microadventures.domain.models.language import Language
+from microadventures.domain.models.walk_length import WalkLength
 from microadventures.domain.services.challenge_generator import ChallengeGenerator
 from microadventures.domain.exceptions.challenge_generation_failed_exception import ChallengeGenerationFailedException
 from microadventures.infrastructure.api.model_tracing import record_usage, traced_model_call
@@ -66,6 +67,10 @@ def _category_order(brief: ChallengeBrief, rng: random.Random) -> list[str]:
     return [shuffled[i % len(shuffled)] for i in range(brief.count)]
 
 
+def _is_short(brief: ChallengeBrief) -> bool:
+    return WalkLength.for_minutes(brief.minutes).is_short
+
+
 def _build_prompt(brief: ChallengeBrief, order: list[str]) -> str:
     categories = ", ".join(order)
     if brief.language == Language.EN:
@@ -77,9 +82,14 @@ def _build_prompt(brief: ChallengeBrief, order: list[str]) -> str:
         if brief.note
         else ""
     )
+    simple_rule = (
+        "Son retos sencillos y rápidos, que se hacen caminando sin desviarse ni detenerse mucho. "
+        if _is_short(brief)
+        else ""
+    )
     return (
         f"Eres un guía de paseos. Crea {brief.count} retos para un paseo de {brief.minutes} minutos. "
-        f"La persona se siente {brief.mood} y el tiempo es: {brief.weather}. {note_rule}"
+        f"La persona se siente {brief.mood} y el tiempo es: {brief.weather}. {simple_rule}{note_rule}"
         f"Usa estas categorías, una por reto y en este orden: {categories}. {category_rule} "
         "Cada reto cabe en una frase de máximo 20 palabras, está escrito en español, "
         "no es peligroso y nunca pide fotografiar a personas. "
@@ -97,9 +107,14 @@ def _build_english_prompt(brief: ChallengeBrief, categories: str) -> str:
         if brief.note
         else ""
     )
+    simple_rule = (
+        "Keep them simple and quick: things to do while walking, without detours or long stops. "
+        if _is_short(brief)
+        else ""
+    )
     return (
         f"You are a walking guide. Create {brief.count} challenges for a {brief.minutes}-minute walk. "
-        f"The person feels {brief.mood} and the weather is: {brief.weather}. {note_rule}"
+        f"The person feels {brief.mood} and the weather is: {brief.weather}. {simple_rule}{note_rule}"
         f"Use these categories, one per challenge and in this order: {categories}. Keep the category values exactly as written. {category_rule} "
         "Each challenge fits in one sentence of at most 20 words, is written in English, "
         "is not dangerous and never asks to photograph people. "

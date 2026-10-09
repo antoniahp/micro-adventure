@@ -33,12 +33,12 @@ export async function warmUp() {
   await request("/warmup", { method: "POST" });
 }
 
-export async function startWalk(userId: string, mood: Mood, minutes: number, weather: string, note: string) {
+export async function startWalk(userId: string, mood: Mood, minutes: number, weather: string, note: string, challengesCount: number) {
   const language = currentLanguage(); // the challenges are written in the language the person is using
   const created = await request<{ id: string }>("/walks", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id: userId, mood, minutes, weather, note, language }),
+    body: JSON.stringify({ user_id: userId, mood, minutes, weather, note, language, challenges_count: challengesCount }),
   });
   return created!.id;
 }
@@ -57,6 +57,15 @@ export async function completeChallenge(walkId: string, challengeId: string, ans
 
 export async function swapChallenge(walkId: string, challengeId: string) {
   await request(`/walks/${walkId}/challenges/${challengeId}/swap`, { method: "POST" });
+}
+
+// Closes the walk with what the person says about it. Time, distance and story are all optional.
+export async function finishWalk(walkId: string, data: { walkedMinutes: number | null; distanceKm: number | null; diary: string }) {
+  await request(`/walks/${walkId}/finish`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ walked_minutes: data.walkedMinutes, distance_km: data.distanceKm, diary: data.diary }),
+  });
 }
 
 export async function getProgress(userId: string) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { completeChallenge, getWalk, MAX_SWAPS_PER_WALK, swapChallenge } from "../api";
+import { completeChallenge, finishWalk, getWalk, MAX_SWAPS_PER_WALK, swapChallenge } from "../api";
+import FinishForm, { type FinishData } from "../components/FinishForm";
 import Icon from "../components/Icon";
 import Loader from "../components/Loader";
 import StoryForm from "../components/StoryForm";
@@ -10,7 +11,7 @@ import { CATEGORIES, FALLBACK_CATEGORY } from "../ui";
 type Props = { walkId: string; onFinished: () => void; onOpenNotebook: () => void };
 
 export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [walk, setWalk] = useState<Walk | null>(null);
   const [loadError, setLoadError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -18,6 +19,11 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const [photos, setPhotos] = useState<Record<string, string>>({}); // preview of each photo sent
   const [justDone, setJustDone] = useState<string | null>(null); // which entry to animate
   const [telling, setTelling] = useState<string | null>(null); // which entry has its story form open
+  const [closing, setClosing] = useState(false); // the person chose "End walk" before finishing every challenge
+  const [skipped, setSkipped] = useState(false); // the person did not want to tell the walk
+  const [editing, setEditing] = useState(false); // reopening the form of a walk already told
+  const [finishBusy, setFinishBusy] = useState(false);
+  const [finishError, setFinishError] = useState("");
 
   // useEffect runs after the screen is drawn. Here: load the walk once per walkId.
   useEffect(() => {
@@ -41,6 +47,21 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
     }
   }
 
+  async function saveFinish(data: FinishData) {
+    setFinishBusy(true);
+    setFinishError("");
+    try {
+      await finishWalk(walkId, data);
+      setWalk(await getWalk(walkId));
+      setClosing(false);
+      setEditing(false);
+    } catch (e) {
+      setFinishError((e as Error).message);
+    } finally {
+      setFinishBusy(false);
+    }
+  }
+
   if (loadError) {
     return (
       <section>
@@ -55,6 +76,12 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const doneCount = walk.challenges.filter((c) => c.status === "completed").length;
   const total = walk.challenges.length;
   const allDone = doneCount === total;
+  const told = walk.finished_at !== null;
+  const showFinishForm = editing || (!told && !skipped && (allDone || closing));
+  const summaryParts = [
+    walk.walked_minutes ? t("finish.summaryMinutes", { n: walk.walked_minutes }) : "",
+    walk.distance_km ? t("finish.summaryKm", { n: String(walk.distance_km).replace(".", lang === "es" ? "," : ".") }) : "",
+  ].filter(Boolean);
 
   return (
     <section>
@@ -79,6 +106,31 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
               <button className="btn btn-secondary" onClick={onFinished}>{t("walk.newWalk")}</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {showFinishForm && (
+        <FinishForm
+          key={editing ? "edit" : "new"}
+          initial={editing ? { walkedMinutes: walk.walked_minutes, distanceKm: walk.distance_km, diary: walk.diary } : undefined}
+          busy={finishBusy}
+          error={finishError}
+          skipLabel={editing ? t("story.cancel") : allDone ? t("finish.later") : t("finish.leave")}
+          onSubmit={saveFinish}
+          onSkip={() => {
+            if (editing) setEditing(false);
+            else if (allDone) setSkipped(true);
+            else onFinished();
+          }}
+        />
+      )}
+
+      {told && !showFinishForm && (summaryParts.length > 0 || walk.diary) && (
+        <div className="walk-summary">
+          <p className="summary-title">{t("finish.summaryTitle")}</p>
+          {summaryParts.length > 0 && <p className="summary-numbers">{summaryParts.join(" · ")}</p>}
+          {walk.diary && <blockquote className="entry-story">{walk.diary}</blockquote>}
+          <button className="btn btn-link left" onClick={() => setEditing(true)}>{t("finish.edit")}</button>
         </div>
       )}
 
@@ -152,7 +204,9 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
       {!allDone && (
         <>
           <p className="hint">{t("walk.swapWarning")}</p>
-          <button className="btn btn-link left" onClick={onFinished}>{t("walk.finish")}</button>
+          {!showFinishForm && (
+            <button className="btn btn-link left" onClick={() => (told ? onFinished() : setClosing(true))}>{t("walk.finish")}</button>
+          )}
         </>
       )}
     </section>

@@ -25,12 +25,12 @@ def _post_json(client, url, body):
 def test_a_user_walks_completes_a_challenge_and_sees_progress():
     client = Client()
 
-    created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 2})
+    created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"})
     assert created.status_code == 201
     walk_id = created.json()["id"]
 
     walk = client.get(f"/api/walks/{walk_id}").json()
-    assert len(walk["challenges"]) == 2
+    assert len(walk["challenges"]) == 3
     challenge = next(c for c in walk["challenges"] if c["accepts_photo"])
 
     photo = SimpleUploadedFile("tree.jpg", b"fake-image", content_type="image/jpeg")
@@ -45,7 +45,7 @@ def test_a_user_walks_completes_a_challenge_and_sees_progress():
 
 def test_completing_a_challenge_without_a_photo_is_rejected():
     client = Client()
-    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 5}).json()["id"]
+    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "minutes": 45}).json()["id"]
     walk = client.get(f"/api/walks/{walk_id}").json()
     challenge = next(c for c in walk["challenges"] if c["accepts_photo"])
 
@@ -56,7 +56,7 @@ def test_completing_a_challenge_without_a_photo_is_rejected():
 
 def test_a_third_swap_is_refused():
     client = Client()
-    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 1}).json()["id"]
+    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
 
     for _ in range(2):
         challenge_id = client.get(f"/api/walks/{walk_id}").json()["challenges"][0]["id"]
@@ -97,7 +97,7 @@ def test_a_walk_remembers_its_language_and_defaults_to_spanish():
 
 def test_a_challenge_can_be_completed_with_a_story():
     client = Client()
-    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 1}).json()["id"]
+    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
     challenge = client.get(f"/api/walks/{walk_id}").json()["challenges"][0]
 
     completed = client.post(
@@ -131,8 +131,76 @@ def test_transcribing_returns_the_text(monkeypatch):
 
 def test_the_walk_says_who_wrote_each_challenge():
     client = Client()
-    created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 2})
+    created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"})
 
     walk = client.get(f"/api/walks/{created.json()['id']}").json()
 
-    assert [c["source"] for c in walk["challenges"]] == ["template", "template"]  # the test setup uses the templates
+    assert [c["source"] for c in walk["challenges"]] == ["template"] * 3  # the test setup uses the templates
+
+
+def test_a_walk_has_the_usual_number_of_challenges_for_its_time():
+    client = Client()
+
+    def count_for(body):
+        created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", **body})
+        return len(client.get(f"/api/walks/{created.json()['id']}").json()["challenges"])
+
+    assert count_for({"minutes": 30}) == 3
+    assert count_for({"minutes": 45}) == 5
+    assert count_for({"minutes": 60}) == 6
+    assert count_for({"minutes": 90, "challenges_count": 10}) == 10
+
+
+def test_a_number_of_challenges_that_does_not_fit_the_time_is_refused():
+    response = _post_json(Client(), "/api/walks", {"user_id": "user-1", "mood": "tired", "minutes": 30, "challenges_count": 8})
+
+    assert response.status_code == 422
+
+
+def test_a_walk_can_be_finished_with_time_distance_and_a_story():
+    client = Client()
+    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
+
+    finished = _post_json(
+        client,
+        f"/api/walks/{walk_id}/finish",
+        {"walked_minutes": 42, "distance_km": 3.4, "diary": "  Salí cansada y volví con la cabeza más limpia.  "},
+    )
+
+    assert finished.status_code == 204
+    walk = client.get(f"/api/walks/{walk_id}").json()
+    assert (walk["walked_minutes"], walk["distance_km"]) == (42, 3.4)
+    assert walk["diary"] == "Salí cansada y volví con la cabeza más limpia."
+    assert walk["finished_at"] is not None
+
+
+def test_time_distance_and_story_are_optional_when_finishing():
+    client = Client()
+    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
+
+    assert _post_json(client, f"/api/walks/{walk_id}/finish", {}).status_code == 204
+
+    walk = client.get(f"/api/walks/{walk_id}").json()
+    assert (walk["walked_minutes"], walk["distance_km"], walk["diary"]) == (None, None, "")
+    assert walk["finished_at"] is not None
+
+
+def test_a_walk_that_is_not_finished_has_no_finish_data():
+    client = Client()
+    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
+
+    walk = client.get(f"/api/walks/{walk_id}").json()
+
+    assert (walk["walked_minutes"], walk["distance_km"], walk["diary"], walk["finished_at"]) == (None, None, "", None)
+
+
+def test_finishing_with_impossible_numbers_is_refused():
+    client = Client()
+    walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
+
+    assert _post_json(client, f"/api/walks/{walk_id}/finish", {"distance_km": -1}).status_code == 422
+    assert _post_json(client, f"/api/walks/{walk_id}/finish", {"walked_minutes": 0}).status_code == 422
+
+
+def test_finishing_an_unknown_walk_returns_404():
+    assert _post_json(Client(), f"/api/walks/{uuid4()}/finish", {}).status_code == 404
