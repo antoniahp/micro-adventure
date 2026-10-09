@@ -7,7 +7,7 @@ from django.test import Client
 
 from api import wiring
 from tests.fakes import InMemoryWalkRepository
-from microadventures.infrastructure.template_challenge_generator import TemplateChallengeGenerator
+from microadventures.infrastructure.template_challenge_generator import CHALLENGE_TEXTS_EN, TemplateChallengeGenerator
 
 
 @pytest.fixture(autouse=True)
@@ -136,3 +136,17 @@ def test_the_walk_says_who_wrote_each_challenge():
     walk = client.get(f"/api/walks/{created.json()['id']}").json()
 
     assert [c["source"] for c in walk["challenges"]] == ["template", "template"]  # the test setup uses the templates
+
+
+def test_a_swap_can_ask_for_the_language_on_screen():
+    client = Client()
+    created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "challenges_count": 1, "language": "es"})
+    walk_id = created.json()["id"]
+    challenge_id = client.get(f"/api/walks/{walk_id}").json()["challenges"][0]["id"]
+
+    swapped = client.post(f"/api/walks/{walk_id}/challenges/{challenge_id}/swap?language=en")
+
+    assert swapped.status_code == 204
+    new_text = client.get(f"/api/walks/{walk_id}").json()["challenges"][0]["text"]
+    english_texts = {text for texts in CHALLENGE_TEXTS_EN.values() for text in texts}
+    assert new_text in english_texts

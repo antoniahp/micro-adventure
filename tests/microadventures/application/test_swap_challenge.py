@@ -6,6 +6,7 @@ from microadventures.application.commands.swap_challenge.swap_challenge_command 
 from microadventures.application.commands.swap_challenge.swap_challenge_command_handler import SwapChallengeCommandHandler
 from microadventures.domain.models.challenge_category import ChallengeCategory
 from microadventures.domain.models.challenge_status import ChallengeStatus
+from microadventures.domain.models.language import Language
 from microadventures.domain.exceptions.challenge_already_completed_exception import ChallengeAlreadyCompletedException
 from microadventures.domain.exceptions.swap_limit_reached_exception import SwapLimitReachedException
 
@@ -70,3 +71,23 @@ def test_the_replacement_is_asked_for_in_the_language_of_the_walk():
     handler.handle(SwapChallengeCommand(walk_id=walk.id, challenge_id=current.id))
 
     assert generator.briefs[0].language == "en"
+
+
+def test_it_writes_the_replacement_in_the_language_on_screen_now():
+    current = a_challenge(category=ChallengeCategory.SOUND)
+    walk = a_walk(challenges=[current])
+    repository, generator, handler = _setup(walk, a_challenge(category=ChallengeCategory.SOUND))
+
+    handler.handle(SwapChallengeCommand(walk_id=walk.id, challenge_id=current.id, language=Language.EN))
+
+    assert generator.briefs[0].language == Language.EN
+
+
+def test_it_keeps_the_language_of_the_walk_when_none_is_given():
+    current = a_challenge(category=ChallengeCategory.SOUND)
+    walk = a_walk(challenges=[current])
+    repository, generator, handler = _setup(walk, a_challenge(category=ChallengeCategory.SOUND))
+
+    handler.handle(SwapChallengeCommand(walk_id=walk.id, challenge_id=current.id))
+
+    assert generator.briefs[0].language == walk.language

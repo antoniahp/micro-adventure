@@ -56,7 +56,7 @@ export async function completeChallenge(walkId: string, challengeId: string, ans
 }
 
 export async function swapChallenge(walkId: string, challengeId: string) {
-  await request(`/walks/${walkId}/challenges/${challengeId}/swap`, { method: "POST" });
+  await request(`/walks/${walkId}/challenges/${challengeId}/swap?language=${currentLanguage()}`, { method: "POST" });
 }
 
 export async function getProgress(userId: string) {

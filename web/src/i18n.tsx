@@ -60,6 +60,7 @@ const ES = {
   "walk.swap": "Cambiar ({n})",
   "walk.noSwaps": "Sin cambios",
   "walk.swapWarning": "Si cambias un reto, el paseo ya no cuenta como perfecto.",
+  "walk.languageNote": "Los retos que ya tienes se quedan en el idioma en que se escribieron. Los retos nuevos saldrán en español.",
   "walk.finish": "Terminar paseo",
 
   "story.aria": "Tu respuesta",
@@ -152,6 +153,7 @@ const EN: Record<TextKey, string> = {
   "walk.swap": "Swap ({n})",
   "walk.noSwaps": "No swaps left",
   "walk.swapWarning": "If you swap a challenge, the walk no longer counts as perfect.",
+  "walk.languageNote": "The challenges you already have stay in the language they were written in. New challenges will come in English.",
   "walk.finish": "End walk",
 
   "story.aria": "Your answer",

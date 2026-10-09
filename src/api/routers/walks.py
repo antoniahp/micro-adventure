@@ -5,6 +5,7 @@ from ninja.files import UploadedFile
 
 from api import wiring
 from api.schemas import StartWalkIn, WalkCreatedOut, WalkOut
+from microadventures.domain.models.language import Language
 from microadventures.application.commands.complete_challenge.complete_challenge_command import CompleteChallengeCommand
 from microadventures.application.queries.find_walk.find_walk_query import FindWalkQuery
 from microadventures.application.commands.start_walk.start_walk_command import StartWalkCommand
@@ -52,6 +53,8 @@ def complete_challenge(
 
 
 @router.post("/{walk_id}/challenges/{challenge_id}/swap", response={204: None})
-def swap_challenge(request, walk_id: UUID, challenge_id: UUID):
-    wiring.swap_challenge_handler().handle(SwapChallengeCommand(walk_id=walk_id, challenge_id=challenge_id))
+def swap_challenge(request, walk_id: UUID, challenge_id: UUID, language: Language | None = None):
+    wiring.swap_challenge_handler().handle(
+        SwapChallengeCommand(walk_id=walk_id, challenge_id=challenge_id, language=language)
+    )
     return Status(204, None)
