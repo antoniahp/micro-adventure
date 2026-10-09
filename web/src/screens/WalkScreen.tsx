@@ -87,10 +87,12 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const total = walk.challenges.length;
   const allDone = doneCount === total;
   const told = walk.finished_at !== null;
-  const summaryParts = [
-    walk.walked_minutes ? t("finish.summaryMinutes", { n: walk.walked_minutes }) : "",
-    walk.distance_km ? t("finish.summaryKm", { n: String(walk.distance_km).replace(".", lang === "es" ? "," : ".") }) : "",
-  ].filter(Boolean);
+  const decimal = lang === "es" ? "," : ".";
+  const stats = [
+    { value: `${doneCount}/${total}`, label: t("done.challenges") },
+    { value: walk.walked_minutes ? String(walk.walked_minutes) : "–", label: t("done.minutes") },
+    { value: walk.distance_km ? String(walk.distance_km).replace(".", decimal) : "–", label: t("done.km") },
+  ];
 
   if (view === "tell") {
     return (
@@ -109,29 +111,36 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
 
   if (view === "done") {
     return (
-      <section>
-        <div className="celebration">
-          <span className="stamp big" aria-hidden="true"><Icon name="check" size={34} /></span>
-          <div>
-            <h3>{allDone ? t("walk.finishedTitle") : t("walk.endedTitle")}</h3>
-            <p>{allDone && walk.swaps_used === 0 ? t("walk.finishedPerfect") : t("walk.finishedNormal")}</p>
-            <div className="celebration-actions">
-              <button className="btn btn-primary" onClick={() => setView("tell")}>{told ? t("walk.editTold") : t("walk.tellWalk")}</button>
-              <button className="btn btn-secondary" onClick={onOpenNotebook}>{t("walk.seeNotebook")}</button>
-              <button className="btn btn-secondary" onClick={onFinished}>{t("walk.newWalk")}</button>
-            </div>
-          </div>
+      <section className="done-page">
+        <span className="stamp big" aria-hidden="true"><Icon name="check" size={34} /></span>
+        <div>
+          <h2>{allDone ? t("walk.finishedTitle") : t("walk.endedTitle")}</h2>
+          <p className="hint">{allDone && walk.swaps_used === 0 ? t("walk.finishedPerfect") : t("walk.finishedNormal")}</p>
         </div>
 
-        {told && (summaryParts.length > 0 || walk.diary) && (
-          <div className="walk-summary">
-            <p className="summary-title">{t("finish.summaryTitle")}</p>
-            {summaryParts.length > 0 && <p className="summary-numbers">{summaryParts.join(" · ")}</p>}
-            {walk.diary && <blockquote className="entry-story">{walk.diary}</blockquote>}
-          </div>
+        <dl className="done-stats">
+          {stats.map((stat) => (
+            <div key={stat.label} className={stat.value === "–" ? "stat empty" : "stat"}>
+              <dd>{stat.value}</dd>
+              <dt>{stat.label}</dt>
+            </div>
+          ))}
+        </dl>
+
+        {walk.diary ? (
+          <blockquote className="entry-story done-story">{walk.diary}</blockquote>
+        ) : (
+          <p className="hint">{t("done.storyPrompt")}</p>
         )}
 
-        <button className="btn btn-link left" onClick={() => setView("challenges")}>{t("walk.backToChallenges")}</button>
+        <div className="done-actions">
+          <button className="btn btn-primary btn-big" onClick={() => setView("tell")}>{told ? t("walk.editTold") : t("walk.tellWalk")}</button>
+          <div className="done-links">
+            <button className="btn btn-link" onClick={onOpenNotebook}>{t("walk.seeNotebook")}</button>
+            <button className="btn btn-link" onClick={onFinished}>{t("walk.newWalk")}</button>
+          </div>
+          <button className="btn btn-link small" onClick={() => setView("challenges")}>{t("walk.backToChallenges")}</button>
+        </div>
       </section>
     );
   }
