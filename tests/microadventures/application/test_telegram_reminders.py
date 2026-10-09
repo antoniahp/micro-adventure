@@ -228,25 +228,26 @@ def test_it_sends_a_reminder_when_the_time_has_come_and_only_once():
     second, _ = _send_due(repository, FRIDAY_18_30_MADRID, sender)
 
     assert (first, second) == (1, 0)
-    assert sender.sent[0][0] == "555" and APP_URL in sender.sent[0][1] and "terminado por hoy" in sender.sent[0][1]
+    card = sender.cards[0][1]
+    assert sender.cards[0][0] == "555" and card.open_url == APP_URL and "Tu jornada ha terminado" in card.caption
 
 
 def test_it_sends_nothing_before_the_time():
     sent, sender = _send_due(_repository_with(a_reminder()), datetime(2026, 10, 9, 14, 0, tzinfo=timezone.utc))
 
-    assert (sent, sender.sent) == (0, [])
+    assert (sent, sender.cards) == (0, [])
 
 
 def test_the_weekend_message_is_different():
     _, sender = _send_due(_repository_with(a_reminder()), SATURDAY_11_30_MADRID)
 
-    assert "Buen momento" in sender.sent[0][1]
+    assert "Buena hora para salir" in sender.cards[0][1].caption and sender.cards[0][1].photo_url.endswith("reminder-weekend.png")
 
 
 def test_the_reminder_is_in_the_language_of_the_person():
     _, sender = _send_due(_repository_with(a_reminder(language=Language.EN)), FRIDAY_18_30_MADRID)
 
-    assert "You're done for today" in sender.sent[0][1]
+    assert "done for today" in sender.cards[0][1].caption and sender.cards[0][1].snooze_label == "⏰ In 1 hour"
 
 
 def test_whoever_already_walked_today_gets_no_reminder():
@@ -256,7 +257,7 @@ def test_whoever_already_walked_today_gets_no_reminder():
 
     sent, sender = _send_due(repository, FRIDAY_18_30_MADRID, walks=walks)
 
-    assert (sent, sender.sent) == (0, [])
+    assert (sent, sender.cards) == (0, [])
     assert repository.find_by_user_id("user-1").last_sent_on is not None  # and it does not try again today
 
 
@@ -283,4 +284,4 @@ def test_it_reminds_everyone_whose_time_has_come():
 
     sent, sender = _send_due(repository, FRIDAY_18_30_MADRID)
 
-    assert sent == 2 and {chat for chat, _ in sender.sent} == {"1", "2"}
+    assert sent == 2 and {chat for chat, _ in sender.cards} == {"1", "2"}

@@ -11,6 +11,7 @@ from microadventures.domain.models.language import Language
 DEFAULT_WEEKDAY_TIME = "18:00"  # when the working day usually ends
 DEFAULT_WEEKEND_TIME = "11:00"  # a good moment in the middle of the day
 DEFAULT_TIMEZONE = "Europe/Madrid"
+SNOOZE = timedelta(hours=1)
 LATE_AFTER = timedelta(hours=3)  # a reminder this late is no longer useful, so it is skipped
 
 
@@ -43,6 +44,10 @@ class ReminderSettings(models.Model):
     telegram_chat_id = models.CharField(max_length=30, blank=True, default="")
     link_code = models.CharField(max_length=40, blank=True, default="", db_index=True)
     last_sent_on = models.DateField(null=True, blank=True)  # the local day of the last reminder
+    # An approximate place (about a kilometre), only if the person shares it: the reminder tells the weather there.
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    snoozed_until = models.DateTimeField(null=True, blank=True)  # "in one hour" from the reminder's button
     updated_at = models.DateTimeField(default=django_timezone.now)
 
     def change(self, enabled: bool, weekday_time: str, weekend_time: str, timezone: str, language: Language) -> None:
@@ -50,12 +55,35 @@ class ReminderSettings(models.Model):
         schedule = (enabled, weekday_time, weekend_time, timezone)
         if schedule != (self.enabled, self.weekday_time, self.weekend_time, self.timezone):
             self.last_sent_on = None  # a new schedule may fire again today, even if one reminder already went out
+            self.snoozed_until = None
         self.enabled = enabled
         self.weekday_time = weekday_time
         self.weekend_time = weekend_time
         self.timezone = timezone
         self.language = language
         self.updated_at = django_timezone.now()
+
+    def set_place(self, latitude: float, longitude: float) -> None:
+        if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+            raise InvalidReminderSettingsException("that place does not exist")
+        self.latitude, self.longitude = round(latitude, 2), round(longitude, 2)
+
+    def clear_place(self) -> None:
+        self.latitude = self.longitude = None
+
+    @property
+    def has_place(self) -> bool:
+        return self.latitude is not None and self.longitude is not None
+
+    def snooze(self, now: datetime) -> None:
+        """'In one hour': it comes back then, even if today's reminder already went out."""
+        self.snoozed_until = now + SNOOZE
+        self.last_sent_on = None
+
+    def skip_today(self, now: datetime) -> None:
+        """'Not today': nothing more until tomorrow."""
+        self.snoozed_until = None
+        self.mark_sent(now)
 
     @property
     def is_linked(self) -> bool:
@@ -85,6 +113,8 @@ class ReminderSettings(models.Model):
         """True from the chosen time until three hours later, once per day."""
         if not (self.enabled and self.is_linked):
             return False
+        if self.snoozed_until is not None:
+            return self.snoozed_until <= now < self.snoozed_until + LATE_AFTER
         zone = parse_timezone(self.timezone)
         local = now.astimezone(zone)
         if self.last_sent_on == local.date():
@@ -93,6 +123,7 @@ class ReminderSettings(models.Model):
         return start <= local < start + LATE_AFTER
 
     def mark_sent(self, now: datetime) -> None:
+        self.snoozed_until = None
         self.last_sent_on = self.local_day(now)
 
     def __str__(self):

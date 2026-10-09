@@ -25,6 +25,7 @@ class Walk(models.Model):
     note = models.CharField(max_length=500, blank=True, default="")
     language = models.CharField(max_length=5, choices=Language.choices, default=Language.ES)
     swaps_used = models.PositiveSmallIntegerField(default=0)
+    conditions = models.CharField(max_length=60, blank=True, default="")  # "dark,rain": kept so a swap stays as careful as the walk
     # What the person tells when the walk ends. All optional.
     walked_minutes = models.PositiveSmallIntegerField(null=True, blank=True)
     distance_km = models.FloatField(null=True, blank=True)

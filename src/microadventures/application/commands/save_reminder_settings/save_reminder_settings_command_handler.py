@@ -25,6 +25,10 @@ class SaveReminderSettingsCommandHandler:
         settings = self.reminder_service.find_by_user_id(command.user_id) or ReminderSettings(user_id=command.user_id)
         before = self._schedule(settings)
         settings.change(command.enabled, command.weekday_time, command.weekend_time, command.timezone, command.language)
+        if command.clear_place:
+            settings.clear_place()
+        elif command.latitude is not None and command.longitude is not None:
+            settings.set_place(command.latitude, command.longitude)
         self.reminder_service.save(settings)
         if self._schedule(settings) != before:
             self._confirm(settings)

@@ -1,4 +1,5 @@
 from microadventures.domain.models.challenge_brief import ChallengeBrief
+from microadventures.domain.models.conditions import Conditions
 from microadventures.domain.services.challenge_generator import ChallengeGenerator
 from microadventures.domain.services.walk_service import WalkService
 
@@ -24,6 +25,7 @@ class SwapChallengeCommandHandler:
             category=current.category,
             note=walk.note,
             language=command.language or walk.language,
+            conditions=Conditions.from_text(walk.conditions),  # a swap at night stays as careful as the walk
         )
         replacement = self.challenge_generator.generate(brief)[0]
 

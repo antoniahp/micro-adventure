@@ -16,6 +16,8 @@ class StartWalkIn(Schema):
     challenges_count: int | None = Field(None, ge=1, le=10)  # None: the usual number for that much time
     note: str = Field("", max_length=500)
     language: Language = Language.ES
+    latitude: float | None = Field(None, ge=-90, le=90)  # where the person is, if they allow it
+    longitude: float | None = Field(None, ge=-180, le=180)
 
 
 class FinishWalkIn(Schema):

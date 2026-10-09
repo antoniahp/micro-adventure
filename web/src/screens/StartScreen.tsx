@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { startWalk, warmUp } from "../api";
+import { getContext, startWalk, warmUp } from "../api";
+import ContextCard, { type ContextState } from "../components/ContextCard";
+import { getPlace, rememberedPlaceAllowed } from "../location";
 import Trail from "../components/Trail";
 import Icon from "../components/Icon";
 import Loader from "../components/Loader";
 import { useI18n, type TextKey } from "../i18n";
 import { useSky } from "../sky";
 import { getUserId } from "../storage";
-import type { Mood } from "../types";
+import type { Mood, Place } from "../types";
 import { challengeRange, ENERGIES, MINUTES, WEATHERS } from "../ui";
 
 const MAX_NOTE = 500;
@@ -21,11 +23,31 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
   const [chosenCount, setChosenCount] = useState<number | null>(null); // only chosen when the walk is an hour or more
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [place, setPlace] = useState<Place | undefined>(undefined);
+  const [context, setContext] = useState<ContextState>({ status: "idle" });
 
   // The model takes a few seconds to load. Starting it as soon as the form opens
   // means it is usually ready by the time the person has written their note.
   useEffect(() => {
     warmUp().catch(() => {}); // not essential: if it fails, the walk still starts
+  }, []);
+
+  // Where the person is decides the weather and the light, and these decide which challenges are safe.
+  async function askContext() {
+    setContext({ status: "loading" });
+    try {
+      const here = await getPlace();
+      setPlace(here);
+      const found = await getContext(here);
+      setContext({ status: "ready", context: found });
+      setWeather(found.suggested_weather);
+    } catch (e) {
+      setContext({ status: "failed", reason: (e as Error).message === "denied" ? "denied" : "unavailable" });
+    }
+  }
+
+  useEffect(() => {
+    if (rememberedPlaceAllowed()) void askContext(); // they already allowed it: no need to ask again
   }, []);
 
   const range = challengeRange(minutes);
@@ -37,7 +59,7 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
     setLoading(true);
     setError("");
     try {
-      onStarted(await startWalk(getUserId(), mood, minutes, weather, note.trim(), count));
+      onStarted(await startWalk(getUserId(), mood, minutes, weather, note.trim(), count, place));
     } catch (e) {
       setError((e as Error).message);
       setLoading(false);
@@ -52,6 +74,8 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
         <h2 className="hero">{t("start.hero")}</h2>
         <Trail sky={sky} />
       </div>
+
+      <ContextCard state={context} onAsk={askContext} />
 
       <div className="field">
         <label htmlFor="note">{t("start.noteLabel")}</label>

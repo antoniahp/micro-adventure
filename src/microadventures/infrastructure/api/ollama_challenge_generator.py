@@ -89,7 +89,7 @@ def _build_prompt(brief: ChallengeBrief, order: list[str]) -> str:
     )
     return (
         f"Eres un guía de paseos. Crea {brief.count} retos para un paseo de {brief.minutes} minutos. "
-        f"La persona se siente {brief.mood} y el tiempo es: {brief.weather}. {simple_rule}{note_rule}"
+        f"La persona se siente {brief.mood} y el tiempo es: {brief.weather}. {simple_rule}{note_rule}{brief.conditions.guidance(brief.language)}"
         f"Usa estas categorías, una por reto y en este orden: {categories}. {category_rule} "
         "Cada reto cabe en una frase de máximo 20 palabras, está escrito en español, "
         "no es peligroso y nunca pide fotografiar a personas. "
@@ -114,7 +114,7 @@ def _build_english_prompt(brief: ChallengeBrief, categories: str) -> str:
     )
     return (
         f"You are a walking guide. Create {brief.count} challenges for a {brief.minutes}-minute walk. "
-        f"The person feels {brief.mood} and the weather is: {brief.weather}. {simple_rule}{note_rule}"
+        f"The person feels {brief.mood} and the weather is: {brief.weather}. {simple_rule}{note_rule}{brief.conditions.guidance(brief.language)}"
         f"Use these categories, one per challenge and in this order: {categories}. Keep the category values exactly as written. {category_rule} "
         "Each challenge fits in one sentence of at most 20 words, is written in English, "
         "is not dangerous and never asks to photograph people. "
