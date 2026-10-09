@@ -4,7 +4,7 @@ from ninja import File, Form, Router, Status
 from ninja.files import UploadedFile
 
 from api import wiring
-from api.schemas import FinishWalkIn, StartWalkIn, WalkCreatedOut, WalkOut
+from api.walks.walks_serializer import FinishWalkIn, StartWalkIn, WalkCreatedOut, WalkOut
 from microadventures.domain.models.language import Language
 from microadventures.application.commands.complete_challenge.complete_challenge_command import CompleteChallengeCommand
 from microadventures.application.queries.find_walk.find_walk_query import FindWalkQuery

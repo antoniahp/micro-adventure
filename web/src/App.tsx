@@ -4,10 +4,11 @@ import Logo from "./components/Logo";
 import { LANGUAGES, useI18n } from "./i18n";
 import { currentWalk } from "./storage";
 import NotebookScreen from "./screens/NotebookScreen";
+import RemindersScreen from "./screens/RemindersScreen";
 import StartScreen from "./screens/StartScreen";
 import WalkScreen from "./screens/WalkScreen";
 
-type Tab = "walk" | "notebook";
+type Tab = "walk" | "notebook" | "reminders";
 
 export default function App() {
   const { lang, setLang, t } = useI18n();
@@ -41,6 +42,7 @@ export default function App() {
 
       <main>
         {tab === "notebook" && <NotebookScreen onStartWalk={() => setTab("walk")} />}
+        {tab === "reminders" && <RemindersScreen />}
         {tab === "walk" && !walkId && <StartScreen onStarted={startedWalk} />}
         {tab === "walk" && walkId && (
           <WalkScreen walkId={walkId} onFinished={finishedWalk} onOpenNotebook={() => setTab("notebook")} />
@@ -53,6 +55,9 @@ export default function App() {
         </button>
         <button className={tab === "notebook" ? "active" : ""} onClick={() => setTab("notebook")}>
           <Icon name="book" size={22} /> {t("app.tabNotebook")}
+        </button>
+        <button className={tab === "reminders" ? "active" : ""} onClick={() => setTab("reminders")}>
+          <Icon name="bell" size={22} /> {t("app.tabReminders")}
         </button>
       </nav>
     </div>

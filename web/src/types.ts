@@ -36,3 +36,13 @@ export type Progress = {
   perfect_walks: number;
   stickers: string[];
 };
+
+export type Reminders = {
+  enabled: boolean;
+  weekday_time: string; // "18:00"
+  weekend_time: string;
+  timezone: string; // "Europe/Madrid"
+  language: string;
+  telegram_connected: boolean;
+  telegram_available: boolean; // false when the server has no bot
+};

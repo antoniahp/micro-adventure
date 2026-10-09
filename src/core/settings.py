@@ -110,3 +110,12 @@ if dsn := os.environ.get("SENTRY_DSN"):
         traces_sample_rate=1.0,
         send_default_pii=False,
     )
+
+# --- Reminders by Telegram ---
+# The bot is made with @BotFather. Without a token the app works and just cannot send reminders.
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "").lstrip("@")
+# An outside clock (cron-job.org) calls /api/reminders/run?key=... every few minutes. Empty = those calls are refused.
+REMINDERS_KEY = os.environ.get("REMINDERS_KEY", "")
+# Where the reminder sends people. Render fills RENDER_EXTERNAL_URL itself.
+APP_URL = os.environ.get("APP_URL") or os.environ.get("RENDER_EXTERNAL_URL", "")

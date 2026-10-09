@@ -4,6 +4,9 @@ from microadventures.domain.exceptions.challenge_already_completed_exception imp
 from microadventures.domain.exceptions.challenge_generation_failed_exception import ChallengeGenerationFailedException
 from microadventures.domain.exceptions.challenge_not_found_exception import ChallengeNotFoundException
 from microadventures.domain.exceptions.invalid_challenges_count_exception import InvalidChallengesCountException
+from microadventures.domain.exceptions.invalid_reminder_settings_exception import InvalidReminderSettingsException
+from microadventures.domain.exceptions.notification_failed_exception import NotificationFailedException
+from microadventures.domain.exceptions.notification_unavailable_exception import NotificationUnavailableException
 from microadventures.domain.exceptions.photo_rejected_exception import PhotoRejectedException
 from microadventures.domain.exceptions.challenge_response_required_exception import ChallengeResponseRequiredException
 from microadventures.domain.exceptions.photo_verification_failed_exception import PhotoVerificationFailedException
@@ -18,6 +21,9 @@ STATUS_BY_EXCEPTION = {
     ChallengeAlreadyCompletedException: 409,
     SwapLimitReachedException: 409,
     ChallengeResponseRequiredException: 422,
+    InvalidReminderSettingsException: 422,
+    NotificationFailedException: 502,
+    NotificationUnavailableException: 503,
     InvalidChallengesCountException: 422,
     PhotoRejectedException: 422,
     PhotoVerificationFailedException: 502,

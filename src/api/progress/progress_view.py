@@ -1,7 +1,7 @@
 from ninja import Router
 
 from api import wiring
-from api.schemas import ProgressOut
+from api.progress.progress_serializer import ProgressOut
 from microadventures.application.queries.find_progress.find_progress_query import FindProgressQuery
 
 router = Router()
