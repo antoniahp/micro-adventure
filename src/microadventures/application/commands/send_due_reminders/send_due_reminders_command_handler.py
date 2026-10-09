@@ -8,22 +8,16 @@ from microadventures.domain.models.weather import Weather
 from microadventures.domain.models.reminder_settings import ReminderSettings
 from microadventures.domain.services.notification_sender import NotificationSender
 from microadventures.domain.services.reminder_service import ReminderService
-from microadventures.domain.services.walk_criteria import WalkCriteria
-from microadventures.domain.services.walk_service import WalkService
 from microadventures.domain.services.weather_service import WeatherService
 
 logger = logging.getLogger(__name__)
 
 
 class SendDueRemindersCommandHandler:
-    """Sends the reminders whose time has come, at most one per person and day.
+    """Sends the reminders whose time has come, at most one per person and day."""
 
-    Whoever already started a walk today gets none: the reminder would only be noise.
-    """
-
-    def __init__(self, reminder_service: ReminderService, walk_service: WalkService, notification_sender: NotificationSender, app_url: str, weather_service: WeatherService | None = None):
+    def __init__(self, reminder_service: ReminderService, notification_sender: NotificationSender, app_url: str, weather_service: WeatherService | None = None):
         self.reminder_service = reminder_service
-        self.walk_service = walk_service
         self.notification_sender = notification_sender
         self.app_url = app_url
         self.weather_service = weather_service
@@ -32,10 +26,6 @@ class SendDueRemindersCommandHandler:
         sent = 0
         for settings in self.reminder_service.find_active():
             if not settings.is_due(command.now):
-                continue
-            if self._walked_today(settings, command):
-                settings.mark_sent(command.now)  # nothing to remind of, and nothing to try again today
-                self.reminder_service.save(settings)
                 continue
             try:
                 self.notification_sender.send_card(settings.telegram_chat_id, self._card(settings, command))
@@ -46,11 +36,6 @@ class SendDueRemindersCommandHandler:
             self.reminder_service.save(settings)
             sent += 1
         return sent
-
-    def _walked_today(self, settings: ReminderSettings, command: SendDueRemindersCommand) -> bool:
-        today = settings.local_day(command.now)
-        walks = self.walk_service.find_by_criteria(WalkCriteria(user_id=settings.user_id))
-        return any(settings.local_day(walk.created_at) == today for walk in walks)
 
     def _card(self, settings: ReminderSettings, command: SendDueRemindersCommand):
         weekend = settings.local_day(command.now).weekday() >= 5

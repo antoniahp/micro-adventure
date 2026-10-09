@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from tests.fakes import FakeWeatherService, InMemoryReminderRepository, InMemoryWalkRepository, SpyNotificationSender
+from tests.fakes import FakeWeatherService, InMemoryReminderRepository, SpyNotificationSender
 from tests.microadventures.object_mothers import a_reminder, a_weather
 from microadventures.application.commands.handle_telegram_callback.handle_telegram_callback_command import HandleTelegramCallbackCommand
 from microadventures.application.commands.handle_telegram_callback.handle_telegram_callback_command_handler import HandleTelegramCallbackCommandHandler
@@ -78,7 +78,7 @@ def test_the_light_is_written_for_people():
 
 def _send(reminders, weather_service, now=FRIDAY_18_00):
     sender = SpyNotificationSender()
-    handler = SendDueRemindersCommandHandler(reminders, InMemoryWalkRepository(), sender, APP_URL, weather_service)
+    handler = SendDueRemindersCommandHandler(reminders, sender, APP_URL, weather_service)
     return handler.handle(SendDueRemindersCommand(now=now)), sender
 
 

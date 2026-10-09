@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from tests.fakes import InMemoryReminderRepository, InMemoryWalkRepository, SpyNotificationSender
-from tests.microadventures.object_mothers import a_reminder, a_walk
+from tests.fakes import InMemoryReminderRepository, SpyNotificationSender
+from tests.microadventures.object_mothers import a_reminder
 from microadventures.application.commands.create_telegram_link.create_telegram_link_command import CreateTelegramLinkCommand
 from microadventures.application.commands.create_telegram_link.create_telegram_link_command_handler import CreateTelegramLinkCommandHandler
 from microadventures.application.commands.handle_telegram_message.handle_telegram_message_command import HandleTelegramMessageCommand
@@ -31,9 +31,9 @@ def _repository_with(*reminders):
     return repository
 
 
-def _send_due(reminders, now, sender=None, walks=None):
+def _send_due(reminders, now, sender=None):
     sender = sender or SpyNotificationSender()
-    handler = SendDueRemindersCommandHandler(reminders, walks or InMemoryWalkRepository(), sender, APP_URL)
+    handler = SendDueRemindersCommandHandler(reminders, sender, APP_URL)
     return handler.handle(SendDueRemindersCommand(now=now)), sender
 
 
@@ -248,26 +248,6 @@ def test_the_reminder_is_in_the_language_of_the_person():
     _, sender = _send_due(_repository_with(a_reminder(language=Language.EN)), FRIDAY_18_30_MADRID)
 
     assert "done for today" in sender.cards[0][1].caption and sender.cards[0][1].snooze_label == "⏰ In 1 hour"
-
-
-def test_whoever_already_walked_today_gets_no_reminder():
-    walks = InMemoryWalkRepository()
-    walks.save(a_walk(user_id="user-1", created_at=datetime(2026, 10, 9, 12, 0, tzinfo=timezone.utc)))
-    repository = _repository_with(a_reminder())
-
-    sent, sender = _send_due(repository, FRIDAY_18_30_MADRID, walks=walks)
-
-    assert (sent, sender.cards) == (0, [])
-    assert repository.find_by_user_id("user-1").last_sent_on is not None  # and it does not try again today
-
-
-def test_a_walk_from_another_day_does_not_stop_the_reminder():
-    walks = InMemoryWalkRepository()
-    walks.save(a_walk(user_id="user-1", created_at=datetime(2026, 10, 8, 12, 0, tzinfo=timezone.utc)))
-
-    sent, _ = _send_due(_repository_with(a_reminder()), FRIDAY_18_30_MADRID, walks=walks)
-
-    assert sent == 1
 
 
 def test_a_failed_send_is_tried_again_at_the_next_call():
