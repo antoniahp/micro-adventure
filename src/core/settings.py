@@ -3,6 +3,8 @@ from pathlib import Path
 
 import sentry_sdk
 
+from core.sentry_scrubber import before_send
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
@@ -109,6 +111,8 @@ if dsn := os.environ.get("SENTRY_DSN"):
         environment=os.environ.get("SENTRY_ENVIRONMENT", "development"),
         traces_sample_rate=1.0,
         send_default_pii=False,
+        before_send=before_send,
+        before_send_transaction=before_send,  # the Telegram URL (with the bot token) shows up in spans
     )
 
 # --- Reminders by Telegram ---
