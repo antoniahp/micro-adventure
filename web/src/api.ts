@@ -56,7 +56,7 @@ export async function completeChallenge(walkId: string, challengeId: string, ans
 }
 
 export async function swapChallenge(walkId: string, challengeId: string) {
-  await request(`/walks/${walkId}/challenges/${challengeId}/swap`, { method: "POST" });
+  await request(`/walks/${walkId}/challenges/${challengeId}/swap?language=${currentLanguage()}`, { method: "POST" });
 }
 
 // Closes the walk with what the person says about it. Time, distance and story are all optional.

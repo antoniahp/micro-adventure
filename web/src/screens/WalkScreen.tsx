@@ -148,6 +148,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   return (
     <section>
       <h2>{t("walk.title")}</h2>
+      {walk.language !== lang && <p className="hint" role="status">{t("walk.languageNote")}</p>}
       <div className="progress">
         <div className="progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={doneCount}>
           {walk.challenges.map((c) => (

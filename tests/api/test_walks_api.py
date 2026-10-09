@@ -7,7 +7,7 @@ from django.test import Client
 
 from api import wiring
 from tests.fakes import InMemoryWalkRepository
-from microadventures.infrastructure.template_challenge_generator import TemplateChallengeGenerator
+from microadventures.infrastructure.template_challenge_generator import CHALLENGE_TEXTS_EN, TemplateChallengeGenerator
 
 
 @pytest.fixture(autouse=True)
@@ -204,3 +204,17 @@ def test_finishing_with_impossible_numbers_is_refused():
 
 def test_finishing_an_unknown_walk_returns_404():
     assert _post_json(Client(), f"/api/walks/{uuid4()}/finish", {}).status_code == 404
+
+
+def test_a_swap_can_ask_for_the_language_on_screen():
+    client = Client()
+    created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "language": "es"})
+    walk_id = created.json()["id"]
+    challenge_id = client.get(f"/api/walks/{walk_id}").json()["challenges"][0]["id"]
+
+    swapped = client.post(f"/api/walks/{walk_id}/challenges/{challenge_id}/swap?language=en")
+
+    assert swapped.status_code == 204
+    new_text = client.get(f"/api/walks/{walk_id}").json()["challenges"][0]["text"]
+    english_texts = {text for texts in CHALLENGE_TEXTS_EN.values() for text in texts}
+    assert new_text in english_texts
