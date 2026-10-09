@@ -16,6 +16,12 @@ services:
         sync: false
       - key: MONGODB_DB
         value: micro_adventure
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false
+      - key: REMINDERS_KEY
+        sync: false
       - key: SENTRY_DSN
         sync: false
       - key: SENTRY_ENVIRONMENT

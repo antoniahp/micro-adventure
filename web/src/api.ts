@@ -1,6 +1,6 @@
 // All the calls to the backend live in this file. Screens never use fetch directly.
 import { currentLanguage, translate } from "./i18n";
-import type { Mood, Progress, Walk } from "./types";
+import type { Mood, Progress, Reminders, Walk } from "./types";
 
 const MAX_SWAPS_PER_WALK = 2; // same rule as the backend (Walk.MAX_SWAPS_PER_WALK)
 export { MAX_SWAPS_PER_WALK };
@@ -84,4 +84,42 @@ export async function transcribe(audio: Blob) {
     if (e instanceof ApiError && e.status === 502) throw new Error(translate("error.voiceFailed"));
     throw e;
   }
+}
+
+export async function getReminders(userId: string) {
+  return (await request<Reminders>(`/users/${userId}/reminders`))!;
+}
+
+// The time zone comes from the browser, so "18:00" means 18:00 where the person is.
+export async function saveReminders(userId: string, data: { enabled: boolean; weekdayTime: string; weekendTime: string }) {
+  try {
+    return (await request<Reminders>(`/users/${userId}/reminders`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        enabled: data.enabled,
+        weekday_time: data.weekdayTime,
+        weekend_time: data.weekendTime,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Madrid",
+        language: currentLanguage(),
+      }),
+    }))!;
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 422) throw new Error(translate("error.badTime"));
+    throw e;
+  }
+}
+
+// Gives the link that opens the bot in Telegram. The bot connects the chat when the person presses Start.
+export async function linkTelegram(userId: string) {
+  try {
+    return (await request<{ url: string }>(`/users/${userId}/telegram/link`, { method: "POST" }))!.url;
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 503) throw new Error(translate("error.remindersOff"));
+    throw e;
+  }
+}
+
+export async function unlinkTelegram(userId: string) {
+  await request(`/users/${userId}/telegram`, { method: "DELETE" });
 }

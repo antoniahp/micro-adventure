@@ -3,6 +3,7 @@ from uuid import uuid4
 from microadventures.domain.models.challenge import Challenge
 from microadventures.domain.models.challenge_category import ChallengeCategory
 from microadventures.domain.models.mood import Mood
+from microadventures.domain.models.reminder_settings import ReminderSettings
 from microadventures.domain.models.walk import Walk
 
 
@@ -21,3 +22,9 @@ def a_walk(**overrides) -> Walk:
         "challenges": [a_challenge(), a_challenge(category=ChallengeCategory.SOUND)],
     }
     return Walk(**{**values, **overrides})
+
+
+def a_reminder(**overrides) -> ReminderSettings:
+    """Reminders on, Telegram connected, 18:00 on weekdays and 11:00 on weekends in Madrid."""
+    values = {"user_id": "user-1", "enabled": True, "telegram_chat_id": "555", "timezone": "Europe/Madrid"}
+    return ReminderSettings(**{**values, **overrides})

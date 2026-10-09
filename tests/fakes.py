@@ -4,7 +4,12 @@ from uuid import UUID
 from microadventures.domain.models.challenge import Challenge
 from microadventures.domain.models.challenge_brief import ChallengeBrief
 from microadventures.domain.services.challenge_generator import ChallengeGenerator
+from microadventures.domain.exceptions.notification_failed_exception import NotificationFailedException
 from microadventures.domain.exceptions.walk_not_found_exception import WalkNotFoundException
+from microadventures.domain.models.reminder_settings import ReminderSettings
+from microadventures.domain.services.bot_webhook import BotWebhook
+from microadventures.domain.services.notification_sender import NotificationSender
+from microadventures.domain.services.reminder_service import ReminderService
 from microadventures.domain.models.photo_verdict import PhotoVerdict
 from microadventures.domain.services.photo_verifier import PhotoVerifier
 from microadventures.domain.services.walk_criteria import WalkCriteria
@@ -53,3 +58,38 @@ class StubPhotoVerifier(PhotoVerifier):
     def verify(self, challenge: Challenge, photo: bytes) -> PhotoVerdict:
         self.verified.append(challenge)
         return self.verdict
+
+
+class InMemoryReminderRepository(ReminderService):
+    def __init__(self):
+        self.settings: dict[str, ReminderSettings] = {}
+
+    def save(self, settings: ReminderSettings) -> None:
+        self.settings[settings.user_id] = deepcopy(settings)
+
+    def find_by_user_id(self, user_id: str) -> ReminderSettings | None:
+        return deepcopy(self.settings.get(user_id))
+
+    def find_by_link_code(self, code: str) -> ReminderSettings | None:
+        return next((deepcopy(s) for s in self.settings.values() if code and s.link_code == code), None)
+
+    def find_by_telegram_chat_id(self, chat_id: str) -> ReminderSettings | None:
+        return next((deepcopy(s) for s in self.settings.values() if chat_id and s.telegram_chat_id == chat_id), None)
+
+    def find_active(self) -> list[ReminderSettings]:
+        return [deepcopy(s) for s in self.settings.values() if s.enabled and s.is_linked]
+
+
+class SpyNotificationSender(NotificationSender, BotWebhook):
+    def __init__(self, fail: bool = False):
+        self.fail = fail
+        self.sent: list[tuple[str, str]] = []
+        self.registered: list[tuple[str, str]] = []
+
+    def send(self, chat_id: str, text: str) -> None:
+        if self.fail:
+            raise NotificationFailedException("Telegram answered 500")
+        self.sent.append((chat_id, text))
+
+    def register(self, url: str, secret: str) -> None:
+        self.registered.append((url, secret))

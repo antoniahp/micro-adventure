@@ -57,11 +57,3 @@ class WalkOut(Schema):
     @staticmethod
     def resolve_diary(walk) -> str:
         return walk.diary or ""  # walks saved before this field existed have none
-
-
-class ProgressOut(Schema):
-    walks_count: int
-    days_walked: int
-    challenges_completed: int
-    perfect_walks: int
-    stickers: list[str]
