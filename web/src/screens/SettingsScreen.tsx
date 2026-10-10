@@ -46,9 +46,9 @@ export default function SettingsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account?.google_linked, userId, lang]);
 
+  const nicknameChanged = nickname.trim() !== (account?.nickname ?? "");
+
   async function saveNickname(value: string) {
-    const current = account?.nickname ?? "";
-    if (value === current) return;
     try {
       const updated = await setNickname(userId, value || null);
       setAccount(updated);
@@ -81,10 +81,15 @@ export default function SettingsScreen() {
           value={nickname}
           placeholder={t("account.nickname.placeholder")}
           onChange={(e) => setNicknameField(e.target.value)}
-          onBlur={(e) => saveNickname(e.target.value.trim())}
+          onKeyDown={(e) => { if (e.key === "Enter") saveNickname(nickname.trim()); }}
         />
         <p className="hint">{t("account.nickname.hint")}</p>
-        {nicknameSaved && <span className="ok-line" role="status"><Icon name="check" size={18} /> {t("account.nickname.saved")}</span>}
+        <div className="story-actions">
+          <button className="btn btn-primary" disabled={!nicknameChanged} onClick={() => saveNickname(nickname.trim())}>
+            {t("account.nickname.save")}
+          </button>
+          {nicknameSaved && <span className="ok-line" role="status"><Icon name="check" size={18} /> {t("account.nickname.saved")}</span>}
+        </div>
         {account?.nickname && (
           <button className="btn btn-link left" onClick={() => saveNickname("")}>{t("account.nickname.remove")}</button>
         )}

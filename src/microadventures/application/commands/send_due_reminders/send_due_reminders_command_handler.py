@@ -6,6 +6,7 @@ from microadventures.domain.exceptions.notification_failed_exception import Noti
 from microadventures.domain.exceptions.weather_unavailable_exception import WeatherUnavailableException
 from microadventures.domain.models.weather import Weather
 from microadventures.domain.models.reminder_settings import ReminderSettings
+from microadventures.domain.services.account_service import AccountService
 from microadventures.domain.services.notification_sender import NotificationSender
 from microadventures.domain.services.reminder_service import ReminderService
 from microadventures.domain.services.weather_service import WeatherService
@@ -16,11 +17,19 @@ logger = logging.getLogger(__name__)
 class SendDueRemindersCommandHandler:
     """Sends the reminders whose time has come, at most one per person and day."""
 
-    def __init__(self, reminder_service: ReminderService, notification_sender: NotificationSender, app_url: str, weather_service: WeatherService | None = None):
+    def __init__(
+        self,
+        reminder_service: ReminderService,
+        notification_sender: NotificationSender,
+        app_url: str,
+        weather_service: WeatherService | None = None,
+        account_service: AccountService | None = None,
+    ):
         self.reminder_service = reminder_service
         self.notification_sender = notification_sender
         self.app_url = app_url
         self.weather_service = weather_service
+        self.account_service = account_service
 
     def handle(self, command: SendDueRemindersCommand) -> int:
         sent = 0
@@ -40,7 +49,13 @@ class SendDueRemindersCommandHandler:
 
     def _card(self, settings: ReminderSettings, command: SendDueRemindersCommand):
         weekend = settings.local_day(command.now).weekday() >= 5
-        return build_reminder_card(settings, weekend, self._weather(settings), command.now, self.app_url)
+        return build_reminder_card(settings, weekend, self._weather(settings), command.now, self.app_url, self._nickname(settings))
+
+    def _nickname(self, settings: ReminderSettings) -> str | None:
+        if self.account_service is None:
+            return None
+        account = self.account_service.find_by_user_id(settings.user_id)
+        return account.nickname if account else None
 
     def _weather(self, settings: ReminderSettings) -> Weather | None:
         """The weather where the person said they are, if they did. Without it the reminder just invites."""

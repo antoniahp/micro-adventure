@@ -42,6 +42,7 @@ def both_languages(key: str) -> str:
 
 CARD_TEXTS = {
     Language.ES: {
+        "greeting": "Hola {nickname} 👋",
         "weekday_title": "🌿 <b>Tu jornada ha terminado.</b>",
         "weekend_title": "☀️ <b>Buena hora para salir.</b>",
         "weekday_invite": "Un paseo corto con retos te sienta bien.",
@@ -57,6 +58,7 @@ CARD_TEXTS = {
         "sky_clear": "despejado", "sky_cloudy": "nublado", "sky_fog": "niebla", "sky_rain": "lluvia", "sky_snow": "nieve", "sky_storm": "tormenta",
     },
     Language.EN: {
+        "greeting": "Hi {nickname} 👋",
         "weekday_title": "🌿 <b>You're done for today.</b>",
         "weekend_title": "☀️ <b>A good time to head out.</b>",
         "weekday_invite": "A short walk with challenges will do you good.",

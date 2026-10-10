@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from tests.fakes import InMemoryReminderRepository, SpyNotificationSender
+from tests.fakes import InMemoryAccountRepository, InMemoryReminderRepository, SpyNotificationSender
 from tests.microadventures.object_mothers import a_reminder
 from microadventures.application.commands.create_telegram_link.create_telegram_link_command import CreateTelegramLinkCommand
 from microadventures.application.commands.create_telegram_link.create_telegram_link_command_handler import CreateTelegramLinkCommandHandler
@@ -31,9 +31,9 @@ def _repository_with(*reminders):
     return repository
 
 
-def _send_due(reminders, now, sender=None):
+def _send_due(reminders, now, sender=None, accounts=None):
     sender = sender or SpyNotificationSender()
-    handler = SendDueRemindersCommandHandler(reminders, sender, APP_URL)
+    handler = SendDueRemindersCommandHandler(reminders, sender, APP_URL, account_service=accounts)
     return handler.handle(SendDueRemindersCommand(now=now)), sender
 
 
@@ -265,3 +265,20 @@ def test_it_reminds_everyone_whose_time_has_come():
     sent, sender = _send_due(repository, FRIDAY_18_30_MADRID)
 
     assert sent == 2 and {chat for chat, _ in sender.cards} == {"1", "2"}
+
+
+def test_the_reminder_greets_the_person_by_their_nickname_when_they_set_one():
+    accounts = InMemoryAccountRepository()
+    accounts.set_nickname("user-1", "Jose")
+
+    _, sender = _send_due(_repository_with(a_reminder()), FRIDAY_18_30_MADRID, accounts=accounts)
+
+    assert "Hola Jose" in sender.cards[0][1].caption
+
+
+def test_the_reminder_has_no_greeting_without_a_nickname():
+    accounts = InMemoryAccountRepository()
+
+    _, sender = _send_due(_repository_with(a_reminder()), FRIDAY_18_30_MADRID, accounts=accounts)
+
+    assert "Hola" not in sender.cards[0][1].caption
