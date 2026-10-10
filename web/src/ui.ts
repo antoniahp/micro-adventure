@@ -3,11 +3,11 @@
 import type { IconName } from "./components/Icon";
 
 export const CATEGORIES: Record<string, { icon: IconName; color: string; tint: string; ink: string }> = {
-  sensory: { icon: "hand", color: "#F25C54", tint: "#FDECEA", ink: "#B6342D" },
-  sound: { icon: "sound", color: "#2E8BEA", tint: "#E6F1FD", ink: "#1B63B3" },
-  culture: { icon: "landmark", color: "#7357E8", tint: "#EEEAFD", ink: "#5237C4" },
+  sensory: { icon: "hand", color: "#A0522D", tint: "#FDECEA", ink: "#B6342D" },
+  sound: { icon: "sound", color: "#3BB5F0", tint: "#E6F1FD", ink: "#1B63B3" },
+  culture: { icon: "landmark", color: "#C050E0", tint: "#EEEAFD", ink: "#5237C4" },
   nature: { icon: "leaf", color: "#10A878", tint: "#E2F6EF", ink: "#0A7656" },
-  people_watching: { icon: "eye", color: "#FFB300", tint: "#FFF4D6", ink: "#8A6100" },
+  people_watching: { icon: "eye", color: "#84B823", tint: "#FFF4D6", ink: "#8A6100" },
 };
 
 export const FALLBACK_CATEGORY = { icon: "star" as IconName, color: "#10A878", tint: "#E2F6EF", ink: "#0A7656" };
@@ -36,16 +36,28 @@ export const WEATHERS: { value: string; icon: IconName }[] = [
 ];
 
 // The stickers of the notebook. The backend sends the code, the goal and how far the person is; the look is here.
-export const STICKERS: Record<string, { icon: IconName; color: string }> = {
-  first_walk: { icon: "pin", color: "#10A878" },
-  perfect_walk: { icon: "star", color: "#FFB300" },
-  five_walks: { icon: "compass", color: "#2E8BEA" },
-  twenty_walks: { icon: "trophy", color: "#7357E8" },
-  fifty_challenges: { icon: "check", color: "#F25C54" },
-  all_categories: { icon: "grid", color: "#10A878" },
-  streak_3: { icon: "flame", color: "#F25C54" },
-  streak_7: { icon: "flame", color: "#FFB300" },
-  storyteller: { icon: "quote", color: "#7357E8" },
-  ten_km: { icon: "route", color: "#2E8BEA" },
-  five_hours: { icon: "clock", color: "#10A878" },
+export const STICKER_FAMILIES: Record<string, { icon: IconName; color: string }> = {
+  walks: { icon: "compass", color: "#2E6FEA" },
+  challenges: { icon: "check", color: "#F25C54" },
+  perfect: { icon: "star", color: "#FFB300" },
+  streak: { icon: "flame", color: "#FF7A45" },
+  km: { icon: "route", color: "#0E9F9F" },
+  minutes: { icon: "clock", color: "#5B5BD6" },
+  stories: { icon: "chat", color: "#8B5CF6" },
+  categories: { icon: "grid", color: "#E8579A" },
+  // The five categories have their own colours here, apart from the ones of the challenge cards, so no sticker group repeats another.
+  sensory: { icon: "hand", color: "#A0522D" },
+  sound: { icon: "sound", color: "#3BB5F0" },
+  culture: { icon: "landmark", color: "#C050E0" },
+  nature: { icon: "leaf", color: "#10A878" },
+  people_watching: { icon: "eye", color: "#84B823" },
+};
+
+// Colours that need dark ink on top: a white drawing would not read on them.
+export const LIGHT_STICKER_COLORS = new Set(["#FFB300", "#84B823", "#3BB5F0", "#FF7A45"]);
+
+// A few stickers keep their own icon (the first one is a pin, not a check); the colour always comes from the group.
+export const STICKER_ICONS: Record<string, IconName> = {
+  first_walk: "pin",
+  all_categories: "grid",
 };

@@ -105,3 +105,21 @@ export function FeelingLine({ values, labels, ariaLabel }: { values: (number | n
     </svg>
   );
 }
+
+type StripDay = { day: string; walks: number; challenges: number };
+
+// The week as seven circles. The number is the challenges completed; a ring with nothing inside, a walk without any.
+export function WeekStrip({ days, labels, today, ariaLabel }: { days: StripDay[]; labels: string[]; today: string; ariaLabel: string }) {
+  return (
+    <ol className="week-strip" aria-label={ariaLabel}>
+      {days.map((d, i) => (
+        <li key={d.day} className={d.day === today ? "today" : undefined}>
+          <span className={d.challenges > 0 ? "day-dot done" : d.walks > 0 ? "day-dot walk" : "day-dot"} aria-label={`${labels[i]}: ${d.challenges}`}>
+            {d.challenges > 0 ? d.challenges : ""}
+          </span>
+          <span aria-hidden="true">{labels[i]}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}

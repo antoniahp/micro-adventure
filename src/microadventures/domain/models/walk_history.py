@@ -109,4 +109,5 @@ class WalkHistory:
             "stories": self.stories,
             "km": int(self.km),
             "minutes": self.minutes,
+            **{f"category_{category}": count for category, count in self.categories.items()},
         }

@@ -176,11 +176,14 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
 /* ---------- Notebook: the page of stickers ---------- */
 .notebook-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
 .streak { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px 4px 8px; border-radius: 999px; background: #fff0d6; color: #8a4b00; font-weight: 800; font-size: 0.9rem; }
-.page { list-style: none; margin: 0; padding: 18px 14px 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; border-radius: 18px; background: var(--paper); border: 1px solid var(--line); background-image: repeating-linear-gradient(transparent 0 31px, #ece9f5 31px 32px); }
+.page { list-style: none; margin: 0; padding: 18px 10px 20px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 8px; border-radius: 18px; background: var(--paper); border: 1px solid var(--line); }
+.sticker-group { margin-top: 18px; }
+.sticker-group-title { margin: 0 0 8px; font-size: 1.05rem; display: flex; align-items: baseline; gap: 8px; }
+.sticker-group-title small { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
 .sticker { display: grid; justify-items: center; align-content: start; gap: 6px; text-align: center; color: var(--muted); min-width: 0; }
 .sticker strong { color: var(--ink); line-height: 1.2; }
 .sticker small { font-size: 0.8rem; line-height: 1.3; }
-.sticker-art { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; border: 2px dashed #b5b1cc; background: var(--paper); }
+.sticker-art { display: grid; place-items: center; width: 62px; height: 62px; border-radius: 50%; border: 2px dashed #b5b1cc; background: var(--paper); }
 .sticker.earned { color: var(--ink); }
 .sticker.earned .sticker-art { border: 0; background: var(--c); color: var(--on, #fff); box-shadow: 0 0 0 4px var(--paper), 0 0 0 6.5px var(--c); transform: rotate(-4deg); }
 .sticker.earned:nth-child(even) .sticker-art { transform: rotate(5deg); }
@@ -288,3 +291,14 @@ a.btn { text-decoration: none; justify-self: start; }
 .context-sky { color: var(--muted); font-weight: 600; }
 .context-line { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; }
 .context-note { margin: 0; padding: 8px 12px; border-radius: 12px; background: #FFF4D6; color: #6b4a00; font-size: 0.92rem; }
+
+/* The week as seven circles: the number is the challenges completed that day. */
+.week-strip { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.week-strip li { display: grid; justify-items: center; gap: 6px; color: var(--muted); font-size: 0.75rem; }
+.week-strip .day-dot { display: grid; place-items: center; width: 38px; height: 38px; max-width: 100%; border-radius: 50%; border: 2px dashed var(--line); font-weight: 800; font-size: 1rem; color: var(--ink); }
+.week-strip .day-dot.walk { border: 2px solid #10A878; }
+.week-strip .day-dot.done { border: 0; background: #10A878; color: #fff; }
+.week-strip .today .day-dot { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
+.week-strip .today { color: var(--ink); font-weight: 700; }
+.dimmed { opacity: 0.55; }
+.time-row { align-items: end; }

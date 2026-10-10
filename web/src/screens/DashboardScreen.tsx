@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { getWeeklySummary, getYearlySummary, saveWeeklyFeeling } from "../api";
-import { BarChart, FeelingLine, RowBars, ShareBar } from "../components/charts";
+import { BarChart, FeelingLine, RowBars, ShareBar, WeekStrip } from "../components/charts";
 import Icon, { type IconName } from "../components/Icon";
 import { useI18n, type TextKey } from "../i18n";
 import { getUserId } from "../storage";
@@ -101,7 +101,6 @@ function WeekView({ data, lang, onMove, onSaved }: { data: WeeklySummary; lang: 
   const weekday = new Intl.DateTimeFormat(lang, { weekday: "narrow" });
   const walkDelta = delta(data.walks_count, data.previous_walks);
   const note = walkDelta > 0 ? t("dash.deltaUp", { n: walkDelta }) : walkDelta < 0 ? t("dash.deltaDown", { n: -walkDelta }) : t("dash.deltaSame");
-  const todayIndex = data.days.findIndex((d) => d.day === today);
 
   return (
     <>
@@ -126,13 +125,13 @@ function WeekView({ data, lang, onMove, onSaved }: { data: WeeklySummary; lang: 
         <>
           <div className="panel">
             <h3>{t("dash.perDay")}</h3>
-            <BarChart
-              values={data.days.map((d) => d.challenges)}
+            <WeekStrip
+              days={data.days}
               labels={data.days.map((d) => weekday.format(atNoon(d.day)))}
-              color="#10A878"
-              highlight={todayIndex >= 0 ? todayIndex : undefined}
+              today={today}
               ariaLabel={t("dash.perDay")}
             />
+            <p className="hint">{t("dash.perDayHint")}</p>
           </div>
 
           <div className="panel">
@@ -191,7 +190,7 @@ function FeelingForm({ data, onSaved }: { data: WeeklySummary; onSaved: () => vo
 
   return (
     <div className="panel feeling">
-      <h3><Icon name="quote" size={20} /> {t("dash.feeling.title")}</h3>
+      <h3><Icon name="bulb" size={20} /> {t("dash.feeling.title")}</h3>
       <div className="scale" role="radiogroup" aria-label={t("dash.feeling.title")}>
         {[1, 2, 3, 4, 5].map((level) => (
           <button key={level} role="radio" aria-checked={feeling === level} className={feeling === level ? "on" : ""} onClick={() => { setFeeling(level); setState("idle"); }}>
@@ -244,7 +243,7 @@ function YearView({ data, lang, onMove }: { data: YearlySummary; lang: string; o
         <Tile icon="clock" color="#2E8BEA" label={t("dash.minutes")} value={formatMinutes(data.minutes)} />
         <Tile icon="route" color="#7357E8" label={t("dash.km")} value={formatKm(data.km)} />
         <Tile icon="flame" color="#FFB300" label={t("dash.longestStreak")} value={t("dash.days", { n: data.longest_streak })} />
-        <Tile icon="quote" color="#F25C54" label={t("dash.stories")} value={String(data.stories)} note={data.best_month ? `${t("dash.bestMonth")}: ${monthLong.format(new Date(data.year, data.best_month - 1, 1, 12))}` : undefined} />
+        <Tile icon="chat" color="#F25C54" label={t("dash.stories")} value={String(data.stories)} note={data.best_month ? `${t("dash.bestMonth")}: ${monthLong.format(new Date(data.year, data.best_month - 1, 1, 12))}` : undefined} />
       </div>
       <p className="hint">{t("dash.dataNote")}</p>
 

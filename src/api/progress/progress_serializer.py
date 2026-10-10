@@ -3,6 +3,7 @@ from ninja import Schema
 
 class StickerOut(Schema):
     code: str
+    family: str
     current: int
     goal: int
     unlocked: bool

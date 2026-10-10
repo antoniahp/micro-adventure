@@ -107,6 +107,8 @@ export default function RemindersScreen() {
     }
   }
 
+  const locked = !settings?.telegram_connected;
+
   if (!settings) return error ? <p className="error" role="alert">{error}</p> : <p className="hint">…</p>;
 
   return (
@@ -137,33 +139,33 @@ export default function RemindersScreen() {
       </div>
 
       {(
-        <div className="panel">
+        <div className={locked ? "panel dimmed" : "panel"}>
           <h3><Icon name="bell" size={20} /> {t("reminders.when")}</h3>
+          {locked && <p className="hint">{t("reminders.needTelegram")}</p>}
           <label className="switch">
             <span>{t("reminders.on")}</span>
-            <input type="checkbox" role="switch" checked={enabled} onChange={(e) => { setEnabled(e.target.checked); setSaved(false); }} />
+            <input type="checkbox" role="switch" disabled={locked} checked={enabled} onChange={(e) => { setEnabled(e.target.checked); setSaved(false); }} />
             <span className="track" aria-hidden="true" />
           </label>
           <div className="time-row">
             <div className="field">
               <label htmlFor="weekday-time">{t("reminders.weekday")}</label>
-              <input id="weekday-time" type="time" value={weekday} onChange={(e) => { setWeekday(e.target.value); setSaved(false); }} />
+              <input id="weekday-time" type="time" disabled={locked} value={weekday} onChange={(e) => { setWeekday(e.target.value); setSaved(false); }} />
             </div>
             <div className="field">
               <label htmlFor="weekend-time">{t("reminders.weekend")}</label>
-              <input id="weekend-time" type="time" value={weekend} onChange={(e) => { setWeekend(e.target.value); setSaved(false); }} />
+              <input id="weekend-time" type="time" disabled={locked} value={weekend} onChange={(e) => { setWeekend(e.target.value); setSaved(false); }} />
             </div>
           </div>
           <p className="hint">{t("reminders.hint")}</p>
           <label className="switch">
             <span>{t("reminders.weather")}</span>
-            <input type="checkbox" role="switch" checked={shareWeather} onChange={(e) => { setShareWeather(e.target.checked); setSaved(false); }} />
+            <input type="checkbox" role="switch" disabled={locked} checked={shareWeather} onChange={(e) => { setShareWeather(e.target.checked); setSaved(false); }} />
             <span className="track" aria-hidden="true" />
           </label>
           <p className="hint">{t("reminders.weatherHint")}</p>
-          {!settings.telegram_connected && <p className="hint">{t("reminders.needTelegram")}</p>}
           <div className="story-actions">
-            <button className="btn btn-primary" disabled={saving || !weekday || !weekend} onClick={save}>
+            <button className="btn btn-primary" disabled={locked || saving || !weekday || !weekend} onClick={save}>
               {saving ? t("reminders.saving") : t("reminders.save")}
             </button>
             {saved && <span className="ok-line" role="status"><Icon name="check" size={18} /> {t("reminders.saved")}</span>}
@@ -173,16 +175,17 @@ export default function RemindersScreen() {
 
       {error && <p className="error" role="alert">{error}</p>}
 
+      {!install.installed && (
       <div className="panel">
         <h3><Icon name="download" size={20} /> {t("reminders.install")}</h3>
-        {install.installed ? (
-          <p className="ok-line"><Icon name="check" size={18} /> {t("reminders.installed")}</p>
-        ) : install.canInstall ? (
+        <p className="hint">{t("reminders.installWhy")}</p>
+        {install.canInstall ? (
           <button className="btn btn-primary" onClick={install.install}><Icon name="download" size={18} /> {t("reminders.installButton")}</button>
         ) : (
           <p className="hint">{install.ios ? t("reminders.installIos") : t("reminders.installOther")}</p>
         )}
       </div>
+      )}
     </section>
   );
 }
