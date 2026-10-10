@@ -13,6 +13,7 @@ from microadventures.domain.models.reminder_card import ReminderCard
 from microadventures.domain.models.weather import Weather
 from microadventures.domain.services.notification_sender import NotificationSender
 from microadventures.domain.services.weather_service import WeatherService
+from microadventures.domain.services.account_service import AccountService
 from microadventures.domain.services.reminder_service import ReminderService
 from microadventures.domain.models.weekly_reflection import WeeklyReflection
 from microadventures.domain.services.reflection_service import ReflectionService
@@ -137,3 +138,14 @@ class InMemoryReflectionRepository(ReflectionService):
 
     def find_by_user_id(self, user_id: str) -> list[WeeklyReflection]:
         return [deepcopy(r) for r in self.reflections if r.user_id == user_id]
+
+
+class InMemoryAccountRepository(AccountService):
+    def __init__(self):
+        self.claimed: set[str] = set()
+
+    def claim(self, user_id: str) -> bool:
+        if user_id in self.claimed:
+            return False
+        self.claimed.add(user_id)
+        return True

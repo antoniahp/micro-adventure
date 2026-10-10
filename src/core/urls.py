@@ -1,9 +1,10 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 
 from api.api import api
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(f"{settings.ADMIN_URL}/", admin.site.urls),
     path("api/", api.urls),
 ]

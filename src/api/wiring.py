@@ -9,6 +9,7 @@ from microadventures.infrastructure.api.fallback_weather_service import Fallback
 from microadventures.infrastructure.api.met_norway_weather_service import MetNorwayWeatherService
 from microadventures.infrastructure.api.open_meteo_weather_service import OpenMeteoWeatherService
 
+from microadventures.application.commands.claim_account.claim_account_command_handler import ClaimAccountCommandHandler
 from microadventures.application.commands.complete_challenge.complete_challenge_command_handler import CompleteChallengeCommandHandler
 from microadventures.application.commands.save_weekly_reflection.save_weekly_reflection_command_handler import SaveWeeklyReflectionCommandHandler
 from microadventures.application.queries.find_progress.find_progress_query_handler import FindProgressQueryHandler
@@ -28,6 +29,7 @@ from microadventures.application.queries.find_reminder_settings.find_reminder_se
 from microadventures.application.commands.start_walk.start_walk_command_handler import StartWalkCommandHandler
 from microadventures.application.commands.swap_challenge.swap_challenge_command_handler import SwapChallengeCommandHandler
 from microadventures.application.commands.warm_up_generator.warm_up_generator_command_handler import WarmUpGeneratorCommandHandler
+from microadventures.domain.services.account_service import AccountService
 from microadventures.domain.services.bot_webhook import BotWebhook
 from microadventures.domain.services.challenge_generator import ChallengeGenerator
 from microadventures.domain.services.notification_sender import NotificationSender
@@ -42,6 +44,7 @@ from microadventures.infrastructure.api.elevenlabs_speech_transcriber import Ele
 from microadventures.infrastructure.api.ollama_photo_verifier import OllamaPhotoVerifier
 from microadventures.infrastructure.api.telegram_notification_sender import TelegramNotificationSender
 from microadventures.infrastructure.repositories.db_reflection_repository import DbReflectionRepository
+from microadventures.infrastructure.repositories.db_account_repository import DbAccountRepository
 from microadventures.infrastructure.repositories.db_reminder_repository import DbReminderRepository
 from microadventures.infrastructure.unavailable_notification_sender import UnavailableNotificationSender
 from microadventures.infrastructure.repositories.db_walk_repository import DbWalkRepository
@@ -95,6 +98,14 @@ _weather_service_instance = FallbackWeatherService(OpenMeteoWeatherService(), Me
 
 def _weather_service() -> WeatherService:
     return _weather_service_instance
+
+
+def _account_repository() -> AccountService:
+    return DbAccountRepository()
+
+
+def claim_account_handler() -> ClaimAccountCommandHandler:
+    return ClaimAccountCommandHandler(account_service=_account_repository())
 
 
 def _reminder_repository() -> ReminderService:

@@ -7,6 +7,7 @@ from ninja import Router, Status
 from ninja.errors import HttpError
 
 from api import wiring
+from api.auth.session import ensure_own_user
 from api.key_guard import check_key, webhook_secret
 from api.telegram.telegram_serializer import TelegramLinkOut, TelegramUpdate
 from microadventures.application.commands.create_telegram_link.create_telegram_link_command import CreateTelegramLinkCommand
@@ -56,6 +57,7 @@ def setup(request, key: str):
 @user_router.post("/{user_id}/telegram/link", response=TelegramLinkOut)
 def link_telegram(request, user_id: str):
     """Gives the link that opens the bot with a one-time code. The bot connects the chat when it gets the code."""
+    ensure_own_user(request, user_id)
     if not (settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_BOT_USERNAME):
         raise NotificationUnavailableException()
     code = secrets.token_urlsafe(16)
@@ -65,5 +67,6 @@ def link_telegram(request, user_id: str):
 
 @user_router.delete("/{user_id}/telegram", response={204: None})
 def unlink_telegram(request, user_id: str):
+    ensure_own_user(request, user_id)
     wiring.unlink_telegram_handler().handle(UnlinkTelegramCommand(user_id=user_id))
     return Status(204, None)

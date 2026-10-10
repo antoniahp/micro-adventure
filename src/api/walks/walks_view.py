@@ -5,7 +5,9 @@ from ninja import File, Form, Router, Status
 from ninja.files import UploadedFile
 
 from api import wiring
+from api.auth.session import current_user_id, ensure_own_user
 from api.walks.walks_serializer import FinishWalkIn, StartWalkIn, WalkCreatedOut, WalkOut
+from microadventures.domain.exceptions.walk_not_found_exception import WalkNotFoundException
 from microadventures.domain.models.language import Language
 from microadventures.application.commands.complete_challenge.complete_challenge_command import CompleteChallengeCommand
 from microadventures.application.queries.find_walk.find_walk_query import FindWalkQuery
@@ -16,8 +18,17 @@ from microadventures.application.commands.swap_challenge.swap_challenge_command 
 router = Router()
 
 
+def _my_walk(request, walk_id: UUID):
+    """A walk is only visible to its owner. For anyone else it simply does not exist."""
+    walk = wiring.find_walk_handler().handle(FindWalkQuery(walk_id=walk_id))
+    if walk.user_id != current_user_id(request):
+        raise WalkNotFoundException(walk_id)
+    return walk
+
+
 @router.post("", response={201: WalkCreatedOut})
 def start_walk(request, payload: StartWalkIn):
+    ensure_own_user(request, payload.user_id)
     walk_id = uuid4()
     wiring.start_walk_handler().handle(
         StartWalkCommand(
@@ -39,13 +50,14 @@ def start_walk(request, payload: StartWalkIn):
 
 @router.get("/{walk_id}", response=WalkOut)
 def get_walk(request, walk_id: UUID):
-    return wiring.find_walk_handler().handle(FindWalkQuery(walk_id=walk_id))
+    return _my_walk(request, walk_id)
 
 
 @router.post("/{walk_id}/challenges/{challenge_id}/complete", response={204: None})
 def complete_challenge(
     request, walk_id: UUID, challenge_id: UUID, photo: UploadedFile = File(None), story: str = Form("")
 ):
+    _my_walk(request, walk_id)
     wiring.complete_challenge_handler().handle(
         CompleteChallengeCommand(
             walk_id=walk_id,
@@ -59,6 +71,7 @@ def complete_challenge(
 
 @router.post("/{walk_id}/challenges/{challenge_id}/swap", response={204: None})
 def swap_challenge(request, walk_id: UUID, challenge_id: UUID, language: Language | None = None):
+    _my_walk(request, walk_id)
     wiring.swap_challenge_handler().handle(
         SwapChallengeCommand(walk_id=walk_id, challenge_id=challenge_id, language=language)
     )
@@ -68,6 +81,7 @@ def swap_challenge(request, walk_id: UUID, challenge_id: UUID, language: Languag
 @router.post("/{walk_id}/finish", response={204: None})
 def finish_walk(request, walk_id: UUID, payload: FinishWalkIn):
     """Closes the walk. Time, distance and the story are all optional."""
+    _my_walk(request, walk_id)
     wiring.finish_walk_handler().handle(
         FinishWalkCommand(
             walk_id=walk_id,
