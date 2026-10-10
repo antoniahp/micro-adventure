@@ -141,6 +141,7 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
             </button>
           ))}
         </div>
+        <p className="hint">{t(context.status === "ready" ? "start.weatherAuto" : "start.weatherPick")}</p>
       </fieldset>
 
       {error && <p className="error" role="alert">{error}</p>}

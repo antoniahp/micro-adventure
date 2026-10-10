@@ -1,7 +1,8 @@
 // Service worker: lets the installed app open fast and show its shell without a connection.
 // It never stores anything from /api: walks and progress always come from the server.
-const CACHE = "microadventures-v1";
-const SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png"];
+// Raise the number when a file without a hash in its name changes (an icon, the manifest): the old copies are deleted on activation.
+const CACHE = "microadventures-v2";
+const SHELL = ["/"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
@@ -29,7 +30,23 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Scripts, styles and images have a hash in their name, so a saved copy never goes stale.
+  // Only what lives in /assets/ has a hash in its name, so only that can be taken from the saved copy without asking.
+  // The icons and the manifest keep their name: the network goes first, so a new icon shows up at once.
+  if (!url.pathname.startsWith("/assets/")) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request)),
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then(
       (saved) =>

@@ -36,7 +36,7 @@ export default function ContextCard({ state, onAsk }: { state: ContextState; onA
     return (
       <div className="context">
         <p className="hint" role="status">{t(state.reason === "denied" ? "context.denied" : "context.unavailable")}</p>
-        <button className="btn btn-link left" onClick={onAsk}>{t("context.retry")}</button>
+        {state.reason !== "denied" && <button className="btn btn-link left" onClick={onAsk}>{t("context.retry")}</button>}
       </div>
     );
   }

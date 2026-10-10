@@ -22,8 +22,8 @@ class Challenge(EmbeddedModel):
 
     @property
     def accepts_photo(self) -> bool:
-        # People are observed, never photographed. Those challenges are answered by telling.
-        return self.category != ChallengeCategory.PEOPLE_WATCHING
+        # People are observed, never photographed, and a sound cannot be seen: those challenges are answered by telling.
+        return self.category not in (ChallengeCategory.PEOPLE_WATCHING, ChallengeCategory.SOUND)
 
     @property
     def written_by_model(self) -> bool:

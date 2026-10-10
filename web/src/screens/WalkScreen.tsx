@@ -190,7 +190,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
 
                 {!done && telling !== c.id && (
                   <>
-                    {!c.accepts_photo && <p className="hint">{t("walk.noPeoplePhotos")}</p>}
+                    {c.category === "people_watching" && <p className="hint">{t("walk.noPeoplePhotos")}</p>}
                     <div className="entry-actions">
                       <button className="btn btn-primary" disabled={busy} onClick={() => setTelling(c.id)}>
                         <Icon name="pen" size={18} /> {t("walk.tell")}

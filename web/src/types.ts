@@ -35,7 +35,7 @@ export type Progress = {
   challenges_completed: number;
   perfect_walks: number;
   stickers: string[];
-  sticker_book: { code: string; current: number; goal: number; unlocked: boolean }[];
+  sticker_book: { code: string; family: string; current: number; goal: number; unlocked: boolean }[];
   current_streak: number;
 };
 
