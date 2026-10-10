@@ -27,7 +27,7 @@ class FakeGet:
 
     def raise_for_status(self):
         if self.status_code != 200:
-            raise requests.HTTPError(str(self.status_code))
+            raise requests.HTTPError(str(self.status_code), response=self)
 
     def json(self):
         return self.body
@@ -48,7 +48,7 @@ def test_it_asks_for_a_rounded_place_and_remembers_the_answer_for_a_while():
     service.at(40.4201, -3.7001)  # the same kilometre
     assert len(http.calls) == 1 and http.calls[0][1]["latitude"] == 40.42
 
-    now[0] = 601
+    now[0] = 1801
     service.at(40.4168, -3.7038)
     assert len(http.calls) == 2
 
@@ -114,3 +114,18 @@ def test_a_button_press_is_answered_and_the_webhook_asks_for_button_presses():
 
     assert http.requests[0][0].endswith("/answerCallbackQuery") and http.requests[0][1] == {"callback_query_id": "cb-1", "text": "Vale"}
     assert http.requests[1][1]["allowed_updates"] == ["message", "callback_query"]
+
+
+def test_a_429_is_remembered_for_five_minutes_so_the_service_is_left_alone():
+    http, now = FakeGet(status_code=429), [0.0]
+    service = OpenMeteoWeatherService(http=http, clock=lambda: now[0])
+
+    for _ in range(3):
+        with pytest.raises(WeatherUnavailableException, match="429"):
+            service.at(40.4, -3.7)
+    assert len(http.calls) == 1
+
+    now[0] = 301
+    with pytest.raises(WeatherUnavailableException):
+        service.at(40.4, -3.7)
+    assert len(http.calls) == 2

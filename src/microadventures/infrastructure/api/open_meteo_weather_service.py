@@ -10,7 +10,9 @@ from microadventures.domain.services.weather_service import WeatherService
 
 URL = "https://api.open-meteo.com/v1/forecast"
 logger = logging.getLogger(__name__)
-CACHE_SECONDS = 600  # the weather barely changes in ten minutes, and the service is free: be kind to it
+CACHE_SECONDS = 1800  # the weather barely changes in half an hour, and the service is free: be kind to it
+BUSY_SECONDS = 300  # after a "429 too many requests" do not ask again for five minutes
+FAILURE_SECONDS = 60  # any other failure is remembered briefly so a retrying page does not hammer the service
 
 
 class OpenMeteoWeatherService(WeatherService):
@@ -20,14 +22,20 @@ class OpenMeteoWeatherService(WeatherService):
         self.http = http
         self.timeout_seconds = timeout_seconds
         self.clock = clock
-        self._cache: dict[tuple[float, float], tuple[float, Weather]] = {}
+        self._cache: dict[tuple[float, float], tuple[float, Weather | WeatherUnavailableException]] = {}
 
     def at(self, latitude: float, longitude: float) -> Weather:
         place = (round(latitude, 2), round(longitude, 2))
         cached = self._cache.get(place)
-        if cached and self.clock() - cached[0] < CACHE_SECONDS:
+        if cached and self.clock() - cached[0] < _remembered_for(cached[1]):
+            if isinstance(cached[1], WeatherUnavailableException):
+                raise cached[1]  # the failure is remembered too: no new request until it expires
             return cached[1]
-        weather = self._fetch(*place)
+        try:
+            weather = self._fetch(*place)
+        except WeatherUnavailableException as error:
+            self._cache[place] = (self.clock(), error)
+            raise
         logger.info("🌤️ Weather at %s: %s, %.0f°C", place, weather.sky.value, weather.temperature_c)
         self._cache[place] = (self.clock(), weather)
         return weather
@@ -52,6 +60,12 @@ class OpenMeteoWeatherService(WeatherService):
         except (requests.RequestException, ValueError, KeyError, IndexError, TypeError) as error:
             status = getattr(getattr(error, "response", None), "status_code", None)
             raise WeatherUnavailableException(f"{type(error).__name__} {status}" if status else type(error).__name__) from error
+
+
+def _remembered_for(answer) -> int:
+    if isinstance(answer, WeatherUnavailableException):
+        return BUSY_SECONDS if " 429" in str(answer) else FAILURE_SECONDS
+    return CACHE_SECONDS
 
 
 def _parse(body: dict) -> Weather:
