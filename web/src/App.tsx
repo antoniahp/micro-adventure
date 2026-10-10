@@ -6,10 +6,11 @@ import { currentWalk } from "./storage";
 import DashboardScreen from "./screens/DashboardScreen";
 import NotebookScreen from "./screens/NotebookScreen";
 import RemindersScreen from "./screens/RemindersScreen";
+import SettingsScreen from "./screens/SettingsScreen";
 import StartScreen from "./screens/StartScreen";
 import WalkScreen from "./screens/WalkScreen";
 
-type Tab = "walk" | "dashboard" | "notebook" | "reminders";
+type Tab = "walk" | "dashboard" | "notebook" | "reminders" | "settings";
 
 export default function App() {
   const { lang, setLang, t } = useI18n();
@@ -45,6 +46,7 @@ export default function App() {
         {tab === "dashboard" && <DashboardScreen />}
         {tab === "notebook" && <NotebookScreen onStartWalk={() => setTab("walk")} />}
         {tab === "reminders" && <RemindersScreen />}
+        {tab === "settings" && <SettingsScreen />}
         {tab === "walk" && !walkId && <StartScreen onStarted={startedWalk} />}
         {tab === "walk" && walkId && (
           <WalkScreen walkId={walkId} onFinished={finishedWalk} onOpenNotebook={() => setTab("notebook")} />
@@ -63,6 +65,9 @@ export default function App() {
         </button>
         <button className={tab === "reminders" ? "active" : ""} onClick={() => setTab("reminders")}>
           <Icon name="bell" size={22} /> {t("app.tabReminders")}
+        </button>
+        <button className={tab === "settings" ? "active" : ""} onClick={() => setTab("settings")}>
+          <Icon name="user" size={22} /> {t("app.tabSettings")}
         </button>
       </nav>
     </div>
