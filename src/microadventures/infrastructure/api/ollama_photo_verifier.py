@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 
 import requests
 
@@ -8,6 +9,15 @@ from microadventures.domain.exceptions.photo_verification_failed_exception impor
 from microadventures.domain.models.photo_verdict import PhotoVerdict
 from microadventures.domain.services.photo_verifier import PhotoVerifier
 from microadventures.infrastructure.api.model_tracing import record_usage, traced_model_call
+
+logger = logging.getLogger(__name__)
+
+
+def _as_bool(value) -> bool:
+    """The model sometimes answers "false" as text, and bool("false") would be True."""
+    if isinstance(value, str):
+        return value.strip().lower() in ("true", "yes", "si", "sí")
+    return bool(value)
 
 
 class OllamaPhotoVerifier(PhotoVerifier):
@@ -47,6 +57,8 @@ class OllamaPhotoVerifier(PhotoVerifier):
                 body = response.json()
                 record_usage(span, body)
             verdict = json.loads(body["response"])
-            return PhotoVerdict(accepted=bool(verdict["accepted"]), reason=str(verdict.get("reason", "")))
+            logger.info("📷 Photo %s: %s", "accepted" if _as_bool(verdict["accepted"]) else "rejected", verdict.get("seen", ""))
+            return PhotoVerdict(accepted=_as_bool(verdict["accepted"]), reason=str(verdict.get("reason", "")))
         except (requests.RequestException, ValueError, KeyError, TypeError) as error:
+            logger.warning("📷 The photo could not be checked (%s): %s", type(error).__name__, error)
             raise PhotoVerificationFailedException(str(error)) from error

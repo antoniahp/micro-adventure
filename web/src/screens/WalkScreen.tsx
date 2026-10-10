@@ -19,6 +19,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const [busyId, setBusyId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({}); // one message per challenge
   const [photos, setPhotos] = useState<Record<string, string>>({}); // preview of each photo sent
+  const [checkingId, setCheckingId] = useState<string | null>(null); // the challenge whose photo is being looked at
   const [justDone, setJustDone] = useState<string | null>(null); // which entry to animate
   const [telling, setTelling] = useState<string | null>(null); // which entry has its story form open
   // Three screens: the challenges, the "walk complete" page, and the page where the person tells the walk.
@@ -51,6 +52,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   // Runs an action on one challenge, then reloads the walk to show the new state.
   async function act(challenge: Challenge, action: () => Promise<void>, photo?: File) {
     setBusyId(challenge.id);
+    if (photo) setCheckingId(challenge.id);
     setErrors((current) => ({ ...current, [challenge.id]: "" }));
     try {
       await action();
@@ -64,6 +66,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
       setErrors((current) => ({ ...current, [challenge.id]: (e as Error).message }));
     } finally {
       setBusyId(null);
+      setCheckingId(null);
     }
   }
 
@@ -225,6 +228,9 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
 
                 {c.story && <blockquote className="entry-story">{c.story}</blockquote>}
                 {photos[c.id] && <img className="entry-photo" src={photos[c.id]} alt={t("walk.photoAlt")} />}
+                {checkingId === c.id && (
+                  <p className="checking" role="status"><span className="spinner" aria-hidden="true" /> {t("walk.photoVerifying")}</p>
+                )}
                 {errors[c.id] && <p className="error" role="alert">{errors[c.id]}</p>}
 
                 {!done && telling === c.id && (
