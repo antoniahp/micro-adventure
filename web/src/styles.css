@@ -37,7 +37,7 @@ legend { padding: 0; margin-bottom: 8px; font-size: 0.9rem; font-weight: 700; co
 main { flex: 1; padding: 12px 20px 32px; }
 section { position: relative; display: grid; gap: 22px; align-content: start; }
 
-.topbar { display: flex; align-items: center; gap: 10px; padding: 18px 20px 0; color: var(--dusk); }
+.topbar { display: flex; align-items: center; gap: 10px; padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 0; color: var(--dusk); }
 .topbar h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
 .lang { margin-left: auto; display: flex; padding: 3px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
 .lang button { min-width: 40px; min-height: 32px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; font-size: 0.82rem; font-weight: 800; color: var(--muted); cursor: pointer; }

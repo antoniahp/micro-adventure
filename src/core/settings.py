@@ -90,12 +90,13 @@ X_FRAME_OPTIONS = "DENY"  # nobody can put the app inside an <iframe> on another
 
 # What the browser is allowed to load, for both faces of this app (the React client and the Django admin).
 # style-src needs 'unsafe-inline': React sets style={{...}} directly, all over the web client.
-# script-src/connect-src/frame-src allow accounts.google.com: it's the optional "Sign in with Google" button
-# (Google's own script, called from the page, opening Google's own popup) — nothing else is added for it.
+# script-src/style-src/connect-src/frame-src allow accounts.google.com: it's the optional "Sign in with
+# Google" button (Google's own script and the stylesheet it injects for that button) — nothing else is
+# added for it.
 CONTENT_SECURITY_POLICY = (
     "default-src 'self'; "
     "script-src 'self' https://accounts.google.com; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; "
     "font-src 'self' https://fonts.gstatic.com; "
     "img-src 'self' data: blob:; "
     "connect-src 'self' https://accounts.google.com; "
