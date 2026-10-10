@@ -91,3 +91,22 @@ class RateLimitMiddleware:
             response.headers["Retry-After"] = str(retry_after)
             return response
         return self.get_response(request)
+
+
+class ContentSecurityPolicyMiddleware:
+    """Tells the browser which sites the page may load things from, so an injected script could not call
+    out to one of its own. Applies to every response; the header does nothing on a JSON reply.
+
+    Covers both faces of this app: the React web client (Google Fonts, and inline `style={...}` which React
+    writes everywhere, and the `blob:` URL used to preview a photo before it is sent) and the Django admin
+    (no inline script or style in its templates, so it needs nothing extra).
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response.headers["Content-Security-Policy"] = settings.CONTENT_SECURITY_POLICY
+        return response
+
