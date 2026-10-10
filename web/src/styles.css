@@ -101,7 +101,7 @@ h3 { font-size: 1.15rem; font-weight: 800; }
 .field { display: grid; gap: 8px; }
 .field label { font-weight: 800; }
 textarea {
-  width: 100%; padding: 14px; resize: vertical; min-height: 110px;
+  width: 100%; padding: 14px; resize: none; min-height: 110px; max-height: 220px; overflow-y: auto; /* a long text scrolls inside the box instead of the box (and the page) growing */
   border: 2px solid var(--line); border-radius: 14px; background: var(--paper); line-height: 1.45;
 }
 input[type="text"], input[type="number"] {
@@ -170,7 +170,9 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
 @keyframes pulse { 50% { opacity: 0.3; } }
 /* overflow-wrap: a long word with no spaces (a transcription glitch, a word in another script) must
    still break instead of stretching the page sideways. */
-.entry-story { margin: 0; padding: 4px 0 4px 12px; border-left: 3px solid var(--c); color: var(--ink); font-size: 1rem; overflow-wrap: anywhere; }
+/* max-height + overflow-y: a story can be up to 2000 characters; past a few lines it scrolls inside its own box
+   instead of pushing the rest of the card (and the buttons under it) far down the page. */
+.entry-story { margin: 0; padding: 4px 8px 4px 12px; border-left: 3px solid var(--c); color: var(--ink); font-size: 1rem; overflow-wrap: anywhere; white-space: pre-line; max-height: 10.5em; overflow-y: auto; overscroll-behavior: contain; }
 
 /* ---------- Notebook ---------- */
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -236,6 +238,7 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
    actually render, or an extra tab (like Ajustes) falls onto a second row instead of lining up. */
 .tabs { position: sticky; bottom: 0; display: flex; padding-bottom: env(safe-area-inset-bottom); background: var(--paper); border-top: 1px solid var(--line); }
 .tabs button { flex: 1 1 0; min-width: 0; display: grid; justify-items: center; gap: 2px; min-height: 56px; padding: 8px 4px; border: 0; background: transparent; font-size: 0.78rem; font-weight: 700; color: var(--muted); cursor: pointer; }
+@media (max-width: 360px) { .tabs button { font-size: 0.68rem; padding-inline: 2px; } } /* five labels fit side by side on the narrowest phones */
 .tabs button.active { color: var(--dusk); box-shadow: inset 0 3px 0 var(--sun); }
 
 @media (prefers-reduced-motion: reduce) {
