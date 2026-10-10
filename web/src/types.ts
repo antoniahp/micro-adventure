@@ -102,3 +102,8 @@ export type Reminders = {
   has_place: boolean; // the reminder tells the weather where the person is
   telegram_available: boolean; // false when the server has no bot
 };
+
+export type Account = {
+  nickname: string | null;
+  google_linked: boolean;
+};

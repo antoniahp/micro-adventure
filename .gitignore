@@ -13,3 +13,5 @@ dist/
 # Local secrets: never commit these (sample.env is the template that is committed)
 local.env
 *.local.env
+web/.env.local
+web/.env.*.local

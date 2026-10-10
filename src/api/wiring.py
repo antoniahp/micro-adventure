@@ -10,6 +10,12 @@ from microadventures.infrastructure.api.met_norway_weather_service import MetNor
 from microadventures.infrastructure.api.open_meteo_weather_service import OpenMeteoWeatherService
 
 from microadventures.application.commands.claim_account.claim_account_command_handler import ClaimAccountCommandHandler
+from microadventures.application.commands.set_nickname.set_nickname_command_handler import SetNicknameCommandHandler
+from microadventures.application.commands.link_google_account.link_google_account_command_handler import LinkGoogleAccountCommandHandler
+from microadventures.application.commands.unlink_google_account.unlink_google_account_command_handler import UnlinkGoogleAccountCommandHandler
+from microadventures.application.queries.find_account.find_account_query_handler import FindAccountQueryHandler
+from microadventures.domain.services.google_identity_verifier import GoogleIdentityVerifier
+from microadventures.infrastructure.google_id_token_verifier import GoogleIdTokenVerifier
 from microadventures.application.commands.complete_challenge.complete_challenge_command_handler import CompleteChallengeCommandHandler
 from microadventures.application.commands.save_weekly_reflection.save_weekly_reflection_command_handler import SaveWeeklyReflectionCommandHandler
 from microadventures.application.queries.find_progress.find_progress_query_handler import FindProgressQueryHandler
@@ -106,6 +112,26 @@ def _account_repository() -> AccountService:
 
 def claim_account_handler() -> ClaimAccountCommandHandler:
     return ClaimAccountCommandHandler(account_service=_account_repository())
+
+
+def _google_identity_verifier() -> GoogleIdentityVerifier:
+    return GoogleIdTokenVerifier()
+
+
+def find_account_handler() -> FindAccountQueryHandler:
+    return FindAccountQueryHandler(account_service=_account_repository())
+
+
+def set_nickname_handler() -> SetNicknameCommandHandler:
+    return SetNicknameCommandHandler(account_service=_account_repository())
+
+
+def link_google_account_handler() -> LinkGoogleAccountCommandHandler:
+    return LinkGoogleAccountCommandHandler(account_service=_account_repository(), verifier=_google_identity_verifier())
+
+
+def unlink_google_account_handler() -> UnlinkGoogleAccountCommandHandler:
+    return UnlinkGoogleAccountCommandHandler(account_service=_account_repository())
 
 
 def _reminder_repository() -> ReminderService:

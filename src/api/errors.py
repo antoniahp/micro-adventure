@@ -1,6 +1,7 @@
 from ninja import NinjaAPI
 
 from microadventures.domain.exceptions.account_already_claimed_exception import AccountAlreadyClaimedException
+from microadventures.domain.exceptions.invalid_google_token_exception import InvalidGoogleTokenException
 from microadventures.domain.exceptions.challenge_already_completed_exception import ChallengeAlreadyCompletedException
 from microadventures.domain.exceptions.challenge_generation_failed_exception import ChallengeGenerationFailedException
 from microadventures.domain.exceptions.challenge_not_found_exception import ChallengeNotFoundException
@@ -21,6 +22,7 @@ from microadventures.domain.exceptions.weather_unavailable_exception import Weat
 
 STATUS_BY_EXCEPTION = {
     AccountAlreadyClaimedException: 409,
+    InvalidGoogleTokenException: 401,
     WalkNotFoundException: 404,
     ChallengeNotFoundException: 404,
     ChallengeAlreadyCompletedException: 409,
