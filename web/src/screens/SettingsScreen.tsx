@@ -90,6 +90,7 @@ export default function SettingsScreen() {
         <h3><Icon name="user" size={20} /> {t("account.nickname.title")}</h3>
         <input
           type="text"
+          maxLength={50} // same limit as the backend (Account.nickname), so a long name can't reach a vague 422
           value={nickname}
           placeholder={t("account.nickname.placeholder")}
           onChange={(e) => setNicknameField(e.target.value)}
