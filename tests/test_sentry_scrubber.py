@@ -19,3 +19,10 @@ def test_events_without_secrets_stay_the_same():
     event = {"message": "hello", "tags": [("a", 1)]}
 
     assert before_send(event, {}) == event
+
+
+def test_logs_are_scrubbed_too():
+    from core.sentry_scrubber import before_send_log
+
+    log = {"body": "POST https://api.telegram.org/bot123:abc-DEF/sendMessage failed", "attributes": {}}
+    assert "abc-DEF" not in before_send_log(log, {})["body"]

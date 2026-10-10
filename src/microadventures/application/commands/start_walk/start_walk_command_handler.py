@@ -46,6 +46,10 @@ class StartWalkCommandHandler:
             challenges=self.challenge_generator.generate(brief),
         )
         self.walk_service.save(walk)
+        logger.info(
+            "🥾 Walk started: %s min, mood=%s, %d challenges from %s, conditions=%s",
+            walk.minutes, walk.mood, len(walk.challenges), {c.source for c in walk.challenges}, walk.conditions or "none",
+        )
 
     def _conditions(self, command: StartWalkCommand) -> Conditions:
         """What the weather and the hour ask of this walk. Without a place, or if the weather fails, nothing special."""
@@ -55,7 +59,7 @@ class StartWalkCommandHandler:
         try:
             return Conditions.from_weather(self.weather_service.at(command.latitude, command.longitude), now)
         except WeatherUnavailableException as error:
-            logger.warning("Walk without weather: %s", error)
+            logger.warning("🌫️ Walk without weather: %s", error)
             return Conditions()
 
     @staticmethod

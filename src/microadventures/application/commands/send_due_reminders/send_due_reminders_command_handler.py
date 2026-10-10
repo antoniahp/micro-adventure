@@ -30,11 +30,12 @@ class SendDueRemindersCommandHandler:
             try:
                 self.notification_sender.send_card(settings.telegram_chat_id, self._card(settings, command))
             except NotificationFailedException as error:
-                logger.warning("Reminder for %s not sent: %s", settings.user_id, error)  # tried again at the next call
+                logger.warning("📭 Reminder for %s not sent: %s", settings.user_id, error)  # tried again at the next call
                 continue
             settings.mark_sent(command.now)
             self.reminder_service.save(settings)
             sent += 1
+            logger.info("🔔 Reminder sent to %s (weather: %s)", settings.user_id, "yes" if settings.has_place else "no")
         return sent
 
     def _card(self, settings: ReminderSettings, command: SendDueRemindersCommand):
@@ -48,5 +49,5 @@ class SendDueRemindersCommandHandler:
         try:
             return self.weather_service.at(settings.latitude, settings.longitude)
         except WeatherUnavailableException as error:
-            logger.warning("Reminder for %s without weather: %s", settings.user_id, error)
+            logger.warning("🌫️ Reminder for %s without weather: %s", settings.user_id, error)
             return None
