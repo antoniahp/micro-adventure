@@ -1,5 +1,8 @@
 # Render Blueprint: one web service with the API, the admin and the web client.
-# Render > New > Blueprint > pick this repository. Secrets marked "sync: false" are asked for in the dashboard.
+# Render > New > Blueprint > pick this repository.
+# Every value is set in the Render dashboard (Environment), never here: a variable marked "sync: false" is only asked for
+# when the service is created and later syncs of this file never overwrite it. Do not add "value:" lines for them.
+# The defaults when a variable is missing are in src/core/settings.py.
 services:
   - type: web
     name: micro-adventure
@@ -14,8 +17,8 @@ services:
         generateValue: true
       - key: MONGODB_URI # the Atlas connection string (mongodb+srv://...)
         sync: false
-      - key: MONGODB_DB
-        value: micro_adventure
+      - key: MONGODB_DB # micro_adventure
+        sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: TELEGRAM_BOT_USERNAME
@@ -24,18 +27,20 @@ services:
         sync: false
       - key: SENTRY_DSN
         sync: false
-      - key: SENTRY_ENVIRONMENT
-        value: production
+      - key: SENTRY_ENVIRONMENT # production
+        sync: false
       - key: ELEVENLABS_API_KEY
         sync: false
-      # Leave OLLAMA_URL out until the GPU Droplet exists: the app then answers with its template challenges.
-      - key: OLLAMA_URL
+      # Ollama Cloud. The model names must exist there: a wrong one gives a 404 and every challenge falls back to the templates.
+      - key: OLLAMA_URL # https://ollama.com
         sync: false
-      - key: OLLAMA_API_KEY # the key the GPU server's proxy expects (printed by scripts/gpu-droplet-setup.sh)
+      - key: OLLAMA_API_KEY # your Ollama API key (ollama.com/settings/keys)
         sync: false
-      - key: OLLAMA_MODEL
-        value: gemma3:latest
-      - key: OLLAMA_TIMEOUT_SECONDS
-        value: "60"
-      - key: PHOTO_VERIFIER
-        value: ollama # Gemma looks at the photo; "trusting" accepts everything
+      - key: OLLAMA_MODEL # gemma4:31b
+        sync: false
+      - key: OLLAMA_VISION_MODEL # gemma4:31b
+        sync: false
+      - key: OLLAMA_TIMEOUT_SECONDS # 60
+        sync: false
+      - key: PHOTO_VERIFIER # ollama (Gemma checks the photo) or trusting (accepts everything)
+        sync: false
