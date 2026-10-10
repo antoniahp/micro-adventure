@@ -24,6 +24,7 @@ body {
   line-height: 1.5;
   color: var(--ink);
   background: var(--mist);
+  overflow-x: hidden; /* a safety net: no single stray element should ever push the whole page sideways */
 }
 
 button, input, textarea { font: inherit; color: inherit; }
@@ -36,6 +37,7 @@ legend { padding: 0; margin-bottom: 8px; font-size: 0.9rem; font-weight: 700; co
 .app { max-width: 480px; min-height: 100dvh; margin: 0 auto; display: flex; flex-direction: column; }
 main { flex: 1; padding: 12px 20px 32px; }
 section { position: relative; display: grid; gap: 22px; align-content: start; }
+section > * { min-width: 0; } /* a grid child's default min-width is its content's, so one long unbroken word could still widen the column */
 
 .topbar { display: flex; align-items: center; gap: 10px; padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 0; color: var(--dusk); }
 .topbar h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
@@ -166,7 +168,9 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
 .btn-record { background: var(--coral); color: #fff; }
 .recording svg { animation: pulse 1s infinite; }
 @keyframes pulse { 50% { opacity: 0.3; } }
-.entry-story { margin: 0; padding: 4px 0 4px 12px; border-left: 3px solid var(--c); color: var(--ink); font-size: 1rem; }
+/* overflow-wrap: a long word with no spaces (a transcription glitch, a word in another script) must
+   still break instead of stretching the page sideways. */
+.entry-story { margin: 0; padding: 4px 0 4px 12px; border-left: 3px solid var(--c); color: var(--ink); font-size: 1rem; overflow-wrap: anywhere; }
 
 /* ---------- Notebook ---------- */
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
