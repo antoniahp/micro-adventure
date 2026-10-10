@@ -6,7 +6,7 @@ const MAX_SWAPS_PER_WALK = 2; // same rule as the backend (Walk.MAX_SWAPS_PER_WA
 export { MAX_SWAPS_PER_WALK };
 
 class ApiError extends Error {
-  constructor(message: string, public status: number) {
+  constructor(message: string, public status: number, public detail = "") {
     super(message);
   }
 }
@@ -23,7 +23,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T | undefin
   const response = await fetch(`/api${path}`, init);
   if (!response.ok) {
     // The backend's messages are for developers; the person gets one in their language.
-    throw new ApiError(friendlyMessage(response.status), response.status);
+    // Only the detail is kept apart: a few screens use it (the reason a photo was rejected).
+    const detail = await response.json().then((body) => (typeof body?.detail === "string" ? body.detail : ""), () => "");
+    throw new ApiError(friendlyMessage(response.status), response.status, detail);
   }
   return response.status === 204 ? undefined : response.json();
 }
@@ -68,6 +70,9 @@ async function shrinkPhoto(file: File): Promise<File> {
   }
 }
 
+// Start of the backend message when the model rejects a photo (PhotoRejectedException); what follows is the reason.
+const REJECTED_PREFIX = "The photo does not match the challenge:";
+
 export async function completeChallenge(walkId: string, challengeId: string, answer: { photo?: File; story?: string }) {
   const form = new FormData();
   if (answer.photo) form.append("photo", await shrinkPhoto(answer.photo));
@@ -76,7 +81,10 @@ export async function completeChallenge(walkId: string, challengeId: string, ans
     await request(`/walks/${walkId}/challenges/${challengeId}/complete`, { method: "POST", body: form });
   } catch (e) {
     // Here a 422 means the photo or the words did not fit the challenge.
-    if (e instanceof ApiError && e.status === 422) throw new ApiError(translate("error.rejected"), 422);
+    if (e instanceof ApiError && e.status === 422) {
+      const reason = e.detail.startsWith(REJECTED_PREFIX) ? e.detail.slice(REJECTED_PREFIX.length).trim().replace(/[.\s]+$/, "") : "";
+      throw new ApiError(reason ? translate("error.rejectedWhy", { reason }) : translate("error.rejected"), 422);
+    }
     if (e instanceof ApiError && (e.status === 502 || e.status === 503)) throw new ApiError(translate("error.photoCheck"), e.status);
     throw e;
   }
