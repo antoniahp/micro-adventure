@@ -3,6 +3,12 @@
 
 FROM node:22-alpine AS web
 WORKDIR /web
+# Vite bakes this into the built JS at compile time, so it has to arrive as a build argument, not a
+# runtime environment variable. It's the public Google OAuth client id, not a secret - it's visible in
+# every browser request, so a plain build ARG is fine. Render turns any dashboard env var of this name
+# into a build argument automatically (see "Using Secrets with Docker" in Render's docs for actual secrets).
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 COPY web/package.json web/package-lock.json* ./
 RUN npm install --no-audit --no-fund
 COPY web ./
