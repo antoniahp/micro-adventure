@@ -235,3 +235,22 @@ def test_the_templates_can_fill_the_longest_walk():
     brief = ChallengeBrief(mood=Mood.ACTIVE, minutes=120, weather="clear", count=10)
 
     assert len(TemplateChallengeGenerator().generate(brief)) == 10
+
+
+def test_a_hosted_model_is_not_warmed_up_because_it_is_always_loaded():
+    http = FakeHttp("")
+
+    OllamaChallengeGenerator("https://ollama.com", "gemma", http=http).warm_up()
+
+    assert http.requests == []
+
+
+def test_challenges_are_asked_for_without_thinking_first():
+    http = FakeHttp('{"challenges": []}')
+
+    try:
+        OllamaChallengeGenerator("http://ollama", "gemma", http=http).generate(ChallengeBrief(mood=Mood.CALM, minutes=30, weather="clear", count=1))
+    except Exception:
+        pass  # an empty answer is a failure: only the request matters here
+
+    assert http.requests[0][1]["think"] is False

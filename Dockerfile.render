@@ -19,4 +19,5 @@ COPY src ./src
 COPY --from=web /web/dist ./web_dist
 
 # Applies migrations, collects the admin's static files and starts gunicorn on the port Render gives us.
-CMD ["sh", "-c", "python src/manage.py migrate && python src/manage.py collectstatic --noinput && gunicorn --chdir src core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --timeout 120 --access-logfile -"]
+# One process with 8 threads: a slow call to the model (a photo, a walk) must not block every other request, health checks included.
+CMD ["sh", "-c", "python src/manage.py migrate && python src/manage.py collectstatic --noinput && gunicorn --chdir src core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 1 --threads 8 --timeout 120 --access-logfile -"]

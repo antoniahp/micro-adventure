@@ -37,6 +37,7 @@ class OllamaChallengeGenerator(ChallengeGenerator):
                     "prompt": prompt,
                     "format": "json",
                     "stream": False,
+                    "think": False,  # challenges are short: reasoning first only makes the walk slower and can eat the token budget
                     "keep_alive": "30m",
                     "options": {"temperature": 0.8, "num_predict": TOKENS_PER_CHALLENGE * brief.count},
                 },
@@ -49,6 +50,9 @@ class OllamaChallengeGenerator(ChallengeGenerator):
 
 
     def warm_up(self) -> None:
+        # A hosted model (ollama.com) is always loaded: calling it would only keep a server worker waiting.
+        if "ollama.com" in self.base_url:
+            return
         # A request without a prompt only loads the model into memory and keeps it there.
         response = self.http.post(
             f"{self.base_url}/api/generate",
