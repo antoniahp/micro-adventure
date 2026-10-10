@@ -3,7 +3,7 @@ from pathlib import Path
 
 import sentry_sdk
 
-from core.sentry_scrubber import before_send
+from core.sentry_scrubber import before_send, before_send_log
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -113,7 +113,17 @@ if dsn := os.environ.get("SENTRY_DSN"):
         send_default_pii=False,
         before_send=before_send,
         before_send_transaction=before_send,  # the Telegram URL (with the bot token) shows up in spans
+        enable_logs=True,  # Python logging (warnings and errors) also goes to Sentry Logs
+        before_send_log=before_send_log,
     )
+
+# The app's own messages (INFO and up) go to the console and, with enable_logs, to Sentry Logs.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "loggers": {"microadventures": {"handlers": ["console"], "level": "INFO"}},
+}
 
 # --- Reminders by Telegram ---
 # The bot is made with @BotFather. Without a token the app works and just cannot send reminders.

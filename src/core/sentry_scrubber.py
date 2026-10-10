@@ -33,3 +33,8 @@ def scrub(value):
 def before_send(event, hint):
     """Used for errors and for traces (their spans hold the outgoing URLs)."""
     return scrub(event)
+
+
+def before_send_log(log, hint):
+    """Used for Sentry Logs: the message and its attributes can hold the same URLs."""
+    return scrub(log)

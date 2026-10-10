@@ -1,3 +1,4 @@
+import logging
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -8,6 +9,7 @@ from microadventures.domain.models.weather import Sky, Weather
 from microadventures.domain.services.weather_service import WeatherService
 
 URL = "https://api.open-meteo.com/v1/forecast"
+logger = logging.getLogger(__name__)
 CACHE_SECONDS = 600  # the weather barely changes in ten minutes, and the service is free: be kind to it
 
 
@@ -26,6 +28,7 @@ class OpenMeteoWeatherService(WeatherService):
         if cached and self.clock() - cached[0] < CACHE_SECONDS:
             return cached[1]
         weather = self._fetch(*place)
+        logger.info("🌤️ Weather at %s: %s, %.0f°C", place, weather.sky.value, weather.temperature_c)
         self._cache[place] = (self.clock(), weather)
         return weather
 
@@ -41,12 +44,14 @@ class OpenMeteoWeatherService(WeatherService):
                     "timezone": "auto",
                     "forecast_days": 1,
                 },
+                headers={"User-Agent": "MicroAdventures/1.0 (+https://micro-adventure.onrender.com)"},
                 timeout=self.timeout_seconds,
             )
             response.raise_for_status()
             return _parse(response.json())
         except (requests.RequestException, ValueError, KeyError, IndexError, TypeError) as error:
-            raise WeatherUnavailableException(type(error).__name__) from error
+            status = getattr(getattr(error, "response", None), "status_code", None)
+            raise WeatherUnavailableException(f"{type(error).__name__} {status}" if status else type(error).__name__) from error
 
 
 def _parse(body: dict) -> Weather:

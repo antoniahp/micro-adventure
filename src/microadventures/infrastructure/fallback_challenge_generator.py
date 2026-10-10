@@ -18,11 +18,11 @@ class FallbackChallengeGenerator(ChallengeGenerator):
         try:
             return self.primary.generate(brief)
         except Exception:
-            logger.exception("Primary challenge generator failed, using the fallback")
+            logger.exception("🧩 Primary challenge generator failed, using the template fallback")
             return self.fallback.generate(brief)
 
     def warm_up(self) -> None:
         try:
             self.primary.warm_up()
         except Exception:
-            logger.warning("Primary challenge generator could not warm up", exc_info=True)
+            logger.warning("😴 Primary challenge generator could not warm up", exc_info=True)

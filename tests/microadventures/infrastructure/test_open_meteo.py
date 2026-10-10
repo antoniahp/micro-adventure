@@ -19,7 +19,7 @@ class FakeGet:
         self.body, self.error, self.status_code = body or ANSWER, error, status_code
         self.calls = []
 
-    def get(self, url, params, timeout):
+    def get(self, url, params, timeout, headers=None):
         self.calls.append((url, params))
         if self.error:
             raise self.error
