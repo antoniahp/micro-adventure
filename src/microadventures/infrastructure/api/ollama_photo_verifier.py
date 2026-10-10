@@ -19,8 +19,14 @@ class OllamaPhotoVerifier(PhotoVerifier):
 
     def verify(self, challenge: Challenge, photo: bytes) -> PhotoVerdict:
         prompt = (
-            f'Reto de paseo: "{challenge.text}". ¿La foto cumple el reto? '
-            'Responde solo con JSON: {"accepted": true o false, "reason": "motivo en pocas palabras"}'
+            "Eres un revisor estricto de retos de paseo al aire libre. "
+            f'Reto: "{challenge.text}"\n'
+            "Primero describe en una frase qué se ve realmente en la foto. "
+            "Después decide: acepta solo si lo que se ve es lo que pide el reto (por ejemplo, un reto de árbol "
+            "exige un árbol o una planta). Rechaza fotos de interiores, pantallas, teclados, objetos que no "
+            "tienen que ver con el reto, fotos borrosas o sin contenido. Ante la duda, rechaza.\n"
+            'Responde solo con JSON: {"seen": "lo que se ve", "accepted": true o false, '
+            '"reason": "motivo en pocas palabras, en español"}'
         )
         try:
             with traced_model_call("verify_photo", self.model, prompt) as span:

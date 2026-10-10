@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { completeChallenge, finishWalk, getWalk, MAX_SWAPS_PER_WALK, swapChallenge } from "../api";
+import { completeChallenge, finishWalk, getProgress, getWalk, MAX_SWAPS_PER_WALK, swapChallenge } from "../api";
 import FinishForm, { type FinishData } from "../components/FinishForm";
 import Icon from "../components/Icon";
 import Loader from "../components/Loader";
+import { stickerWords, type Sticker } from "../components/stickerWords";
 import StoryForm from "../components/StoryForm";
 import { useI18n, type TextKey } from "../i18n";
 import type { Challenge, Walk } from "../types";
-import { CATEGORIES, FALLBACK_CATEGORY } from "../ui";
+import { getUserId } from "../storage";
+import { CATEGORIES, FALLBACK_CATEGORY, LIGHT_STICKER_COLORS, STICKER_FAMILIES, STICKER_ICONS } from "../ui";
 
 type Props = { walkId: string; onFinished: () => void; onOpenNotebook: () => void };
 
@@ -23,6 +25,8 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const [view, setView] = useState<"challenges" | "done" | "tell">("challenges");
   const [finishBusy, setFinishBusy] = useState(false);
   const [finishError, setFinishError] = useState("");
+  const [before, setBefore] = useState<Set<string> | null>(null); // stickers already earned when the walk was opened
+  const [earned, setEarned] = useState<{ sticker: Sticker; level: number }[]>([]); // stickers this walk has just won
 
   // useEffect runs after the screen is drawn. Here: load the walk once per walkId.
   useEffect(() => {
@@ -32,6 +36,11 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
         if (loaded.challenges.every((c) => c.status === "completed")) setView("done"); // coming back to a finished walk
       })
       .catch((e: Error) => setLoadError(e.message));
+  }, [walkId]);
+
+  // What the person had before this walk: whatever is new afterwards was won now.
+  useEffect(() => {
+    getProgress(getUserId()).then((p) => setBefore(new Set(p.stickers))).catch(() => setBefore(null));
   }, [walkId]);
 
   // Each screen starts at the top.
@@ -58,12 +67,27 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
     }
   }
 
+  async function findNewStickers() {
+    if (!before) return;
+    try {
+      const now = await getProgress(getUserId());
+      setEarned(
+        now.sticker_book
+          .map((sticker) => ({ sticker, level: now.sticker_book.filter((o) => o.family === sticker.family).findIndex((o) => o.code === sticker.code) }))
+          .filter(({ sticker }) => sticker.unlocked && !before.has(sticker.code)),
+      );
+    } catch {
+      /* the badges are a bonus: never block the walk for them */
+    }
+  }
+
   async function saveFinish(data: FinishData) {
     setFinishBusy(true);
     setFinishError("");
     try {
       await finishWalk(walkId, data);
       setWalk(await getWalk(walkId));
+      await findNewStickers();
       setView("done");
     } catch (e) {
       setFinishError((e as Error).message);
@@ -117,6 +141,25 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
           <h2>{allDone ? t("walk.finishedTitle") : t("walk.endedTitle")}</h2>
           <p className="hint">{allDone && walk.swaps_used === 0 ? t("walk.finishedPerfect") : t("walk.finishedNormal")}</p>
         </div>
+
+        {earned.length > 0 && (
+          <div className="unlocked" role="status">
+            <strong>{t(earned.length === 1 ? "done.unlockedOne" : "done.unlocked")}</strong>
+            <ul>
+              {earned.map(({ sticker, level }) => {
+                const family = STICKER_FAMILIES[sticker.family] ?? { icon: "star" as const, color: "#10A878" };
+                const color = family.color;
+                return (
+                  <li key={sticker.code} style={{ "--c": color, "--on": LIGHT_STICKER_COLORS.has(color) ? "#1d1b3a" : "#fff" } as React.CSSProperties}>
+                    <span className="sticker-art"><Icon name={STICKER_ICONS[sticker.code] ?? family.icon} size={24} /></span>
+                    {stickerWords(t, sticker, level).name}
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="hint">{t("done.keepGoing")}</p>
+          </div>
+        )}
 
         <dl className="done-stats">
           {stats.map((stat) => (

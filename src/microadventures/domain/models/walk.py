@@ -40,10 +40,11 @@ class Walk(models.Model):
                 return challenge
         raise ChallengeNotFoundException(self.id, challenge_id)
 
-    def complete_challenge(self, challenge_id: UUID, story: str = "") -> None:
+    def complete_challenge(self, challenge_id: UUID, story: str = "", with_photo: bool = False) -> None:
         challenge = self.find_challenge(challenge_id)
         challenge.status = ChallengeStatus.COMPLETED
         challenge.story = story
+        challenge.with_photo = with_photo
 
     def finish(self, walked_minutes: int | None = None, distance_km: float | None = None, diary: str = "") -> None:
         """Closes the walk with what the person says about it. Telling it again replaces what they said before."""

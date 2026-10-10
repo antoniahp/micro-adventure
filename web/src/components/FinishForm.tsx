@@ -23,13 +23,18 @@ export default function FinishForm({ busy, error, skipLabel, initial, onSubmit, 
   const [diary, setDiary] = useState(initial?.diary ?? "");
   const voice = useVoiceNote((spoken) => setDiary((current) => (current ? `${current} ${spoken}` : spoken)));
 
+  const [problem, setProblem] = useState("");
   const disabled = busy || voice.recording || voice.transcribing;
 
   function submit() {
     const walkedMinutes = toNumber(minutes);
+    const distance = toNumber(km);
+    if (walkedMinutes !== null && (walkedMinutes < 1 || walkedMinutes > 720)) return setProblem(t("finish.badMinutes"));
+    if (distance !== null && distance > 200) return setProblem(t("finish.badKm"));
+    setProblem("");
     onSubmit({
       walkedMinutes: walkedMinutes === null ? null : Math.round(walkedMinutes),
-      distanceKm: toNumber(km),
+      distanceKm: distance,
       diary: diary.trim(),
     });
   }
@@ -64,7 +69,7 @@ export default function FinishForm({ busy, error, skipLabel, initial, onSubmit, 
         <p className="hint"><span className="count">{diary.length}/{MAX_DIARY}</span></p>
       </div>
 
-      {(voice.error || error) && <p className="error" role="alert">{voice.error || error}</p>}
+      {(problem || voice.error || error) && <p className="error" role="alert">{problem || voice.error || error}</p>}
 
       <div className="story-actions">
         {CAN_RECORD &&

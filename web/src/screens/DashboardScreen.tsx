@@ -165,15 +165,19 @@ function FeelingForm({ data, onSaved }: { data: WeeklySummary; onSaved: () => vo
   const { t } = useI18n();
   const [feeling, setFeeling] = useState<number | null>(data.feeling);
   const [note, setNote] = useState(data.feeling_note);
-  const [state, setState] = useState<"idle" | "saving" | "saved">(data.feeling ? "saved" : "idle");
+  const [state, setState] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState("");
 
   useEffect(() => {
     setFeeling(data.feeling);
     setNote(data.feeling_note);
-    setState(data.feeling ? "saved" : "idle");
     setError("");
   }, [data.week_start, data.feeling, data.feeling_note]);
+
+  useEffect(() => { setState("idle"); }, [data.week_start]);
+
+  // "Guardar" only lights up when something differs from what is already saved.
+  const dirty = feeling !== data.feeling || note !== data.feeling_note;
 
   const save = useCallback(async () => {
     if (!feeling) return;
@@ -205,10 +209,10 @@ function FeelingForm({ data, onSaved }: { data: WeeklySummary; onSaved: () => vo
       </div>
       {error && <p className="error" role="alert">{error}</p>}
       <div className="story-actions">
-        <button className="btn btn-primary" disabled={!feeling || state === "saving"} onClick={save}>
+        <button className="btn btn-primary" disabled={!feeling || !dirty || state === "saving"} onClick={save}>
           {state === "saving" ? t("dash.feeling.saving") : t("dash.feeling.save")}
         </button>
-        {state === "saved" && <span className="ok-line" role="status"><Icon name="check" size={18} /> {t("dash.feeling.saved")}</span>}
+        {state === "saved" && !dirty && <span className="ok-line" role="status"><Icon name="check" size={18} /> {t("dash.feeling.saved")}</span>}
       </div>
     </div>
   );

@@ -66,6 +66,10 @@ class WalkHistory:
         return told + sum(1 for w in self.walks if w.diary.strip())
 
     @property
+    def photos(self) -> int:
+        return sum(1 for w in self.walks for c in w.challenges if c.is_completed and c.with_photo)
+
+    @property
     def categories(self) -> Counter:
         return Counter(str(c.category) for w in self.walks for c in w.challenges if c.is_completed)
 
@@ -107,6 +111,7 @@ class WalkHistory:
             "categories": len(self.categories),
             "streak": self.longest_streak(),
             "stories": self.stories,
+            "photos": self.photos,
             "km": int(self.km),
             "minutes": self.minutes,
             **{f"category_{category}": count for category, count in self.categories.items()},

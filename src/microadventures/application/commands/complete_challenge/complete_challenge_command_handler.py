@@ -29,5 +29,5 @@ class CompleteChallengeCommandHandler:
             if not verdict.accepted:
                 raise PhotoRejectedException(verdict.reason)
 
-        walk.complete_challenge(challenge.id, story)
+        walk.complete_challenge(challenge.id, story, with_photo=photo is not None)
         self.walk_service.save(walk)

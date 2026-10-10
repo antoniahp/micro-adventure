@@ -88,7 +88,7 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
           placeholder={t("start.notePlaceholder")}
         />
         <p className="hint">
-          {t("start.noteHint")} <span className="count">{note.length}/{MAX_NOTE}</span>
+          <span className="count">{note.length}/{MAX_NOTE}</span>
         </p>
       </div>
 
