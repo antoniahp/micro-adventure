@@ -5,6 +5,8 @@ from django.conf import settings
 
 from microadventures.application.queries.find_walk_context.find_walk_context_query_handler import FindWalkContextQueryHandler
 from microadventures.domain.services.weather_service import WeatherService
+from microadventures.infrastructure.api.fallback_weather_service import FallbackWeatherService
+from microadventures.infrastructure.api.met_norway_weather_service import MetNorwayWeatherService
 from microadventures.infrastructure.api.open_meteo_weather_service import OpenMeteoWeatherService
 
 from microadventures.application.commands.complete_challenge.complete_challenge_command_handler import CompleteChallengeCommandHandler
@@ -88,7 +90,7 @@ def _reflection_repository() -> ReflectionService:
     return DbReflectionRepository()
 
 
-_weather_service_instance = OpenMeteoWeatherService()  # one for the whole server, so its short memory is shared
+_weather_service_instance = FallbackWeatherService(OpenMeteoWeatherService(), MetNorwayWeatherService())  # one for the whole server, so its short memory is shared
 
 
 def _weather_service() -> WeatherService:

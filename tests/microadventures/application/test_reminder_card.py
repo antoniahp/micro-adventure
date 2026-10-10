@@ -203,3 +203,13 @@ def test_changing_the_schedule_cancels_a_pending_snooze():
     reminder.change(True, "19:00", "11:00", "Europe/Madrid", Language.ES)
 
     assert reminder.snoozed_until is None
+
+
+def test_after_dark_the_picture_is_the_night_one():
+    assert _card(a_weather(), now=FRIDAY_21_00).photo_url == f"{APP_URL}/reminder-night.png"
+    assert _card(a_weather()).photo_url == f"{APP_URL}/reminder-weekday.png"
+
+
+def test_without_the_weather_the_late_evening_still_gets_the_night_picture():
+    assert _card(None, now=datetime(2026, 10, 9, 21, 53, tzinfo=timezone.utc)).photo_url.endswith("reminder-night.png")  # 23:53 in Madrid
+    assert _card(None, now=SATURDAY_11_30, weekend=True).photo_url.endswith("reminder-weekend.png")

@@ -9,7 +9,7 @@ function formatLight(minutes: number) {
 }
 
 function clock(iso: string) {
-  return iso.slice(11, 16); // the sun time arrives in the local time of the place: "2026-10-09T19:42:00+02:00"
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); // shown in the time of the phone, which is where the person is
 }
 
 export type ContextState =
