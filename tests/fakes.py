@@ -1,5 +1,9 @@
 from copy import deepcopy
+from dataclasses import dataclass
 from uuid import UUID
+
+from microadventures.domain.exceptions.invalid_google_token_exception import InvalidGoogleTokenException
+from microadventures.domain.services.google_identity_verifier import GoogleIdentityVerifier
 
 from microadventures.domain.models.challenge import Challenge
 from microadventures.domain.models.challenge_brief import ChallengeBrief
@@ -140,12 +144,53 @@ class InMemoryReflectionRepository(ReflectionService):
         return [deepcopy(r) for r in self.reflections if r.user_id == user_id]
 
 
+@dataclass
+class _FakeAccount:
+    user_id: str
+    nickname: str | None = None
+    google_sub: str | None = None
+
+
 class InMemoryAccountRepository(AccountService):
     def __init__(self):
         self.claimed: set[str] = set()
+        self.accounts: dict[str, _FakeAccount] = {}
 
     def claim(self, user_id: str) -> bool:
         if user_id in self.claimed:
             return False
         self.claimed.add(user_id)
+        self.accounts[user_id] = _FakeAccount(user_id=user_id)
         return True
+
+    def find_by_user_id(self, user_id: str) -> _FakeAccount | None:
+        return self.accounts.get(user_id)
+
+    def set_nickname(self, user_id: str, nickname: str | None) -> None:
+        self.accounts.setdefault(user_id, _FakeAccount(user_id=user_id)).nickname = nickname
+
+    def find_by_google_sub(self, google_sub: str) -> _FakeAccount | None:
+        return next((a for a in self.accounts.values() if a.google_sub == google_sub), None)
+
+    def link_google(self, user_id: str, google_sub: str, google_email: str) -> None:
+        # google_email isn't kept, even in memory here: nothing downstream of the repository reads
+        # it back (the real one stores only a one-way hash — see core/email_hash.py).
+        self.accounts.setdefault(user_id, _FakeAccount(user_id=user_id)).google_sub = google_sub
+
+    def unlink_google(self, user_id: str) -> None:
+        account = self.accounts.get(user_id)
+        if account:
+            account.google_sub = None
+
+
+class FakeGoogleIdentityVerifier(GoogleIdentityVerifier):
+    """Treats each id_token as a literal "sub:email" pair, except ones registered as invalid."""
+
+    def __init__(self):
+        self.invalid: set[str] = set()
+
+    def verify(self, id_token: str) -> tuple[str, str]:
+        if id_token in self.invalid or ":" not in id_token:
+            raise InvalidGoogleTokenException()
+        sub, email = id_token.split(":", 1)
+        return sub, email

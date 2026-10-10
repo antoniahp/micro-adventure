@@ -14,6 +14,9 @@ ADMIN_URL = os.environ.get("ADMIN_URL", "admin").strip("/")
 DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
 # "*" only as a local-development fallback; Render needs its own value set, e.g. micro-adventure.onrender.com.
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+# Optional: the OAuth client id from Google Cloud Console. Empty means "Sign in with Google" stays off —
+# the button still shows, but linking fails with a clear error instead of a broken script.
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 INSTALLED_APPS = [
     # Django admin and its dependencies, with MongoDB-ready AppConfigs (see core/apps.py).
@@ -29,6 +32,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",  # blocks the app being framed by another site
+    "core.middleware.ContentSecurityPolicyMiddleware",  # tells the browser which sources of script/style/etc. to trust
     "core.middleware.MaxBodySizeMiddleware",  # refuses an oversized body before Django reads any of it
     "core.middleware.RateLimitMiddleware",  # caps requests per IP, tighter on the routes that call Gemma/ElevenLabs
     "whitenoise.middleware.WhiteNoiseMiddleware",  # serves the admin CSS in production
@@ -83,6 +87,24 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 X_FRAME_OPTIONS = "DENY"  # nobody can put the app inside an <iframe> on another site (clickjacking)
+
+# What the browser is allowed to load, for both faces of this app (the React client and the Django admin).
+# style-src needs 'unsafe-inline': React sets style={{...}} directly, all over the web client.
+# script-src/connect-src/frame-src allow accounts.google.com: it's the optional "Sign in with Google" button
+# (Google's own script, called from the page, opening Google's own popup) — nothing else is added for it.
+CONTENT_SECURITY_POLICY = (
+    "default-src 'self'; "
+    "script-src 'self' https://accounts.google.com; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' https://fonts.gstatic.com; "
+    "img-src 'self' data: blob:; "
+    "connect-src 'self' https://accounts.google.com; "
+    "frame-src https://accounts.google.com; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self'; "
+    "frame-ancestors 'none'"
+)
 CSRF_TRUSTED_ORIGINS = [
     origin for origin in [os.environ.get("RENDER_EXTERNAL_URL", ""), *os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")] if origin
 ]

@@ -14,3 +14,12 @@ class Account(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
     user_id = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(default=django_timezone.now)
+
+    # Both optional, added so nobody has to lose their walks and badges to get them: a name the person
+    # chooses to be greeted by, and a Google identity that lets the same progress be found again from
+    # another browser or after this one's local data is gone. google_sub is Google's own opaque id for
+    # the account (not a readable personal detail, needed as-is to look the account back up); the email
+    # is a real personal detail, so only its hash is kept (core/email_hash.py) — never the address itself.
+    nickname = models.CharField(max_length=50, null=True, blank=True)
+    google_sub = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    google_email_hash = models.CharField(max_length=64, null=True, blank=True)

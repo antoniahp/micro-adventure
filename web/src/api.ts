@@ -1,7 +1,7 @@
 // All the calls to the backend live in this file. Screens never use fetch directly.
 import { currentLanguage, translate } from "./i18n";
 import { accessToken, ensureSession, renewSession } from "./session";
-import type { Mood, Place, Progress, Reminders, Walk, WalkContext, WeeklySummary, YearlySummary } from "./types";
+import type { Account, Mood, Place, Progress, Reminders, Walk, WalkContext, WeeklySummary, YearlySummary } from "./types";
 
 const MAX_SWAPS_PER_WALK = 2; // same rule as the backend (Walk.MAX_SWAPS_PER_WALK)
 export { MAX_SWAPS_PER_WALK };
@@ -198,4 +198,34 @@ export async function linkTelegram(userId: string) {
 
 export async function unlinkTelegram(userId: string) {
   await request(`/users/${userId}/telegram`, { method: "DELETE" });
+}
+
+export async function getAccount(userId: string) {
+  return (await request<Account>(`/users/${userId}/account`))!;
+}
+
+// nickname === null clears it; the app behaves exactly as before once it's gone.
+export async function setNickname(userId: string, nickname: string | null) {
+  return (await request<Account>(`/users/${userId}/account/nickname`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nickname }),
+  }))!;
+}
+
+export type GoogleLinkResult = Account & { switched: boolean; user_id: string; access: string | null; refresh: string | null };
+
+// idToken is the credential Google's own script hands back after the person picks an account.
+// When Google's identity already belonged to a different (older) account, the result says so
+// (switched: true) and carries fresh tokens for that account instead of linking this browser's own.
+export async function linkGoogleAccount(userId: string, idToken: string) {
+  return (await request<GoogleLinkResult>(`/users/${userId}/account/google/link`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id_token: idToken }),
+  }))!;
+}
+
+export async function unlinkGoogleAccount(userId: string) {
+  return (await request<Account>(`/users/${userId}/account/google/unlink`, { method: "POST" }))!;
 }

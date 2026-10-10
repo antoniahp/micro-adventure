@@ -27,6 +27,12 @@ export function accessToken(): string | null {
   return read()?.access ?? null;
 }
 
+// Used when connecting Google hands back a different, older account (its walks and badges restored):
+// this browser adopts that account's tokens and id instead of the one it had been using.
+export function adoptSession(session: Tokens & { user_id: string }) {
+  save(session);
+}
+
 // Two screens asking at once must share one request, or the second would find the id already taken.
 let pending: Promise<boolean> | null = null;
 function once(work: () => Promise<boolean>): Promise<boolean> {

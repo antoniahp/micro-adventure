@@ -3,6 +3,7 @@ from ninja import File, NinjaAPI, Schema, Status
 from ninja.files import UploadedFile
 
 from api import wiring
+from api.account.account_view import router as account_router
 from api.auth.auth_view import router as auth_router
 from api.auth.session import UserAuth
 from api.context.context_view import router as context_router
@@ -26,6 +27,7 @@ api = NinjaAPI(
     openapi_url="/openapi.json" if settings.DEBUG else None,
 )
 api.add_router("/auth", auth_router)
+api.add_router("/users", account_router)
 api.add_router("/walks", walks_router)
 api.add_router("/context", context_router)
 api.add_router("/users", progress_router)
