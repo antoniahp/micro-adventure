@@ -1,5 +1,6 @@
 from ninja import NinjaAPI
 
+from microadventures.domain.exceptions.account_already_claimed_exception import AccountAlreadyClaimedException
 from microadventures.domain.exceptions.challenge_already_completed_exception import ChallengeAlreadyCompletedException
 from microadventures.domain.exceptions.challenge_generation_failed_exception import ChallengeGenerationFailedException
 from microadventures.domain.exceptions.challenge_not_found_exception import ChallengeNotFoundException
@@ -18,6 +19,7 @@ from microadventures.domain.exceptions.walk_not_found_exception import WalkNotFo
 from microadventures.domain.exceptions.weather_unavailable_exception import WeatherUnavailableException
 
 STATUS_BY_EXCEPTION = {
+    AccountAlreadyClaimedException: 409,
     WalkNotFoundException: 404,
     ChallengeNotFoundException: 404,
     ChallengeAlreadyCompletedException: 409,
@@ -44,6 +46,8 @@ def register_error_handlers(api: NinjaAPI) -> None:
 
 def _handler_for(api: NinjaAPI, status: int):
     def handler(request, exception):
-        return api.create_response(request, {"detail": str(exception)}, status=status)
+        # What went wrong inside (a model, a provider) is for the logs. The person only gets it for 4xx.
+        detail = str(exception) if status < 500 else "Service unavailable"
+        return api.create_response(request, {"detail": detail}, status=status)
 
     return handler

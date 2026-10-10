@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import sentry_sdk
@@ -8,6 +9,8 @@ from core.sentry_scrubber import before_send, before_send_log
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+# The admin lives at /<ADMIN_URL>/. A path only you know keeps bots from trying passwords on /admin/.
+ADMIN_URL = os.environ.get("ADMIN_URL", "admin").strip("/")
 DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
@@ -124,6 +127,14 @@ LOGGING = {
     "filters": {"secrets": {"()": "core.sentry_scrubber.SecretsFilter"}},  # no key reaches the Render logs
     "handlers": {"console": {"class": "logging.StreamHandler", "filters": ["secrets"]}},
     "loggers": {"microadventures": {"handlers": ["console"], "level": "INFO"}},
+}
+
+# --- Sessions ---
+# Every browser gets an anonymous account and signed tokens (django-ninja-jwt), signed with SECRET_KEY.
+# The short access token goes in each request; the refresh token, kept by the browser, gets a new pair.
+NINJA_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
 }
 
 # --- Reminders by Telegram ---

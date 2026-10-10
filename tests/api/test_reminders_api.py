@@ -2,7 +2,7 @@ import hashlib
 import json
 
 import pytest
-from django.test import Client
+from tests.auth_helpers import signed_in
 
 from api import wiring
 from tests.fakes import InMemoryReminderRepository, InMemoryWalkRepository, SpyNotificationSender
@@ -36,7 +36,7 @@ def _webhook(client, text, chat_id=999, secret=SECRET):
 
 
 def test_someone_new_gets_the_defaults_switched_off():
-    body = Client().get("/api/users/new/reminders").json()
+    body = signed_in().get("/api/users/user-1/reminders").json()
 
     assert body == {
         "enabled": False, "weekday_time": "18:00", "weekend_time": "11:00", "timezone": "Europe/Madrid",
@@ -47,11 +47,11 @@ def test_someone_new_gets_the_defaults_switched_off():
 def test_the_app_knows_when_the_server_has_no_bot(settings):
     settings.TELEGRAM_BOT_TOKEN = ""
 
-    assert Client().get("/api/users/new/reminders").json()["telegram_available"] is False
+    assert signed_in().get("/api/users/user-1/reminders").json()["telegram_available"] is False
 
 
 def test_the_settings_are_saved():
-    client = Client()
+    client = signed_in()
 
     saved = _put(client, "user-1", {"enabled": True, "weekday_time": "19:15", "weekend_time": "10:00", "timezone": "Europe/London", "language": "en"})
 
@@ -60,7 +60,7 @@ def test_the_settings_are_saved():
 
 
 def test_a_wrong_time_or_time_zone_is_refused():
-    client = Client()
+    client = signed_in()
     ok = {"enabled": True, "weekday_time": "18:00", "weekend_time": "11:00", "timezone": "Europe/Madrid"}
 
     assert _put(client, "user-1", {**ok, "weekday_time": "late"}).status_code == 422
@@ -68,7 +68,7 @@ def test_a_wrong_time_or_time_zone_is_refused():
 
 
 def test_connecting_telegram_end_to_end(adapters):
-    client = Client()
+    client = signed_in()
 
     link = client.post("/api/users/user-1/telegram/link").json()["url"]
     code = link.split("?start=")[1]
@@ -83,11 +83,11 @@ def test_connecting_telegram_end_to_end(adapters):
 def test_connecting_needs_a_bot_on_the_server(settings):
     settings.TELEGRAM_BOT_USERNAME = ""
 
-    assert Client().post("/api/users/user-1/telegram/link").status_code == 503
+    assert signed_in().post("/api/users/user-1/telegram/link").status_code == 503
 
 
 def test_the_person_can_disconnect():
-    client = Client()
+    client = signed_in()
     code = client.post("/api/users/user-1/telegram/link").json()["url"].split("?start=")[1]
     _webhook(client, f"/start {code}")
 
@@ -97,27 +97,27 @@ def test_the_person_can_disconnect():
 
 
 def test_the_webhook_refuses_messages_without_the_secret():
-    assert _webhook(Client(), "/start x", secret="wrong").status_code == 403
-    assert _webhook(Client(), "/start x", secret="").status_code == 403
+    assert _webhook(signed_in(), "/start x", secret="wrong").status_code == 403
+    assert _webhook(signed_in(), "/start x", secret="").status_code == 403
 
 
 def test_the_webhook_ignores_updates_without_a_text_message(adapters):
     body = {"update_id": 2, "edited_message": {"chat": {"id": 1}, "text": "x"}}
 
-    response = Client().post("/api/telegram/webhook", data=json.dumps(body), content_type="application/json", HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN=SECRET)
+    response = signed_in().post("/api/telegram/webhook", data=json.dumps(body), content_type="application/json", HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN=SECRET)
 
     assert response.status_code == 204 and adapters["sender"].sent == []
 
 
 def test_the_setup_registers_the_webhook_with_the_secret(adapters):
-    response = Client().post(f"/api/telegram/setup?key={KEY}")
+    response = signed_in().post(f"/api/telegram/setup?key={KEY}")
 
     assert response.status_code == 204
     assert adapters["sender"].registered == [("https://micro-adventure.onrender.com/api/telegram/webhook", SECRET)]
 
 
 def test_the_calls_only_the_clock_makes_need_the_key(settings):
-    client = Client()
+    client = signed_in()
 
     assert client.post("/api/reminders/run?key=wrong").status_code == 403
     assert client.post("/api/telegram/setup?key=wrong").status_code == 403
@@ -129,7 +129,7 @@ def test_the_clock_sends_the_reminders_that_are_due(adapters, monkeypatch):
     from datetime import datetime, timezone
     from api.reminders import reminders_view as telegram_router
 
-    client = Client()
+    client = signed_in()
     _put(client, "user-1", {"enabled": True, "weekday_time": "18:00", "weekend_time": "11:00", "timezone": "Europe/Madrid"})
     code = client.post("/api/users/user-1/telegram/link").json()["url"].split("?start=")[1]
     _webhook(client, f"/start {code}")

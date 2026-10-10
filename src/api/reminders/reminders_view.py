@@ -4,6 +4,7 @@ from django.conf import settings
 from ninja import Router
 
 from api import wiring
+from api.auth.session import ensure_own_user
 from api.key_guard import check_key
 from api.reminders.reminders_serializer import ReminderSettingsIn, ReminderSettingsOut, RunOut
 from microadventures.application.commands.save_reminder_settings.save_reminder_settings_command import SaveReminderSettingsCommand
@@ -29,11 +30,13 @@ def _out(reminder) -> dict:
 
 @router.get("/{user_id}/reminders", response=ReminderSettingsOut)
 def get_reminders(request, user_id: str):
+    ensure_own_user(request, user_id)
     return _out(wiring.find_reminder_settings_handler().handle(FindReminderSettingsQuery(user_id=user_id)))
 
 
 @router.put("/{user_id}/reminders", response=ReminderSettingsOut)
 def save_reminders(request, user_id: str, payload: ReminderSettingsIn):
+    ensure_own_user(request, user_id)
     wiring.save_reminder_settings_handler().handle(
         SaveReminderSettingsCommand(
             user_id=user_id,

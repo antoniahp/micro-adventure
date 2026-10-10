@@ -1,5 +1,6 @@
 // All the calls to the backend live in this file. Screens never use fetch directly.
 import { currentLanguage, translate } from "./i18n";
+import { accessToken, ensureSession, renewSession } from "./session";
 import type { Mood, Place, Progress, Reminders, Walk, WalkContext, WeeklySummary, YearlySummary } from "./types";
 
 const MAX_SWAPS_PER_WALK = 2; // same rule as the backend (Walk.MAX_SWAPS_PER_WALK)
@@ -19,8 +20,21 @@ function friendlyMessage(status: number): string {
   return translate("error.generic");
 }
 
+// Every call carries the session token. If it ran out (401), the session is renewed and the call repeated once.
+async function send(path: string, init?: RequestInit): Promise<Response> {
+  await ensureSession().catch(() => false);
+  const attempt = () => {
+    const headers = new Headers(init?.headers);
+    const token = accessToken();
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    return fetch(`/api${path}`, { ...init, headers });
+  };
+  const response = await attempt();
+  return response.status === 401 && (await renewSession().catch(() => false)) ? attempt() : response;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T | undefined> {
-  const response = await fetch(`/api${path}`, init);
+  const response = await send(path, init);
   if (!response.ok) {
     // The backend's messages are for developers; the person gets one in their language.
     // Only the detail is kept apart: a few screens use it (the reason a photo was rejected).

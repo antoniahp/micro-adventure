@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client
+from tests.auth_helpers import signed_in
 
 from api import wiring
 from tests.fakes import InMemoryWalkRepository
@@ -23,7 +23,7 @@ def _post_json(client, url, body):
 
 
 def test_a_user_walks_completes_a_challenge_and_sees_progress():
-    client = Client()
+    client = signed_in()
 
     created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"})
     assert created.status_code == 201
@@ -44,7 +44,7 @@ def test_a_user_walks_completes_a_challenge_and_sees_progress():
 
 
 def test_completing_a_challenge_without_a_photo_is_rejected():
-    client = Client()
+    client = signed_in()
     walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "minutes": 45}).json()["id"]
     walk = client.get(f"/api/walks/{walk_id}").json()
     challenge = next(c for c in walk["challenges"] if c["accepts_photo"])
@@ -55,7 +55,7 @@ def test_completing_a_challenge_without_a_photo_is_rejected():
 
 
 def test_a_third_swap_is_refused():
-    client = Client()
+    client = signed_in()
     walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
 
     for _ in range(2):
@@ -67,17 +67,17 @@ def test_a_third_swap_is_refused():
 
 
 def test_an_unknown_walk_returns_404():
-    response = Client().get(f"/api/walks/{uuid4()}")
+    response = signed_in().get(f"/api/walks/{uuid4()}")
 
     assert response.status_code == 404
 
 
 def test_warm_up_answers_with_no_content():
-    assert Client().post("/api/warmup").status_code == 204
+    assert signed_in().post("/api/warmup").status_code == 204
 
 
 def test_a_walk_keeps_what_the_person_wrote():
-    client = Client()
+    client = signed_in()
 
     created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "note": "  Día largo  "})
 
@@ -86,7 +86,7 @@ def test_a_walk_keeps_what_the_person_wrote():
 
 
 def test_a_walk_remembers_its_language_and_defaults_to_spanish():
-    client = Client()
+    client = signed_in()
 
     english = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "language": "en"})
     default = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"})
@@ -96,7 +96,7 @@ def test_a_walk_remembers_its_language_and_defaults_to_spanish():
 
 
 def test_a_challenge_can_be_completed_with_a_story():
-    client = Client()
+    client = signed_in()
     walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
     challenge = client.get(f"/api/walks/{walk_id}").json()["challenges"][0]
 
@@ -113,7 +113,7 @@ def test_transcribing_without_a_configured_service_answers_503(settings):
     settings.ELEVENLABS_API_KEY = ""
     voice = SimpleUploadedFile("voice.webm", b"audio", content_type="audio/webm")
 
-    response = Client().post("/api/transcribe", {"audio": voice})
+    response = signed_in().post("/api/transcribe", {"audio": voice})
 
     assert response.status_code == 503
 
@@ -124,13 +124,13 @@ def test_transcribing_returns_the_text(monkeypatch):
     monkeypatch.setattr(wiring, "_speech_transcriber", lambda: StubSpeechTranscriber("Se oye una fuente."))
     voice = SimpleUploadedFile("voice.webm", b"audio", content_type="audio/webm")
 
-    response = Client().post("/api/transcribe", {"audio": voice})
+    response = signed_in().post("/api/transcribe", {"audio": voice})
 
     assert response.json() == {"text": "Se oye una fuente."}
 
 
 def test_the_walk_says_who_wrote_each_challenge():
-    client = Client()
+    client = signed_in()
     created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"})
 
     walk = client.get(f"/api/walks/{created.json()['id']}").json()
@@ -139,7 +139,7 @@ def test_the_walk_says_who_wrote_each_challenge():
 
 
 def test_a_walk_has_the_usual_number_of_challenges_for_its_time():
-    client = Client()
+    client = signed_in()
 
     def count_for(body):
         created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", **body})
@@ -152,13 +152,13 @@ def test_a_walk_has_the_usual_number_of_challenges_for_its_time():
 
 
 def test_a_number_of_challenges_that_does_not_fit_the_time_is_refused():
-    response = _post_json(Client(), "/api/walks", {"user_id": "user-1", "mood": "tired", "minutes": 30, "challenges_count": 8})
+    response = _post_json(signed_in(), "/api/walks", {"user_id": "user-1", "mood": "tired", "minutes": 30, "challenges_count": 8})
 
     assert response.status_code == 422
 
 
 def test_a_walk_can_be_finished_with_time_distance_and_a_story():
-    client = Client()
+    client = signed_in()
     walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
 
     finished = _post_json(
@@ -175,7 +175,7 @@ def test_a_walk_can_be_finished_with_time_distance_and_a_story():
 
 
 def test_time_distance_and_story_are_optional_when_finishing():
-    client = Client()
+    client = signed_in()
     walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
 
     assert _post_json(client, f"/api/walks/{walk_id}/finish", {}).status_code == 204
@@ -186,7 +186,7 @@ def test_time_distance_and_story_are_optional_when_finishing():
 
 
 def test_a_walk_that_is_not_finished_has_no_finish_data():
-    client = Client()
+    client = signed_in()
     walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
 
     walk = client.get(f"/api/walks/{walk_id}").json()
@@ -195,7 +195,7 @@ def test_a_walk_that_is_not_finished_has_no_finish_data():
 
 
 def test_finishing_with_impossible_numbers_is_refused():
-    client = Client()
+    client = signed_in()
     walk_id = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm"}).json()["id"]
 
     assert _post_json(client, f"/api/walks/{walk_id}/finish", {"distance_km": -1}).status_code == 422
@@ -203,11 +203,11 @@ def test_finishing_with_impossible_numbers_is_refused():
 
 
 def test_finishing_an_unknown_walk_returns_404():
-    assert _post_json(Client(), f"/api/walks/{uuid4()}/finish", {}).status_code == 404
+    assert _post_json(signed_in(), f"/api/walks/{uuid4()}/finish", {}).status_code == 404
 
 
 def test_a_swap_can_ask_for_the_language_on_screen():
-    client = Client()
+    client = signed_in()
     created = _post_json(client, "/api/walks", {"user_id": "user-1", "mood": "calm", "language": "es"})
     walk_id = created.json()["id"]
     challenge_id = client.get(f"/api/walks/{walk_id}").json()["challenges"][0]["id"]
