@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getAccount, linkGoogleAccount, setNickname, unlinkGoogleAccount } from "../api";
-import { googleSignInAvailable, renderGoogleSignIn } from "../google";
+import { consumePendingGoogleCredential, googleSignInAvailable, renderGoogleSignIn } from "../google";
 import Icon from "../components/Icon";
 import { useI18n } from "../i18n";
 import { adoptSession } from "../session";
@@ -28,23 +28,35 @@ export default function SettingsScreen() {
     });
   }, [userId]);
 
+  // The person left to sign in at Google and just came back: finish linking the account they picked,
+  // exactly as the button's own flow does below.
+  useEffect(() => {
+    const idToken = consumePendingGoogleCredential();
+    if (idToken) linkGoogle(idToken);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!googleSignInAvailable || !googleButton.current || account?.google_linked) return;
-    renderGoogleSignIn(googleButton.current, lang)
-      .then(async (idToken) => {
-        setGoogleError("");
-        const result = await linkGoogleAccount(userId, idToken);
-        if (result.switched && result.access && result.refresh) {
-          adoptSession({ access: result.access, refresh: result.refresh, user_id: result.user_id });
-          window.alert(t("account.google.switched"));
-          window.location.reload(); // every screen re-reads the restored account from scratch
-          return;
-        }
-        setAccount({ nickname: result.nickname, google_linked: result.google_linked });
-      })
-      .catch((e: Error) => setGoogleError(e.message || t("error.google")));
+    renderGoogleSignIn(googleButton.current, lang).catch((e: Error) => setGoogleError(e.message || t("error.google")));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account?.google_linked, userId, lang]);
+
+  async function linkGoogle(idToken: string) {
+    setGoogleError("");
+    try {
+      const result = await linkGoogleAccount(userId, idToken);
+      if (result.switched && result.access && result.refresh) {
+        adoptSession({ access: result.access, refresh: result.refresh, user_id: result.user_id });
+        window.alert(t("account.google.switched"));
+        window.location.reload(); // every screen re-reads the restored account from scratch
+        return;
+      }
+      setAccount({ nickname: result.nickname, google_linked: result.google_linked });
+    } catch (e) {
+      setGoogleError((e as Error).message || t("error.google"));
+    }
+  }
 
   const nicknameChanged = nickname.trim() !== (account?.nickname ?? "");
 
