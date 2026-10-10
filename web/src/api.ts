@@ -52,15 +52,32 @@ export async function getWalk(walkId: string) {
 }
 
 // A challenge is completed with a story (written or from a voice note), a photo, or both.
+// Phone photos weigh several MB: the model gets one of at most 1280 px, which is plenty to see what is in it and much faster to send.
+async function shrinkPhoto(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((done) => canvas.toBlob(done, "image/jpeg", 0.82));
+    return blob && blob.size < file.size ? new File([blob], "photo.jpg", { type: "image/jpeg" }) : file;
+  } catch {
+    return file; // an odd format: send it as it is
+  }
+}
+
 export async function completeChallenge(walkId: string, challengeId: string, answer: { photo?: File; story?: string }) {
   const form = new FormData();
-  if (answer.photo) form.append("photo", answer.photo);
+  if (answer.photo) form.append("photo", await shrinkPhoto(answer.photo));
   if (answer.story) form.append("story", answer.story);
   try {
     await request(`/walks/${walkId}/challenges/${challengeId}/complete`, { method: "POST", body: form });
   } catch (e) {
     // Here a 422 means the photo or the words did not fit the challenge.
     if (e instanceof ApiError && e.status === 422) throw new ApiError(translate("error.rejected"), 422);
+    if (e instanceof ApiError && (e.status === 502 || e.status === 503)) throw new ApiError(translate("error.photoCheck"), e.status);
     throw e;
   }
 }

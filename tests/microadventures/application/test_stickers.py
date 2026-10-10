@@ -34,3 +34,16 @@ def test_only_the_challenges_that_can_be_seen_accept_a_photo():
         ChallengeCategory.SOUND: False,
         ChallengeCategory.PEOPLE_WATCHING: False,
     }
+
+
+def test_every_sticker_family_has_its_words_in_the_app():
+    """A missing text blanks the notebook page: each family needs its group title, name and goal in both languages."""
+    import re
+    from pathlib import Path
+
+    texts = (Path(__file__).parents[3] / "web" / "src" / "i18n.tsx").read_text()
+    families = {s.family for s in CATALOG}
+    categories = {c.value for c in ChallengeCategory}
+    for family in families - categories:
+        for key in (f"sticker.group.{family}", f"sticker.{family}.name", f"sticker.{family}.goal"):
+            assert len(re.findall(rf'"{re.escape(key)}":', texts)) == 2, key  # Spanish and English

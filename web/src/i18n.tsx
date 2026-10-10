@@ -35,7 +35,7 @@ const ES = {
   "sticker.km.goal": "Suma {n} kilómetros caminados",
   "sticker.minutes.name": "{n} fuera",
   "sticker.minutes.goal": "Suma {n} caminando",
-  "sticker.photos.name": "{n} fotos",
+  "sticker.photos.name": "Fotos: {n}",
   "sticker.photos.goal": "Haz {n} fotos que den un reto por bueno",
   "sticker.stories.name": "{n} historias",
   "sticker.stories.goal": "Cuenta {n} retos o paseos",
@@ -56,6 +56,7 @@ const ES = {
   "sticker.group.streak": "Rachas",
   "sticker.group.km": "Kilómetros",
   "sticker.group.minutes": "Tiempo fuera",
+  "sticker.group.photos": "Fotos",
   "sticker.group.stories": "Historias",
   "sticker.group.categories": "Curiosidad",
   "sticker.group.count": "{done} de {total}",
@@ -202,6 +203,7 @@ const ES = {
   "walk.tell": "Contarlo",
   "walk.photo": "Foto",
   "walk.photoChecking": "Mirando tu foto…",
+  "walk.photoVerifying": "Verificando tu foto… puede tardar unos segundos.",
   "walk.photoAgain": "Otra foto",
   "walk.photoAlt": "Tu foto de este reto",
   "walk.sourceModel": "Escrito por {model}",
@@ -262,6 +264,7 @@ const ES = {
   "error.invalid": "Algún dato no es válido. Revísalo e inténtalo de nuevo.",
   "finish.badMinutes": "Los minutos deben estar entre 1 y 720.",
   "finish.badKm": "Los kilómetros deben estar entre 0 y 200. Usa coma o punto para los decimales (3,5).",
+  "error.photoCheck": "No he podido revisar la foto ahora. Prueba otra vez o cuéntalo con tus palabras.",
   "error.modelDown": "El guía está tardando más de lo normal. Inténtalo de nuevo en un momento.",
   "error.voiceOff": "La voz no está activada todavía. Escríbelo, por favor.",
   "error.voiceFailed": "No he podido entender el audio. Prueba otra vez o escríbelo.",
@@ -299,7 +302,7 @@ const EN: Record<TextKey, string> = {
   "sticker.km.goal": "Add up {n} kilometres walked",
   "sticker.minutes.name": "{n} outdoors",
   "sticker.minutes.goal": "Add up {n} of walking",
-  "sticker.photos.name": "{n} photos",
+  "sticker.photos.name": "Photos: {n}",
   "sticker.photos.goal": "Take {n} photos that complete a challenge",
   "sticker.stories.name": "{n} stories",
   "sticker.stories.goal": "Tell {n} challenges or walks",
@@ -320,6 +323,7 @@ const EN: Record<TextKey, string> = {
   "sticker.group.streak": "Streaks",
   "sticker.group.km": "Kilometres",
   "sticker.group.minutes": "Time outdoors",
+  "sticker.group.photos": "Photos",
   "sticker.group.stories": "Stories",
   "sticker.group.categories": "Curiosity",
   "sticker.group.count": "{done} of {total}",
@@ -466,6 +470,7 @@ const EN: Record<TextKey, string> = {
   "walk.tell": "Tell it",
   "walk.photo": "Photo",
   "walk.photoChecking": "Looking at your photo…",
+  "walk.photoVerifying": "Checking your photo… it can take a few seconds.",
   "walk.photoAgain": "Another photo",
   "walk.photoAlt": "Your photo for this challenge",
   "walk.sourceModel": "Written by {model}",
@@ -526,6 +531,7 @@ const EN: Record<TextKey, string> = {
   "error.invalid": "Some value is not valid. Check it and try again.",
   "finish.badMinutes": "Minutes must be between 1 and 720.",
   "finish.badKm": "Kilometres must be between 0 and 200. Use a comma or a dot for decimals (3.5).",
+  "error.photoCheck": "I couldn't check the photo right now. Try again or tell it in your own words.",
   "error.modelDown": "The guide is taking longer than usual. Try again in a moment.",
   "error.voiceOff": "Voice isn't switched on yet. Please write it.",
   "error.voiceFailed": "I couldn't understand the audio. Try again or write it.",
@@ -558,7 +564,8 @@ export function hasText(key: string, lang: Lang = current): boolean {
 }
 
 export function translate(key: TextKey, vars: Record<string, string | number> = {}, lang: Lang = current): string {
-  return TEXTS[lang][key].replace(/\{(\w+)\}/g, (_, name) => String(vars[name] ?? ""));
+  const text = TEXTS[lang][key] ?? TEXTS.es[key] ?? key; // a missing text must never blank the screen
+  return text.replace(/\{(\w+)\}/g, (_, name) => String(vars[name] ?? ""));
 }
 
 type I18n = { lang: Lang; setLang: (lang: Lang) => void; t: (key: TextKey, vars?: Record<string, string | number>) => string };
