@@ -7,12 +7,15 @@ from microadventures.domain.models.language import Language
 from microadventures.domain.models.mood import Mood
 from microadventures.domain.models.walk import MAX_DIARY_LENGTH
 
+MAX_STORY_LENGTH = 2000
+MAX_PHOTO_BYTES = 5 * 1024 * 1024  # 5 MB: the client already shrinks photos well under this
+
 
 class StartWalkIn(Schema):
     user_id: str
     mood: Mood
     minutes: int = Field(30, ge=5, le=240)
-    weather: str = "unknown"
+    weather: str = Field("unknown", max_length=50)
     challenges_count: int | None = Field(None, ge=1, le=10)  # None: the usual number for that much time
     note: str = Field("", max_length=500)
     language: Language = Language.ES

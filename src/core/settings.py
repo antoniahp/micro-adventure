@@ -12,6 +12,7 @@ SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 # The admin lives at /<ADMIN_URL>/. A path only you know keeps bots from trying passwords on /admin/.
 ADMIN_URL = os.environ.get("ADMIN_URL", "admin").strip("/")
 DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
+# "*" only as a local-development fallback; Render needs its own value set, e.g. micro-adventure.onrender.com.
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
@@ -27,12 +28,23 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",  # blocks the app being framed by another site
+    "core.middleware.MaxBodySizeMiddleware",  # refuses an oversized body before Django reads any of it
+    "core.middleware.RateLimitMiddleware",  # caps requests per IP, tighter on the routes that call Gemma/ElevenLabs
     "whitenoise.middleware.WhiteNoiseMiddleware",  # serves the admin CSS in production
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
+
+# A multipart body (a photo) past this size is refused outright; the client already shrinks photos well under it.
+MAX_BODY_BYTES = 8 * 1024 * 1024
+
+# (requests allowed, over this many seconds) per kind of route. The model routes cost money and a slow
+# reply each, so they get a tighter budget than a simple read. Off in tests by default (see tests/conftest.py).
+RATE_LIMIT_ENABLED = True
+RATE_LIMITS = {"model": (12, 60), "default": (120, 60)}
 
 ROOT_URLCONF = "core.urls"
 WSGI_APPLICATION = "core.wsgi.application"
@@ -66,6 +78,11 @@ if WEB_DIST.is_dir():
 # Behind Render's HTTPS proxy: trust its header, and accept the service's own address for admin logins.
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # Tells browsers that have already visited to always use HTTPS here, even if someone types http://.
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+X_FRAME_OPTIONS = "DENY"  # nobody can put the app inside an <iframe> on another site (clickjacking)
 CSRF_TRUSTED_ORIGINS = [
     origin for origin in [os.environ.get("RENDER_EXTERNAL_URL", ""), *os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")] if origin
 ]
@@ -132,9 +149,11 @@ LOGGING = {
 # --- Sessions ---
 # Every browser gets an anonymous account and signed tokens (django-ninja-jwt), signed with SECRET_KEY.
 # The short access token goes in each request; the refresh token, kept by the browser, gets a new pair.
+# A year, not 30 days: the refresh is renewed on every visit, so only someone away from the app a full year
+# (not just away from walking) would need a new, empty session.
 NINJA_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
 }
 
 # --- Reminders by Telegram ---
