@@ -3,6 +3,7 @@ from ninja.files import UploadedFile
 
 from api import wiring
 from api.context.context_view import router as context_router
+from api.diagnostics.diagnostics_view import router as diagnostics_router
 from api.errors import register_error_handlers
 from api.progress.progress_view import router as progress_router
 from api.reminders.reminders_view import clock_router, router as reminders_router
@@ -21,6 +22,7 @@ api.add_router("/users", reminders_router)
 api.add_router("/users", telegram_user_router)
 api.add_router("/telegram", telegram_router)
 api.add_router("/reminders", clock_router)
+api.add_router("/diagnostics", diagnostics_router)
 register_error_handlers(api)
 
 
