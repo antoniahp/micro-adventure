@@ -33,7 +33,8 @@ CATALOG = tuple(
     + _ladder("streak", "streak", {2: "", 3: "streak_3", 5: "", 7: "streak_7", 10: "", 14: "", 30: ""})
     + _ladder("km", "km", {5: "", 10: "ten_km", 25: "", 50: "", 100: "", 200: ""})
     + _ladder("minutes", "minutes", {60: "", 300: "five_hours", 600: "", 1200: "", 3000: ""})
-    + _ladder("stories", "stories", {3: "", 5: "", 10: "storyteller", 25: "", 50: ""})
+    + _ladder("stories", "stories", {5: "", 10: "storyteller", 15: "", 20: "", 35: "", 50: ""})
+    + _ladder("photos", "photos", {1: "", 5: "", 15: "", 30: "", 50: ""})
     + _ladder("categories", "categories", {3: "", 5: "all_categories"})
     + [
         Sticker(f"{category.value}_{goal}", category.value, f"category_{category.value}", goal)

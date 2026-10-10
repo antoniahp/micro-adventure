@@ -21,7 +21,7 @@ def test_a_category_sticker_counts_only_the_challenges_of_that_category():
 def test_every_sticker_says_what_it_is_about():
     families = {s.family for s in CATALOG}
 
-    assert {"walks", "challenges", "streak", "km", "minutes", "stories", "nature"} <= families
+    assert {"walks", "challenges", "streak", "km", "minutes", "stories", "nature", "photos"} <= families
 
 
 def test_only_the_challenges_that_can_be_seen_accept_a_photo():

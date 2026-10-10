@@ -43,7 +43,8 @@ export const STICKER_FAMILIES: Record<string, { icon: IconName; color: string }>
   streak: { icon: "flame", color: "#FF7A45" },
   km: { icon: "route", color: "#0E9F9F" },
   minutes: { icon: "clock", color: "#5B5BD6" },
-  stories: { icon: "chat", color: "#8B5CF6" },
+  photos: { icon: "camera", color: "#D6336C" },
+  stories: { icon: "mic", color: "#8B5CF6" },
   categories: { icon: "grid", color: "#E8579A" },
   // The five categories have their own colours here, apart from the ones of the challenge cards, so no sticker group repeats another.
   sensory: { icon: "hand", color: "#A0522D" },

@@ -71,6 +71,7 @@ h3 { font-size: 1.15rem; font-weight: 800; }
 .btn-big { padding: 16px 22px; font-size: 1.15rem; width: 100%; background: var(--sun); color: var(--dusk); }
 .btn-big:hover:not(:disabled) { background: #f0a800; }
 .btn:disabled, .btn.disabled { opacity: 0.5; cursor: default; }
+.btn-primary:disabled { background: #c9cdd6; color: #6b7280; opacity: 1; }
 
 /* ---------- Start screen ---------- */
 .hero-card { position: relative; min-height: 330px; padding: 26px 22px; overflow: hidden; border-radius: 28px; background: var(--dusk); color: #fff; }
@@ -302,3 +303,9 @@ a.btn { text-decoration: none; justify-self: start; }
 .week-strip .today { color: var(--ink); font-weight: 700; }
 .dimmed { opacity: 0.55; }
 .time-row { align-items: end; }
+
+.unlocked { width: 100%; padding: 14px 16px; border-radius: 16px; background: #FFF7DD; border: 2px solid #FFB300; text-align: center; color: #1d1b3a; }
+.unlocked ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0 6px; padding: 0; list-style: none; }
+.unlocked li { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 999px; background: #fff; font-weight: 700; }
+.unlocked .sticker-art { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--c); color: var(--on); }
+.unlocked .hint { margin: 0; color: #5a5578; }

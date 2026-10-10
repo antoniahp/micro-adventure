@@ -233,3 +233,13 @@ def test_an_empty_year_has_no_best_month():
     summary = _yearly(InMemoryWalkRepository(), year=2026)
 
     assert summary.best_month is None and summary.walks_count == 0 and summary.longest_streak == 0
+
+
+def test_only_challenges_completed_with_an_accepted_photo_count_for_photo_stickers():
+    repository = InMemoryWalkRepository()
+    repository.save(a_walk(challenges=[done(with_photo=True), done(with_photo=True), done(story="Un gato")]))
+
+    book, _ = _book(repository)
+
+    assert book["photos_1"].unlocked
+    assert book["photos_5"].current == 2

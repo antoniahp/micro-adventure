@@ -14,7 +14,7 @@ class ApiError extends Error {
 function friendlyMessage(status: number): string {
   if (status === 404) return translate("error.notFound");
   if (status === 409) return translate("error.conflict");
-  if (status === 422) return translate("error.rejected");
+  if (status === 422) return translate("error.invalid");
   if (status === 502 || status === 503) return translate("error.modelDown");
   return translate("error.generic");
 }
@@ -56,7 +56,13 @@ export async function completeChallenge(walkId: string, challengeId: string, ans
   const form = new FormData();
   if (answer.photo) form.append("photo", answer.photo);
   if (answer.story) form.append("story", answer.story);
-  await request(`/walks/${walkId}/challenges/${challengeId}/complete`, { method: "POST", body: form });
+  try {
+    await request(`/walks/${walkId}/challenges/${challengeId}/complete`, { method: "POST", body: form });
+  } catch (e) {
+    // Here a 422 means the photo or the words did not fit the challenge.
+    if (e instanceof ApiError && e.status === 422) throw new ApiError(translate("error.rejected"), 422);
+    throw e;
+  }
 }
 
 export async function swapChallenge(walkId: string, challengeId: string) {

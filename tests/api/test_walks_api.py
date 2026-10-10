@@ -40,7 +40,7 @@ def test_a_user_walks_completes_a_challenge_and_sees_progress():
     progress = client.get("/api/users/user-1/progress").json()
     assert progress["walks_count"] == 1
     assert progress["challenges_completed"] == 1
-    assert progress["stickers"] == ["first_walk"]
+    assert progress["stickers"] == ["first_walk", "photos_1"]  # the challenge was completed with a photo
 
 
 def test_completing_a_challenge_without_a_photo_is_rejected():

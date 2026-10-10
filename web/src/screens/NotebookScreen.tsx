@@ -4,12 +4,11 @@ import Icon from "../components/Icon";
 import { hasText, useI18n, type TextKey } from "../i18n";
 import { getUserId } from "../storage";
 import type { Progress } from "../types";
+import { stickerWords, type Sticker } from "../components/stickerWords";
 import { CATEGORIES, LIGHT_STICKER_COLORS, STICKER_FAMILIES, STICKER_ICONS } from "../ui";
 
 const UNITS: Record<string, string> = { km: " km", minutes: " min" };
-const ROMAN = ["I", "II", "III", "IV", "V"];
 
-type Sticker = Progress["sticker_book"][number];
 
 // The notebook: one page with every sticker. The earned ones are stuck on; the others show their goal and how far you are.
 export default function NotebookScreen({ onStartWalk }: { onStartWalk: () => void }) {
@@ -27,23 +26,7 @@ export default function NotebookScreen({ onStartWalk }: { onStartWalk: () => voi
   const earned = progress.sticker_book.filter((s) => s.unlocked).length;
   const streak = progress.current_streak;
 
-  // The words of a sticker. A few keep their own name ("Primer paseo"); the rest are built from their family and goal.
-  function words(sticker: Sticker, level: number) {
-    const own = `sticker.${sticker.code}`;
-    if (hasText(`${own}.name`)) return { name: t(`${own}.name` as TextKey), goal: t(`${own}.goal` as TextKey), explain: true };
-    const isCategory = sticker.family in CATEGORIES;
-    if (isCategory) {
-      const category = t(`cat.${sticker.family}` as TextKey).toLowerCase();
-      return {
-        name: t("sticker.category.name", { name: t(`sticker.cat.${sticker.family}` as TextKey), level: ROMAN[level] ?? level + 1 }),
-        goal: t("sticker.category.goal", { n: sticker.goal, category }),
-        explain: true,
-      };
-    }
-    const n = sticker.family === "minutes" ? hours(sticker.goal) : sticker.goal;
-    return { name: t(`sticker.${sticker.family}.name` as TextKey, { n }), goal: t(`sticker.${sticker.family}.goal` as TextKey, { n }), explain: false };
-  }
-  const hours = (minutes: number) => (minutes === 60 ? t("sticker.hour", { n: 1 }) : t("sticker.hours", { n: minutes / 60 }));
+  const words = (sticker: Sticker, level: number) => stickerWords(t, sticker, level);
 
   // The notebook is read by theme: walks, challenges, streaks... each with its own stickers, from the first to the hardest.
   const groups: { family: string; stickers: Sticker[] }[] = [];

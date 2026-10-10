@@ -18,6 +18,7 @@ class Challenge(EmbeddedModel):
     text = models.CharField(max_length=300)
     status = models.CharField(max_length=20, choices=ChallengeStatus.choices, default=ChallengeStatus.PENDING)
     story = models.TextField(blank=True, default="")  # what the person told about it, written or transcribed from a voice note
+    with_photo = models.BooleanField(default=False)  # completed with a photo that was accepted
     source = models.CharField(max_length=60, default=TEMPLATE_SOURCE)  # "template" or the model that wrote it, e.g. "gemma4:31b"
 
     @property
