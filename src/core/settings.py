@@ -121,7 +121,8 @@ if dsn := os.environ.get("SENTRY_DSN"):
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "filters": {"secrets": {"()": "core.sentry_scrubber.SecretsFilter"}},  # no key reaches the Render logs
+    "handlers": {"console": {"class": "logging.StreamHandler", "filters": ["secrets"]}},
     "loggers": {"microadventures": {"handlers": ["console"], "level": "INFO"}},
 }
 
