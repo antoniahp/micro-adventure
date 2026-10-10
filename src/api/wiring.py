@@ -212,6 +212,7 @@ def send_due_reminders_handler() -> SendDueRemindersCommandHandler:
         notification_sender=_notification_sender(),
         app_url=settings.APP_URL,
         weather_service=_weather_service(),
+        account_service=_account_repository(),
     )
 
 

@@ -5,7 +5,7 @@ import pytest
 from tests.auth_helpers import signed_in
 
 from api import wiring
-from tests.fakes import InMemoryReminderRepository, InMemoryWalkRepository, SpyNotificationSender
+from tests.fakes import InMemoryAccountRepository, InMemoryReminderRepository, InMemoryWalkRepository, SpyNotificationSender
 from microadventures.infrastructure.template_challenge_generator import TemplateChallengeGenerator
 
 KEY = "clock-key"
@@ -15,15 +15,17 @@ SECRET = hashlib.sha256(f"telegram:{KEY}".encode()).hexdigest()
 @pytest.fixture(autouse=True)
 def adapters(monkeypatch, settings):
     walks, reminders, sender = InMemoryWalkRepository(), InMemoryReminderRepository(), SpyNotificationSender()
+    accounts = InMemoryAccountRepository()
     monkeypatch.setattr(wiring, "_walk_repository", lambda: walks)
     monkeypatch.setattr(wiring, "_challenge_generator", lambda: TemplateChallengeGenerator())
     monkeypatch.setattr(wiring, "_reminder_repository", lambda: reminders)
     monkeypatch.setattr(wiring, "_notification_sender", lambda: sender)
+    monkeypatch.setattr(wiring, "_account_repository", lambda: accounts)
     settings.REMINDERS_KEY = KEY
     settings.TELEGRAM_BOT_TOKEN = "123:TOKEN"
     settings.TELEGRAM_BOT_USERNAME = "MicroAdventuresBot"
     settings.APP_URL = "https://micro-adventure.onrender.com"
-    return {"reminders": reminders, "sender": sender}
+    return {"reminders": reminders, "sender": sender, "accounts": accounts}
 
 
 def _put(client, user, body):

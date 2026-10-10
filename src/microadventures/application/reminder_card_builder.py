@@ -7,11 +7,19 @@ from microadventures.domain.models.reminder_settings import ReminderSettings, pa
 from microadventures.domain.models.weather import Weather
 
 
-def build_reminder_card(settings: ReminderSettings, weekend: bool, weather: Weather | None, now: datetime, app_url: str) -> ReminderCard:
-    """The message of a reminder. With the weather it says the light that is left; without it, it still invites."""
+def build_reminder_card(
+    settings: ReminderSettings, weekend: bool, weather: Weather | None, now: datetime, app_url: str, nickname: str | None = None
+) -> ReminderCard:
+    """The message of a reminder. With the weather it says the light that is left; without it, it still invites.
+
+    nickname is optional, like the field itself: without one the card reads exactly as it always has.
+    """
     language = settings.language
     kind = "weekend" if weekend else "weekday"
-    lines = [card_text(language, f"{kind}_title")]
+    lines = []
+    if nickname:
+        lines.append(card_text(language, "greeting", nickname=nickname))
+    lines.append(card_text(language, f"{kind}_title"))
     night = _is_night(settings, now)
     if weather is None:
         lines.append(card_text(language, f"{kind}_invite"))

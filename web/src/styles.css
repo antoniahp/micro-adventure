@@ -228,8 +228,10 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
 .scale button.on span { color: #fff; }
 
 /* ---------- Tab bar ---------- */
-.tabs { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding-bottom: env(safe-area-inset-bottom); background: var(--paper); border-top: 1px solid var(--line); }
-.tabs button { display: grid; justify-items: center; gap: 2px; min-height: 56px; padding: 8px; border: 0; background: transparent; font-size: 0.82rem; font-weight: 700; color: var(--muted); cursor: pointer; }
+/* flex, not a fixed grid-template-columns: the column count has to follow however many tab buttons
+   actually render, or an extra tab (like Ajustes) falls onto a second row instead of lining up. */
+.tabs { position: sticky; bottom: 0; display: flex; padding-bottom: env(safe-area-inset-bottom); background: var(--paper); border-top: 1px solid var(--line); }
+.tabs button { flex: 1 1 0; min-width: 0; display: grid; justify-items: center; gap: 2px; min-height: 56px; padding: 8px 4px; border: 0; background: transparent; font-size: 0.78rem; font-weight: 700; color: var(--muted); cursor: pointer; }
 .tabs button.active { color: var(--dusk); box-shadow: inset 0 3px 0 var(--sun); }
 
 @media (prefers-reduced-motion: reduce) {
