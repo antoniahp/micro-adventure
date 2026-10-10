@@ -6,7 +6,8 @@ from ninja.files import UploadedFile
 
 from api import wiring
 from api.auth.session import current_user_id, ensure_own_user
-from api.walks.walks_serializer import FinishWalkIn, StartWalkIn, WalkCreatedOut, WalkOut
+from api.walks.walks_serializer import MAX_PHOTO_BYTES, MAX_STORY_LENGTH, FinishWalkIn, StartWalkIn, WalkCreatedOut, WalkOut
+from microadventures.domain.exceptions.photo_too_large_exception import PhotoTooLargeException
 from microadventures.domain.exceptions.walk_not_found_exception import WalkNotFoundException
 from microadventures.domain.models.language import Language
 from microadventures.application.commands.complete_challenge.complete_challenge_command import CompleteChallengeCommand
@@ -55,9 +56,15 @@ def get_walk(request, walk_id: UUID):
 
 @router.post("/{walk_id}/challenges/{challenge_id}/complete", response={204: None})
 def complete_challenge(
-    request, walk_id: UUID, challenge_id: UUID, photo: UploadedFile = File(None), story: str = Form("")
+    request,
+    walk_id: UUID,
+    challenge_id: UUID,
+    photo: UploadedFile = File(None),
+    story: str = Form("", max_length=MAX_STORY_LENGTH),
 ):
     _my_walk(request, walk_id)
+    if photo is not None and photo.size > MAX_PHOTO_BYTES:
+        raise PhotoTooLargeException(MAX_PHOTO_BYTES)
     wiring.complete_challenge_handler().handle(
         CompleteChallengeCommand(
             walk_id=walk_id,

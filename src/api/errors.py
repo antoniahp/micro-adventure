@@ -10,6 +10,7 @@ from microadventures.domain.exceptions.invalid_weekly_reflection_exception impor
 from microadventures.domain.exceptions.notification_failed_exception import NotificationFailedException
 from microadventures.domain.exceptions.notification_unavailable_exception import NotificationUnavailableException
 from microadventures.domain.exceptions.photo_rejected_exception import PhotoRejectedException
+from microadventures.domain.exceptions.photo_too_large_exception import PhotoTooLargeException
 from microadventures.domain.exceptions.challenge_response_required_exception import ChallengeResponseRequiredException
 from microadventures.domain.exceptions.photo_verification_failed_exception import PhotoVerificationFailedException
 from microadventures.domain.exceptions.speech_transcription_failed_exception import SpeechTranscriptionFailedException
@@ -32,6 +33,7 @@ STATUS_BY_EXCEPTION = {
     WeatherUnavailableException: 503,
     InvalidChallengesCountException: 422,
     PhotoRejectedException: 422,
+    PhotoTooLargeException: 422,
     PhotoVerificationFailedException: 502,
     ChallengeGenerationFailedException: 502,
     SpeechTranscriptionFailedException: 502,
