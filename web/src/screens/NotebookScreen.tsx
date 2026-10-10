@@ -7,7 +7,20 @@ import type { Progress } from "../types";
 import { stickerWords, type Sticker } from "../components/stickerWords";
 import { CATEGORIES, LIGHT_STICKER_COLORS, STICKER_FAMILIES, STICKER_ICONS } from "../ui";
 
-const UNITS: Record<string, string> = { km: " km", minutes: " min" };
+const UNITS: Record<string, string> = { km: " km" };
+
+// Time goals are named in hours ("5 hours outdoors"), so their progress reads in hours too: "1 h 25 min of 5 h".
+function amount(family: string, value: number): string {
+  const text = family !== "minutes" ? `${value}${UNITS[family] ?? ""}` : hoursAndMinutes(value);
+  return text.replace(/ /g, "\u00a0"); // one amount never splits across lines: "1 h 25 min" stays together
+}
+
+function hoursAndMinutes(value: number): string {
+  const hours = Math.floor(value / 60);
+  const minutes = value % 60;
+  if (hours === 0) return `${minutes} min`;
+  return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`;
+}
 
 
 // The notebook: one page with every sticker. The earned ones are stuck on; the others show their goal and how far you are.
@@ -60,7 +73,8 @@ export default function NotebookScreen({ onStartWalk }: { onStartWalk: () => voi
               {group.stickers.map((sticker, level) => {
                 const family = STICKER_FAMILIES[sticker.family] ?? { icon: "star" as const, color: "#10A878" };
                 const look = { icon: STICKER_ICONS[sticker.code] ?? family.icon, color: family.color };
-                const unit = UNITS[sticker.family] ?? "";
+                const current = amount(sticker.family, sticker.current);
+                const target = amount(sticker.family, sticker.goal);
                 const share = Math.round((sticker.current / sticker.goal) * 100);
                 const { name, goal, explain } = words(sticker, level);
                 return (
@@ -77,8 +91,8 @@ export default function NotebookScreen({ onStartWalk }: { onStartWalk: () => voi
                     ) : (
                       <>
                         {explain && <small>{goal}</small>}
-                        <span className="meter" role="img" aria-label={`${sticker.current}${unit} / ${sticker.goal}${unit}`}><i /></span>
-                        <small className="count">{t("notebook.goal", { current: `${sticker.current}${unit}`, goal: `${sticker.goal}${unit}` })}</small>
+                        <span className="meter" role="img" aria-label={`${current} / ${target}`}><i /></span>
+                        <small className="count">{t("notebook.goal", { current, goal: target })}</small>
                       </>
                     )}
                   </li>

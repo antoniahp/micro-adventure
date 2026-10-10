@@ -24,6 +24,7 @@ body {
   line-height: 1.5;
   color: var(--ink);
   background: var(--mist);
+  overflow-x: hidden; /* a safety net: no single stray element should ever push the whole page sideways */
 }
 
 button, input, textarea { font: inherit; color: inherit; }
@@ -36,8 +37,9 @@ legend { padding: 0; margin-bottom: 8px; font-size: 0.9rem; font-weight: 700; co
 .app { max-width: 480px; min-height: 100dvh; margin: 0 auto; display: flex; flex-direction: column; }
 main { flex: 1; padding: 12px 20px 32px; }
 section { position: relative; display: grid; gap: 22px; align-content: start; }
+section > * { min-width: 0; } /* a grid child's default min-width is its content's, so one long unbroken word could still widen the column */
 
-.topbar { display: flex; align-items: center; gap: 10px; padding: 18px 20px 0; color: var(--dusk); }
+.topbar { display: flex; align-items: center; gap: 10px; padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 0; color: var(--dusk); }
 .topbar h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
 .lang { margin-left: auto; display: flex; padding: 3px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
 .lang button { min-width: 40px; min-height: 32px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; font-size: 0.82rem; font-weight: 800; color: var(--muted); cursor: pointer; }
@@ -99,7 +101,7 @@ h3 { font-size: 1.15rem; font-weight: 800; }
 .field { display: grid; gap: 8px; }
 .field label { font-weight: 800; }
 textarea {
-  width: 100%; padding: 14px; resize: vertical; min-height: 110px;
+  width: 100%; padding: 14px; resize: none; min-height: 110px; max-height: 220px; overflow-y: auto; /* a long text scrolls inside the box instead of the box (and the page) growing */
   border: 2px solid var(--line); border-radius: 14px; background: var(--paper); line-height: 1.45;
 }
 input[type="text"], input[type="number"] {
@@ -166,7 +168,11 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
 .btn-record { background: var(--coral); color: #fff; }
 .recording svg { animation: pulse 1s infinite; }
 @keyframes pulse { 50% { opacity: 0.3; } }
-.entry-story { margin: 0; padding: 4px 0 4px 12px; border-left: 3px solid var(--c); color: var(--ink); font-size: 1rem; }
+/* overflow-wrap: a long word with no spaces (a transcription glitch, a word in another script) must
+   still break instead of stretching the page sideways. */
+/* max-height + overflow-y: a story can be up to 2000 characters; past a few lines it scrolls inside its own box
+   instead of pushing the rest of the card (and the buttons under it) far down the page. */
+.entry-story { margin: 0; padding: 4px 8px 4px 12px; border-left: 3px solid var(--c); color: var(--ink); font-size: 1rem; overflow-wrap: anywhere; white-space: pre-line; max-height: 10.5em; overflow-y: auto; overscroll-behavior: contain; }
 
 /* ---------- Notebook ---------- */
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -232,6 +238,7 @@ textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4
    actually render, or an extra tab (like Ajustes) falls onto a second row instead of lining up. */
 .tabs { position: sticky; bottom: 0; display: flex; padding-bottom: env(safe-area-inset-bottom); background: var(--paper); border-top: 1px solid var(--line); }
 .tabs button { flex: 1 1 0; min-width: 0; display: grid; justify-items: center; gap: 2px; min-height: 56px; padding: 8px 4px; border: 0; background: transparent; font-size: 0.78rem; font-weight: 700; color: var(--muted); cursor: pointer; }
+@media (max-width: 360px) { .tabs button { font-size: 0.68rem; padding-inline: 2px; } } /* five labels fit side by side on the narrowest phones */
 .tabs button.active { color: var(--dusk); box-shadow: inset 0 3px 0 var(--sun); }
 
 @media (prefers-reduced-motion: reduce) {

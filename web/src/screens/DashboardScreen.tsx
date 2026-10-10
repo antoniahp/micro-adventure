@@ -242,11 +242,11 @@ function YearView({ data, lang, onMove }: { data: YearlySummary; lang: string; o
       {data.year <= oldest && null}
 
       <div className="tiles">
-        <Tile icon="pin" color="#F25C54" label={t("dash.walks")} value={String(data.walks_count)} note={t("dash.days", { n: data.days_walked })} />
+        <Tile icon="pin" color="#F25C54" label={t("dash.walks")} value={String(data.walks_count)} note={data.days_walked === 1 ? t("dash.daysOne") : t("dash.days", { n: data.days_walked })} />
         <Tile icon="check" color="#10A878" label={t("dash.challenges")} value={String(data.challenges_completed)} note={`${data.perfect_walks} ${t("dash.perfect").toLowerCase()}`} />
         <Tile icon="clock" color="#2E8BEA" label={t("dash.minutes")} value={formatMinutes(data.minutes)} />
         <Tile icon="route" color="#7357E8" label={t("dash.km")} value={formatKm(data.km)} />
-        <Tile icon="flame" color="#FFB300" label={t("dash.longestStreak")} value={t("dash.days", { n: data.longest_streak })} />
+        <Tile icon="flame" color="#FFB300" label={t("dash.longestStreak")} value={data.longest_streak === 1 ? t("dash.daysOne") : t("dash.days", { n: data.longest_streak })} />
         <Tile icon="chat" color="#F25C54" label={t("dash.stories")} value={String(data.stories)} note={data.best_month ? `${t("dash.bestMonth")}: ${monthLong.format(new Date(data.year, data.best_month - 1, 1, 12))}` : undefined} />
       </div>
       <p className="hint">{t("dash.dataNote")}</p>
