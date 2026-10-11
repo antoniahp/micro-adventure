@@ -3,6 +3,8 @@ import { deleteAccount, getAccount, linkGoogleAccount, setNickname, unlinkGoogle
 import { consumePendingGoogleCredential, googleSignInAvailable, renderGoogleSignIn } from "../google";
 import Icon from "../components/Icon";
 import LegalLinks from "../components/LegalLinks";
+import LegalNotice from "../components/LegalNotice";
+import { acceptLegalIfNeeded, useLegalNoticeNeeded } from "../legalConsent";
 import { restartTours } from "../components/tourStorage";
 import { useI18n } from "../i18n";
 import { adoptSession } from "../session";
@@ -28,6 +30,7 @@ export default function SettingsScreen() {
   // Google's script is only fetched once the person asks for it: until then, opening Settings sends nothing to Google.
   const [googleWanted, setGoogleWanted] = useState(false);
   const [copied, setCopied] = useState(false);
+  const legalNotice = useLegalNoticeNeeded();
   const googleButton = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -73,6 +76,7 @@ export default function SettingsScreen() {
 
   async function saveNickname(value: string) {
     try {
+      await acceptLegalIfNeeded();
       const updated = await setNickname(userId, value || null);
       setAccount(updated);
       setNicknameField(updated.nickname ?? "");
@@ -87,6 +91,16 @@ export default function SettingsScreen() {
     setGoogleError("");
     try {
       setAccount(await unlinkGoogleAccount(userId));
+    } catch (e) {
+      setGoogleError((e as Error).message);
+    }
+  }
+
+  async function connectGoogle() {
+    setGoogleError("");
+    try {
+      await acceptLegalIfNeeded(); // before anything is fetched from Google
+      setGoogleWanted(true);
     } catch (e) {
       setGoogleError((e as Error).message);
     }
@@ -122,6 +136,7 @@ export default function SettingsScreen() {
     <section className="reminders">
       <h2>{t("settings.title")}</h2>
       <p className="hint">{t("settings.intro")}</p>
+      {legalNotice && <LegalNotice lead="legal.notice.settings" />}
 
       <div className="panel">
         <h3><Icon name="user" size={20} /> {t("account.nickname.title")}</h3>
@@ -161,7 +176,7 @@ export default function SettingsScreen() {
               <div ref={googleButton} />
             ) : (
               <>
-                <button className="btn btn-secondary left" onClick={() => setGoogleWanted(true)}>{t("account.google.connect")}</button>
+                <button className="btn btn-secondary left" onClick={connectGoogle}>{t("account.google.connect")}</button>
                 <p className="hint">{t("account.google.loads")}</p>
               </>
             )}

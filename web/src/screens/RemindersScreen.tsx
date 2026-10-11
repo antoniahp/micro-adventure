@@ -6,6 +6,8 @@ import { useI18n } from "../i18n";
 import { useInstall } from "../pwa";
 import { getUserId } from "../storage";
 import type { Place, Reminders } from "../types";
+import LegalNotice from "../components/LegalNotice";
+import { acceptLegalIfNeeded, useLegalNoticeNeeded } from "../legalConsent";
 
 const POLL_EVERY_MS = 3000;
 const POLL_FOR_MS = 3 * 60 * 1000; // the person has three minutes to press Start in Telegram
@@ -14,6 +16,7 @@ export default function RemindersScreen() {
   const { t } = useI18n();
   const install = useInstall();
   const userId = getUserId();
+  const legalNotice = useLegalNoticeNeeded();
   const [settings, setSettings] = useState<Reminders | null>(null);
   const [enabled, setEnabled] = useState(false);
   const [weekday, setWeekday] = useState("18:00");
@@ -48,6 +51,7 @@ export default function RemindersScreen() {
   async function connect() {
     setError("");
     try {
+      await acceptLegalIfNeeded();
       const url = await linkTelegram(userId);
       setTelegramUrl(url);
       window.open(url, "_blank", "noopener");
@@ -85,6 +89,7 @@ export default function RemindersScreen() {
     setSaved(false);
     setError("");
     try {
+      await acceptLegalIfNeeded();
       // The place is only asked for when the person wants the weather in the reminder, and it is taken away when they do not.
       let place: Place | null | undefined = undefined;
       if (shareWeather) {
@@ -115,6 +120,7 @@ export default function RemindersScreen() {
     <section className="reminders">
       <h2>{t("reminders.title")}</h2>
       <p className="hint">{t("reminders.intro")}</p>
+      {legalNotice && <LegalNotice lead="legal.notice.reminders" />}
 
       <div className="panel">
         <h3><Icon name="send" size={20} /> {t("reminders.telegram")}</h3>

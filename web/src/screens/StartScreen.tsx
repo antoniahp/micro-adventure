@@ -5,6 +5,8 @@ import { getPlace, rememberedPlaceAllowed } from "../location";
 import Trail from "../components/Trail";
 import Icon from "../components/Icon";
 import LegalLinks from "../components/LegalLinks";
+import LegalNotice from "../components/LegalNotice";
+import { acceptLegalIfNeeded, useLegalNoticeNeeded } from "../legalConsent";
 import Loader from "../components/Loader";
 import { useI18n, type TextKey } from "../i18n";
 import { useSky } from "../sky";
@@ -15,6 +17,7 @@ import { challengeRange, ENERGIES, MINUTES, WEATHERS } from "../ui";
 const MAX_NOTE = 500;
 
 export default function StartScreen({ onStarted }: { onStarted: (walkId: string) => void }) {
+  const legalNotice = useLegalNoticeNeeded();
   const { t } = useI18n();
   const sky = useSky();
   const [note, setNote] = useState("");
@@ -60,6 +63,9 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
     setLoading(true);
     setError("");
     try {
+      // The notice sits right above this button: tapping it, with the notice in view, is the acceptance. It's
+      // recorded (version and time) before anything about the walk is sent, so nothing is kept before informing.
+      await acceptLegalIfNeeded();
       onStarted(await startWalk(getUserId(), mood, minutes, weather, note.trim(), count, place));
     } catch (e) {
       setError((e as Error).message);
@@ -146,8 +152,9 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
       </fieldset>
 
       {error && <p className="error" role="alert">{error}</p>}
+      {legalNotice && <LegalNotice lead="legal.notice.walk" />}
       <button className="btn btn-primary btn-big" onClick={submit}>{t("start.submit")}</button>
-      <LegalLinks />
+      {!legalNotice && <LegalLinks />}
     </section>
   );
 }

@@ -77,10 +77,9 @@ h3 { font-size: 1.15rem; font-weight: 800; }
 .btn-danger:hover:not(:disabled) { background: #8f1e18; }
 .panel-danger { border-color: #f1c9c5; }
 .user-code { min-width: 0; overflow-wrap: anywhere; padding: 6px 10px; border-radius: 8px; background: var(--mist); font-size: 1rem; font-weight: 700; letter-spacing: 0.06em; }
-.legal-gate { display: grid; gap: 14px; }
-.legal-gate-points { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.legal-gate-points li { display: flex; align-items: flex-start; gap: 8px; }
-.legal-gate-points svg { flex: none; margin-top: 3px; color: var(--dusk); }
+.legal-notice { margin: 0; font-size: 0.88rem; line-height: 1.45; color: var(--muted); text-align: center; text-wrap: balance; }
+.reminders .legal-notice { text-align: left; }
+.legal-notice a { color: var(--dusk); font-weight: 700; text-underline-offset: 3px; }
 .legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; margin: 0; font-size: 0.88rem; color: var(--muted); }
 .legal-links a { color: var(--muted); text-underline-offset: 3px; }
 .panel .legal-links { justify-content: flex-start; }
