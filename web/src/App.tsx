@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Icon from "./components/Icon";
 import Logo from "./components/Logo";
+import Tour from "./components/Tour";
+import { markTourSeen, onToursRestarted, tourSeen } from "./components/tourStorage";
 import { LANGUAGES, useI18n } from "./i18n";
 import { currentWalk } from "./storage";
 import DashboardScreen from "./screens/DashboardScreen";
@@ -17,6 +19,22 @@ export default function App() {
   // State = data that, when it changes, makes React redraw the screen.
   const [tab, setTab] = useState<Tab>("walk");
   const [walkId, setWalkId] = useState<string | null>(currentWalk.get());
+  // The first time the app opens, a few bubbles say what each tab at the bottom is for.
+  const [appTour, setAppTour] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAppTour(!tourSeen("app")), 600); // let the first screen settle
+    const stop = onToursRestarted(() => setAppTour(true));
+    return () => {
+      window.clearTimeout(timer);
+      stop();
+    };
+  }, []);
+
+  function closeAppTour() {
+    markTourSeen("app");
+    setAppTour(false);
+  }
 
   function startedWalk(id: string) {
     currentWalk.set(id);
@@ -54,22 +72,33 @@ export default function App() {
       </main>
 
       <nav className="tabs">
-        <button className={tab === "walk" ? "active" : ""} onClick={() => setTab("walk")}>
+        <button data-tour="tab-walk" className={tab === "walk" ? "active" : ""} onClick={() => setTab("walk")}>
           <Icon name="pin" size={22} /> {t("app.tabWalk")}
         </button>
-        <button className={tab === "dashboard" ? "active" : ""} onClick={() => setTab("dashboard")}>
+        <button data-tour="tab-dashboard" className={tab === "dashboard" ? "active" : ""} onClick={() => setTab("dashboard")}>
           <Icon name="chart" size={22} /> {t("app.tabDashboard")}
         </button>
-        <button className={tab === "notebook" ? "active" : ""} onClick={() => setTab("notebook")}>
+        <button data-tour="tab-notebook" className={tab === "notebook" ? "active" : ""} onClick={() => setTab("notebook")}>
           <Icon name="book" size={22} /> {t("app.tabNotebook")}
         </button>
-        <button className={tab === "reminders" ? "active" : ""} onClick={() => setTab("reminders")}>
+        <button data-tour="tab-reminders" className={tab === "reminders" ? "active" : ""} onClick={() => setTab("reminders")}>
           <Icon name="bell" size={22} /> {t("app.tabReminders")}
         </button>
-        <button className={tab === "settings" ? "active" : ""} onClick={() => setTab("settings")}>
+        <button data-tour="tab-settings" className={tab === "settings" ? "active" : ""} onClick={() => setTab("settings")}>
           <Icon name="user" size={22} /> {t("app.tabSettings")}
         </button>
       </nav>
+
+      {appTour && (
+        <Tour
+          onDone={closeAppTour}
+          steps={(["walk", "dashboard", "notebook", "reminders", "settings"] as const).map((name) => ({
+            target: `tab-${name}`,
+            title: t(`tour.app.${name}.title`),
+            text: t(`tour.app.${name}.text`),
+          }))}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { getAccount, linkGoogleAccount, setNickname, unlinkGoogleAccount } from "../api";
 import { consumePendingGoogleCredential, googleSignInAvailable, renderGoogleSignIn } from "../google";
 import Icon from "../components/Icon";
+import { restartTours } from "../components/tourStorage";
 import { useI18n } from "../i18n";
 import { adoptSession } from "../session";
 import { getUserId } from "../storage";
@@ -131,6 +132,8 @@ export default function SettingsScreen() {
       </div>
 
       {error && <p className="error" role="alert">{error}</p>}
+
+      <button className="btn btn-link left" onClick={restartTours}>{t("tour.again")}</button>
     </section>
   );
 }
