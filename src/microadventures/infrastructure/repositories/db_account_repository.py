@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import IntegrityError
 from pymongo.errors import DuplicateKeyError
 
@@ -32,6 +34,9 @@ class DbAccountRepository(AccountService):
 
     def unlink_google(self, user_id: str) -> None:
         Account.objects.filter(user_id=user_id).update(google_sub=None, google_email_hash=None)
+
+    def accept_legal(self, user_id: str, version: str, at: datetime) -> None:
+        Account.objects.filter(user_id=user_id).update(legal_version=version, legal_accepted_at=at)
 
     def delete_by_user_id(self, user_id: str) -> None:
         Account.objects.filter(user_id=user_id).delete()

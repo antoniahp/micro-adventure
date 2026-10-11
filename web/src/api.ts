@@ -200,6 +200,11 @@ export async function unlinkTelegram(userId: string) {
   await request(`/users/${userId}/telegram`, { method: "DELETE" });
 }
 
+// "Accept and start": the server records which version of the privacy policy and terms, and when.
+export async function acceptLegal(userId: string) {
+  return (await request<Account>(`/users/${userId}/account/legal`, { method: "POST" }))!;
+}
+
 export async function getAccount(userId: string) {
   return (await request<Account>(`/users/${userId}/account`))!;
 }

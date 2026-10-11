@@ -63,7 +63,7 @@ export default function SettingsScreen() {
         window.location.reload(); // every screen re-reads the restored account from scratch
         return;
       }
-      setAccount({ nickname: result.nickname, google_linked: result.google_linked, support_code: result.support_code });
+      setAccount({ nickname: result.nickname, google_linked: result.google_linked, legal_accepted: result.legal_accepted, support_code: result.support_code });
     } catch (e) {
       setGoogleError((e as Error).message || t("error.google"));
     }

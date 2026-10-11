@@ -3,6 +3,7 @@ from ninja import Router, Status
 from api import wiring
 from api.account.account_serializer import AccountOut, GoogleLinkIn, GoogleLinkOut, NicknameIn
 from api.auth.session import ensure_own_user, issue_tokens
+from microadventures.application.commands.accept_legal.accept_legal_command import AcceptLegalCommand
 from microadventures.application.commands.delete_account.delete_account_command import DeleteAccountCommand
 from microadventures.application.commands.link_google_account.link_google_account_command import LinkGoogleAccountCommand
 from microadventures.application.commands.set_nickname.set_nickname_command import SetNicknameCommand
@@ -10,6 +11,7 @@ from microadventures.application.commands.unlink_google_account.unlink_google_ac
     UnlinkGoogleAccountCommand,
 )
 from microadventures.application.queries.find_account.find_account_query import FindAccountQuery
+from microadventures.domain.models.legal import CURRENT_LEGAL_VERSION
 from microadventures.domain.models.support_code import support_code
 
 router = Router()  # mounted at /users
@@ -17,10 +19,11 @@ router = Router()  # mounted at /users
 
 def _out(account, user_id: str) -> dict:
     if account is None:
-        return {"nickname": None, "google_linked": False, "support_code": support_code(user_id)}
+        return {"nickname": None, "google_linked": False, "legal_accepted": False, "support_code": support_code(user_id)}
     return {
         "nickname": account.nickname,
         "google_linked": bool(account.google_sub),
+        "legal_accepted": account.legal_version == CURRENT_LEGAL_VERSION,
         "support_code": support_code(user_id),
     }
 
@@ -39,6 +42,14 @@ def get_account(request, user_id: str):
 def set_nickname(request, user_id: str, payload: NicknameIn):
     ensure_own_user(request, user_id)
     wiring.set_nickname_handler().handle(SetNicknameCommand(user_id=user_id, nickname=payload.nickname))
+    return _out(_find(user_id), user_id)
+
+
+@router.post("/{user_id}/account/legal", response=AccountOut)
+def accept_legal(request, user_id: str):
+    """The person tapped "Accept and start" after being shown the privacy policy and the terms."""
+    ensure_own_user(request, user_id)
+    wiring.accept_legal_handler().handle(AcceptLegalCommand(user_id=user_id))
     return _out(_find(user_id), user_id)
 
 
