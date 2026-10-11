@@ -3,7 +3,8 @@
 Three layers, because a key can leak in different shapes:
 1. Known shapes: the Telegram token in its URL, `?key=` in query strings, the user and password of a MongoDB
    address, and `Authorization: Bearer ...` headers.
-2. Names: any dictionary field called api_key, authorization, password, token, cookie... is emptied.
+2. Names: any dictionary field called api_key, authorization, password, token, cookie... is emptied
+   (token counts such as input_tokens are not secrets and are kept).
 3. Values: whatever the environment holds in a variable named like KEY, TOKEN, SECRET, PASSWORD, URI or DSN is
    replaced wherever it appears, even in a shape nobody foresaw.
 """
@@ -22,7 +23,9 @@ PATTERNS = (
     (re.compile(r"(?i)\b((?:xi-api-key|api[-_]?key|password|secret)['\"]?\s*[:=]\s*['\"]?)[^\s,'\"&}]+"), rf"\1{FILTERED}"),
 )
 
-SENSITIVE_NAMES = re.compile(r"(?i)(api[-_]?key|authorization|password|passwd|secret|token|cookie|credential|dsn)")
+# "token(?!s)": access_token and bot_token are secrets, but gen_ai.usage.input_tokens is a count, and the AI views
+# in Sentry are built on those counts. A bare "token" used to blank them all.
+SENSITIVE_NAMES = re.compile(r"(?i)(api[-_]?key|authorization|password|passwd|secret|token(?!s)|cookie|credential|dsn)")
 SECRET_ENV_NAMES = re.compile(r"(KEY|TOKEN|SECRET|PASSWORD|URI|DSN)")
 MIN_SECRET_LENGTH = 8  # a short value would also cut up ordinary words
 

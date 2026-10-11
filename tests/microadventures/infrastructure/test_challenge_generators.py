@@ -254,3 +254,32 @@ def test_challenges_are_asked_for_without_thinking_first():
         pass  # an empty answer is a failure: only the request matters here
 
     assert http.requests[0][1]["think"] is False
+
+
+# A swap asks for one challenge, and in production every swap came back as a template. These are the
+# shapes a single challenge can come in that the parser used to reject.
+SWAP = ChallengeBrief(mood=Mood.CALM, minutes=30, weather="clear", count=1, category=ChallengeCategory.SOUND)
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        '{"challenges": {"category": "sound", "text": "Escucha el viento."}}',  # one object instead of a list of one
+        '{"challenge": "Escucha el viento."}',  # the sentence under a singular key
+        '{"reto": {"category": "sound", "text": "Escucha el viento."}}',  # one object under another key
+        '"Escucha el viento."',  # just the sentence, as a JSON string
+        '{"sound": "Escucha el viento."}',  # the category as the key
+    ],
+)
+def test_a_swap_accepts_a_single_challenge_in_the_shapes_models_give_it(output):
+    challenges = OllamaChallengeGenerator("http://ollama", "gemma", http=FakeHttp(output)).generate(SWAP)
+
+    assert [(c.category, c.text) for c in challenges] == [(ChallengeCategory.SOUND, "Escucha el viento.")]
+
+
+def test_a_swap_gets_room_for_the_json_around_a_single_challenge():
+    http = FakeHttp('{"challenges": [{"category": "sound", "text": "Escucha el viento."}]}')
+
+    OllamaChallengeGenerator("http://ollama", "gemma", http=http).generate(SWAP)
+
+    assert http.requests[0][1]["options"]["num_predict"] >= 160
