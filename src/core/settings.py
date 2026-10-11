@@ -96,8 +96,8 @@ X_FRAME_OPTIONS = "DENY"  # nobody can put the app inside an <iframe> on another
 CONTENT_SECURITY_POLICY = (
     "default-src 'self'; "
     "script-src 'self' https://accounts.google.com; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; "
-    "font-src 'self' https://fonts.gstatic.com; "
+    "style-src 'self' 'unsafe-inline' https://accounts.google.com; "
+    "font-src 'self'; "
     "img-src 'self' data: blob:; "
     "connect-src 'self' https://accounts.google.com; "
     "frame-src https://accounts.google.com; "

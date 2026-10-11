@@ -10,16 +10,18 @@ from microadventures.application.commands.unlink_google_account.unlink_google_ac
     UnlinkGoogleAccountCommand,
 )
 from microadventures.application.queries.find_account.find_account_query import FindAccountQuery
+from microadventures.domain.models.support_code import support_code
 
 router = Router()  # mounted at /users
 
 
-def _out(account) -> dict:
+def _out(account, user_id: str) -> dict:
     if account is None:
-        return {"nickname": None, "google_linked": False}
+        return {"nickname": None, "google_linked": False, "support_code": support_code(user_id)}
     return {
         "nickname": account.nickname,
         "google_linked": bool(account.google_sub),
+        "support_code": support_code(user_id),
     }
 
 
@@ -30,14 +32,14 @@ def _find(user_id: str):
 @router.get("/{user_id}/account", response=AccountOut)
 def get_account(request, user_id: str):
     ensure_own_user(request, user_id)
-    return _out(_find(user_id))
+    return _out(_find(user_id), user_id)
 
 
 @router.put("/{user_id}/account/nickname", response=AccountOut)
 def set_nickname(request, user_id: str, payload: NicknameIn):
     ensure_own_user(request, user_id)
     wiring.set_nickname_handler().handle(SetNicknameCommand(user_id=user_id, nickname=payload.nickname))
-    return _out(_find(user_id))
+    return _out(_find(user_id), user_id)
 
 
 @router.post("/{user_id}/account/google/link", response=GoogleLinkOut)
@@ -49,15 +51,15 @@ def link_google(request, user_id: str, payload: GoogleLinkIn):
     account = _find(resulting_user_id)
     if resulting_user_id != user_id:
         tokens = issue_tokens(resulting_user_id)
-        return {**_out(account), "switched": True, "user_id": resulting_user_id, "access": tokens["access"], "refresh": tokens["refresh"]}
-    return {**_out(account), "switched": False, "user_id": user_id, "access": None, "refresh": None}
+        return {**_out(account, resulting_user_id), "switched": True, "user_id": resulting_user_id, "access": tokens["access"], "refresh": tokens["refresh"]}
+    return {**_out(account, user_id), "switched": False, "user_id": user_id, "access": None, "refresh": None}
 
 
 @router.post("/{user_id}/account/google/unlink", response=AccountOut)
 def unlink_google(request, user_id: str):
     ensure_own_user(request, user_id)
     wiring.unlink_google_account_handler().handle(UnlinkGoogleAccountCommand(user_id=user_id))
-    return _out(_find(user_id))
+    return _out(_find(user_id), user_id)
 
 
 @router.delete("/{user_id}/account", response={204: None})

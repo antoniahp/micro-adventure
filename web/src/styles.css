@@ -12,7 +12,7 @@
   --mint: #10a878;
   --violet: #7357e8;
   --danger: #b3261e;
-  --font: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: "Bricolage Grotesque Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -76,6 +76,10 @@ h3 { font-size: 1.15rem; font-weight: 800; }
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-danger:hover:not(:disabled) { background: #8f1e18; }
 .panel-danger { border-color: #f1c9c5; }
+.user-code { min-width: 0; overflow-wrap: anywhere; padding: 6px 10px; border-radius: 8px; background: var(--mist); font-size: 1rem; font-weight: 700; letter-spacing: 0.06em; }
+.legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; margin: 0; font-size: 0.88rem; color: var(--muted); }
+.legal-links a { color: var(--muted); text-underline-offset: 3px; }
+.panel .legal-links { justify-content: flex-start; }
 .panel-danger h3 { color: var(--danger); }
 .btn:disabled, .btn.disabled { opacity: 0.5; cursor: default; }
 .btn-primary:disabled { background: #c9cdd6; color: #6b7280; opacity: 1; }

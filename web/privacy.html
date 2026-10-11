@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#25235f" />
+    <link rel="icon" href="/icon-192.png" type="image/png" />
+    <title>Privacidad · MicroAdventures</title>
+    <script type="module" src="/src/legal/legal.ts"></script>
+  </head>
+  <body class="legal">
+    <header class="legal-top">
+      <a class="legal-back" href="/">← MicroAdventures</a>
+      <div class="lang" role="group" aria-label="Idioma / Language">
+        <button type="button" data-lang="es" lang="es">ES</button>
+        <button type="button" data-lang="en" lang="en">EN</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- ============================== ESPAÑOL ============================== -->
+      <article lang="es">
+        <h1>Política de privacidad</h1>
+        <p class="updated">Última actualización: 11 de octubre de 2026</p>
+
+        <div class="summary">
+          <h2>En pocas palabras</h2>
+          <ul>
+            <li>No pedimos registrarte, ni tu email, ni tu nombre real. Tu navegador recibe un identificador anónimo.</li>
+            <li>No hay publicidad, ni cookies, ni analítica de seguimiento. No vendemos ni cedemos tus datos.</li>
+            <li>Guardamos lo que escribes de tus paseos para enseñártelo en tu cuaderno y tu panel. Nada más.</li>
+            <li>Puedes borrar todo, para siempre, desde <strong>Ajustes → Borrar mi cuenta</strong>.</li>
+          </ul>
+        </div>
+
+        <h2>1. Quién es responsable de tus datos</h2>
+        <p>
+          MicroAdventures es un proyecto personal, gratuito y sin ánimo de lucro de <strong>Antonia</strong>, que es
+          la responsable del tratamiento según el Reglamento General de Protección de Datos (RGPD, Reglamento (UE)
+          2016/679). Para cualquier cuestión sobre tus datos: <strong><a href="mailto:microadventures.support@gmail.com">microadventures.support@gmail.com</a></strong>.
+        </p>
+
+        <h2>2. Qué datos tratamos, para qué y con qué base legal</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Datos</th><th>Para qué</th><th>Base legal (art. 6 RGPD)</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Identificador anónimo que crea tu navegador y los tokens de sesión</td>
+                <td>Saber que tus paseos son tuyos sin pedirte una cuenta</td>
+                <td>Ejecución del servicio que pides (6.1.b)</td>
+              </tr>
+              <tr>
+                <td>Tus paseos: cómo vienes (estado de ánimo y nota opcional), duración, retos, lo que cuentas de cada reto, si lo completaste con foto, minutos, kilómetros y diario. Tus reflexiones semanales.</td>
+                <td>Preparar tus retos, mostrarte tu cuaderno, tu panel y tus insignias</td>
+                <td>Ejecución del servicio (6.1.b)</td>
+              </tr>
+              <tr>
+                <td>Fotos de un reto</td>
+                <td>Comprobar con un modelo de IA que la foto encaja con el reto. <strong>La foto no se guarda</strong>: solo guardamos que el reto se completó con foto.</td>
+                <td>Ejecución del servicio (6.1.b)</td>
+              </tr>
+              <tr>
+                <td>Notas de voz</td>
+                <td>Pasarlas a texto. <strong>No guardamos el audio</strong>, y pedimos a ElevenLabs que borre su copia en cuanto recibimos el texto.</td>
+                <td>Ejecución del servicio (6.1.b)</td>
+              </tr>
+              <tr>
+                <td>Ubicación aproximada (redondeada a unos 1&nbsp;km), solo si das permiso al navegador</td>
+                <td>Adaptar los retos al tiempo y a la luz. No se guarda con el paseo. Si activas los avisos con el tiempo, se guarda en tus avisos hasta que la cambies o los borres.</td>
+                <td>Tu consentimiento (6.1.a), que puedes retirar en los permisos del navegador</td>
+              </tr>
+              <tr>
+                <td>Cómo te llamamos (opcional; puede ser un apodo)</td>
+                <td>Saludarte en la app</td>
+                <td>Tu consentimiento (6.1.a)</td>
+              </tr>
+              <tr>
+                <td>Conexión con Google (opcional): el identificador de tu cuenta de Google y una huella cifrada de un solo sentido de tu email. <strong>Nunca guardamos tu email.</strong></td>
+                <td>Recuperar tu progreso en otro móvil</td>
+                <td>Tu consentimiento (6.1.a); puedes desconectarla en Ajustes</td>
+              </tr>
+              <tr>
+                <td>Avisos por Telegram (opcional): el identificador del chat, tus horarios, zona horaria e idioma</td>
+                <td>Enviarte el recordatorio para salir a caminar</td>
+                <td>Tu consentimiento (6.1.a); puedes desconectarlo en Avisos</td>
+              </tr>
+              <tr>
+                <td>Datos técnicos: dirección IP, registros del servidor y avisos de error y rendimiento (sin tu contenido)</td>
+                <td>Mantener la app segura, evitar abusos y arreglar fallos</td>
+                <td>Interés legítimo en la seguridad del servicio (6.1.f)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <strong>Datos sensibles.</strong> La app no te pide datos de salud ni otras categorías especiales de datos
+          (art. 9 RGPD). Te pedimos que no los escribas en las notas ni en el diario. Si aun así lo haces, se tratan
+          como el resto de lo que escribes, solo para el servicio, y puedes borrarlos cuando quieras.
+        </p>
+
+        <h2>3. Inteligencia artificial</h2>
+        <p>
+          Los retos los escribe un modelo de lenguaje (Gemma, de Google) que se ejecuta en Ollama, a partir de tu
+          estado de ánimo, tu nota opcional, la duración y el tiempo. Si el modelo no responde, se usan retos de una
+          lista preparada. La app indica qué retos vienen de la IA. Según su política, Ollama no guarda el contenido
+          de las peticiones más allá de lo necesario para responder y no lo usa para entrenar modelos. No se toman
+          decisiones automatizadas con efectos jurídicos sobre ti (art. 22 RGPD).
+        </p>
+
+        <h2>4. Con quién se comparten</h2>
+        <p>No vendemos tus datos ni los cedemos a nadie. Solo los tratan, por nuestra cuenta, estos proveedores:</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Proveedor</th><th>Qué hace</th><th>Dónde</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Render</td><td>Aloja la app y sus registros</td><td>EE. UU.</td></tr>
+              <tr><td>MongoDB Atlas</td><td>Base de datos</td><td>Fráncfort (UE)</td></tr>
+              <tr><td>Ollama</td><td>Ejecuta el modelo que escribe los retos y revisa las fotos</td><td>EE. UU.</td></tr>
+              <tr><td>ElevenLabs</td><td>Pasa las notas de voz a texto</td><td>EE. UU.</td></tr>
+              <tr><td>Sentry</td><td>Avisos de error y rendimiento, con filtros que quitan claves y datos identificativos</td><td>EE. UU.</td></tr>
+              <tr><td>Telegram</td><td>Envía los avisos, solo si los conectas</td><td>Según su política</td></tr>
+              <tr><td>Google</td><td>Inicio de sesión, solo si pulsas «Conectar con Google»</td><td>Según su política</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Para el tiempo, nuestro servidor consulta Open-Meteo y MET Norway enviando solo unas coordenadas
+          redondeadas: ni tu IP ni ningún dato tuyo llega a ellos.
+        </p>
+        <p>
+          <strong>Transferencias fuera de la UE.</strong> Cuando un proveedor está en EE. UU. y adherido al Marco de
+          Privacidad de Datos UE-EE. UU., la transferencia se basa en la decisión de adecuación de la Comisión
+          Europea de 10 de julio de 2023 (art. 45 RGPD). En los demás casos, se basa en las cláusulas contractuales
+          tipo aprobadas por la Comisión que incluyen las condiciones del proveedor (art. 46 RGPD).
+        </p>
+
+        <h2>5. Cuánto tiempo los guardamos</h2>
+        <ul>
+          <li>Tus paseos, reflexiones, avisos y cuenta: mientras tengas la cuenta. Al borrarla desde Ajustes se eliminan al momento de la base de datos.</li>
+          <li>Registros del servidor y avisos de error: el tiempo que fijan Render y Sentry, normalmente unos días o semanas.</li>
+          <li>El contador que limita peticiones por IP: unos minutos, solo en memoria.</li>
+        </ul>
+
+        <h2>6. Tus derechos</h2>
+        <p>
+          Tienes derecho a acceder a tus datos, rectificarlos, suprimirlos, limitar su tratamiento, oponerte a él,
+          a la portabilidad y a retirar tu consentimiento en cualquier momento, sin que eso afecte a lo hecho antes.
+        </p>
+        <ul>
+          <li><strong>Borrarlo todo:</strong> Ajustes → Borrar mi cuenta. Es inmediato.</li>
+          <li><strong>Lo demás:</strong> escribe a <strong><a href="mailto:microadventures.support@gmail.com">microadventures.support@gmail.com</a></strong> e incluye el código que aparece en Ajustes. Como no sabemos quién eres, ese código es la única forma de encontrar tus datos (art. 11 RGPD). Respondemos en un plazo máximo de un mes.</li>
+          <li>
+            Si crees que no tratamos bien tus datos, puedes reclamar ante la
+            <a href="https://www.aepd.es" rel="noopener" target="_blank">Agencia Española de Protección de Datos</a>
+            o ante la autoridad de protección de datos de tu país.
+          </li>
+        </ul>
+
+        <h2>7. Menores</h2>
+        <p>
+          La app está pensada para mayores de 14 años, la edad a partir de la cual en España se puede consentir el
+          tratamiento de datos. Si vives en otro país de la UE, debes tener la edad que fije tu país (entre 13 y 16 años)
+          o el permiso de tu madre, padre o tutor.
+        </p>
+
+        <h2 id="storage">8. Cookies y almacenamiento en tu dispositivo</h2>
+        <p>
+          La app no usa cookies. Guarda en el almacenamiento local de tu navegador solo lo imprescindible para
+          funcionar o recordar tus elecciones, por lo que no necesita tu consentimiento (art. 5.3 de la Directiva
+          2002/58/CE):
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nombre</th><th>Para qué</th></tr></thead>
+            <tbody>
+              <tr><td><code>userId</code>, <code>session</code></td><td>Tu identificador anónimo y tus tokens de sesión</td></tr>
+              <tr><td><code>walkId</code></td><td>El paseo que tienes en marcha</td></tr>
+              <tr><td><code>lang</code></td><td>El idioma que elegiste</td></tr>
+              <tr><td><code>sharesPlace</code></td><td>Que ya diste permiso de ubicación, para no preguntarte cada vez</td></tr>
+              <tr><td><code>tour.app.done</code>, <code>tour.walk.done</code></td><td>Que ya viste la guía</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Además, la app guarda en caché sus propios archivos para abrir rápido y funcionar sin conexión. Las
+          tipografías se sirven desde nuestro propio servidor. Solo si pulsas «Conectar con Google» se carga el
+          botón de Google, que tiene su propia política de privacidad y cookies.
+        </p>
+
+        <h2>9. Seguridad</h2>
+        <p>
+          Toda la comunicación va cifrada (HTTPS). Cada navegador tiene sus propios tokens firmados, así que conocer
+          el identificador de otra persona no abre sus datos. De tu cuenta de Google solo guardamos una huella cifrada
+          del email, de la que no se puede recuperar la dirección. Los registros pasan por filtros que quitan claves
+          y tokens.
+        </p>
+
+        <h2>10. Cambios</h2>
+        <p>
+          Si cambiamos esta política, actualizaremos la fecha de arriba. Si el cambio es importante, te avisaremos
+          dentro de la app.
+        </p>
+      </article>
+
+      <!-- ============================== ENGLISH ============================== -->
+      <article lang="en">
+        <h1>Privacy policy</h1>
+        <p class="updated">Last updated: 11 October 2026</p>
+
+        <div class="summary">
+          <h2>In short</h2>
+          <ul>
+            <li>No sign-up, no email, no real name. Your browser gets an anonymous id.</li>
+            <li>No ads, no cookies, no tracking analytics. We don't sell or share your data.</li>
+            <li>We keep what you write about your walks to show it to you in your notebook and dashboard. Nothing else.</li>
+            <li>You can delete everything, for good, from <strong>Settings → Delete my account</strong>.</li>
+          </ul>
+        </div>
+
+        <h2>1. Who is responsible for your data</h2>
+        <p>
+          MicroAdventures is a free, non-profit personal project by <strong>Antonia</strong>, who is the data
+          controller under the General Data Protection Regulation (GDPR, Regulation (EU) 2016/679). For anything
+          about your data: <strong><a href="mailto:microadventures.support@gmail.com">microadventures.support@gmail.com</a></strong>.
+        </p>
+
+        <h2>2. What data we process, why, and on what legal basis</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Data</th><th>What for</th><th>Legal basis (GDPR art. 6)</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>The anonymous id your browser creates, and the session tokens</td>
+                <td>Knowing your walks are yours without asking you for an account</td>
+                <td>Providing the service you ask for (6.1.b)</td>
+              </tr>
+              <tr>
+                <td>Your walks: how you're arriving (mood and optional note), length, challenges, what you tell about each one, whether you completed it with a photo, minutes, kilometres and diary. Your weekly reflections.</td>
+                <td>Preparing your challenges and showing you your notebook, dashboard and badges</td>
+                <td>Providing the service (6.1.b)</td>
+              </tr>
+              <tr>
+                <td>Photos for a challenge</td>
+                <td>Checking with an AI model that the photo fits the challenge. <strong>The photo is not stored</strong>: we only keep that the challenge was completed with a photo.</td>
+                <td>Providing the service (6.1.b)</td>
+              </tr>
+              <tr>
+                <td>Voice notes</td>
+                <td>Turning them into text. <strong>We don't store the audio</strong>, and we ask ElevenLabs to delete its copy as soon as we get the text back.</td>
+                <td>Providing the service (6.1.b)</td>
+              </tr>
+              <tr>
+                <td>Approximate location (rounded to about 1&nbsp;km), only if you allow it in your browser</td>
+                <td>Fitting the challenges to the weather and the light. It isn't stored with the walk. If you turn on reminders with the weather, it's kept with your reminders until you change or remove it.</td>
+                <td>Your consent (6.1.a), which you can withdraw in the browser's permissions</td>
+              </tr>
+              <tr>
+                <td>What we call you (optional; a nickname is fine)</td>
+                <td>Greeting you in the app</td>
+                <td>Your consent (6.1.a)</td>
+              </tr>
+              <tr>
+                <td>Google connection (optional): your Google account id and a one-way hash of your email. <strong>We never store your email.</strong></td>
+                <td>Restoring your progress on another phone</td>
+                <td>Your consent (6.1.a); you can disconnect it in Settings</td>
+              </tr>
+              <tr>
+                <td>Telegram reminders (optional): the chat id, your times, time zone and language</td>
+                <td>Sending you the nudge to go for a walk</td>
+                <td>Your consent (6.1.a); you can disconnect it in Reminders</td>
+              </tr>
+              <tr>
+                <td>Technical data: IP address, server logs, and error and performance reports (without your content)</td>
+                <td>Keeping the app secure, preventing abuse and fixing bugs</td>
+                <td>Legitimate interest in the security of the service (6.1.f)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <strong>Sensitive data.</strong> The app doesn't ask for health data or any other special category of data
+          (GDPR art. 9). Please don't write it in notes or the diary. If you do, it's handled like everything else you
+          write, only for the service, and you can delete it whenever you like.
+        </p>
+
+        <h2>3. Artificial intelligence</h2>
+        <p>
+          The challenges are written by a language model (Gemma, by Google) running on Ollama, based on your mood,
+          your optional note, the length and the weather. If the model doesn't answer, challenges from a prepared
+          list are used. The app shows which challenges come from AI. According to its policy, Ollama doesn't keep
+          request content beyond what it needs to answer and doesn't use it to train models. No automated decisions
+          with legal effects are made about you (GDPR art. 22).
+        </p>
+
+        <h2>4. Who it's shared with</h2>
+        <p>We don't sell your data or give it to anyone. Only these providers process it, on our behalf:</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Provider</th><th>What it does</th><th>Where</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Render</td><td>Hosts the app and its logs</td><td>USA</td></tr>
+              <tr><td>MongoDB Atlas</td><td>Database</td><td>Frankfurt (EU)</td></tr>
+              <tr><td>Ollama</td><td>Runs the model that writes the challenges and checks photos</td><td>USA</td></tr>
+              <tr><td>ElevenLabs</td><td>Turns voice notes into text</td><td>USA</td></tr>
+              <tr><td>Sentry</td><td>Error and performance reports, with filters that strip keys and identifying data</td><td>USA</td></tr>
+              <tr><td>Telegram</td><td>Sends reminders, only if you connect it</td><td>Per its own policy</td></tr>
+              <tr><td>Google</td><td>Sign-in, only if you tap "Connect with Google"</td><td>Per its own policy</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          For the weather, our server asks Open-Meteo and MET Norway with rounded coordinates only: neither your IP
+          nor any data about you reaches them.
+        </p>
+        <p>
+          <strong>Transfers outside the EU.</strong> When a provider is in the USA and certified under the EU-U.S.
+          Data Privacy Framework, the transfer relies on the European Commission's adequacy decision of 10 July 2023
+          (GDPR art. 45). Otherwise, it relies on the Commission's standard contractual clauses included in the
+          provider's terms (GDPR art. 46).
+        </p>
+
+        <h2>5. How long we keep it</h2>
+        <ul>
+          <li>Your walks, reflections, reminders and account: for as long as you have the account. Deleting it from Settings removes them from the database at once.</li>
+          <li>Server logs and error reports: for the period set by Render and Sentry, usually a few days or weeks.</li>
+          <li>The per-IP request counter: a few minutes, in memory only.</li>
+        </ul>
+
+        <h2>6. Your rights</h2>
+        <p>
+          You have the right to access your data, correct it, erase it, restrict or object to its processing, take it
+          with you (portability), and withdraw your consent at any time, without affecting what was done before.
+        </p>
+        <ul>
+          <li><strong>Delete everything:</strong> Settings → Delete my account. It's immediate.</li>
+          <li><strong>Anything else:</strong> write to <strong><a href="mailto:microadventures.support@gmail.com">microadventures.support@gmail.com</a></strong> and include the code shown in Settings. Since we don't know who you are, that code is the only way to find your data (GDPR art. 11). We reply within one month at most.</li>
+          <li>
+            If you think your data isn't being handled properly, you can complain to the
+            <a href="https://www.aepd.es/en" rel="noopener" target="_blank">Spanish Data Protection Agency (AEPD)</a>
+            or to the data protection authority of your country.
+          </li>
+        </ul>
+
+        <h2>7. Children</h2>
+        <p>
+          The app is meant for people aged 14 and over, the age from which consent to data processing is valid in
+          Spain. If you live in another EU country, you must be the age your country sets (between 13 and 16) or have
+          a parent's or guardian's permission.
+        </p>
+
+        <h2>8. Cookies and storage on your device</h2>
+        <p>
+          The app uses no cookies. It keeps in your browser's local storage only what it needs to work or to remember
+          your choices, so it doesn't need your consent (art. 5(3) of Directive 2002/58/EC):
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>What for</th></tr></thead>
+            <tbody>
+              <tr><td><code>userId</code>, <code>session</code></td><td>Your anonymous id and session tokens</td></tr>
+              <tr><td><code>walkId</code></td><td>The walk you have under way</td></tr>
+              <tr><td><code>lang</code></td><td>The language you picked</td></tr>
+              <tr><td><code>sharesPlace</code></td><td>That you already allowed location, so you aren't asked every time</td></tr>
+              <tr><td><code>tour.app.done</code>, <code>tour.walk.done</code></td><td>That you've already seen the guide</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The app also caches its own files to open fast and work offline. Fonts are served from our own server.
+          Google's button is only loaded if you tap "Connect with Google", and it has its own privacy and cookie
+          policy.
+        </p>
+
+        <h2>9. Security</h2>
+        <p>
+          All traffic is encrypted (HTTPS). Each browser has its own signed tokens, so knowing someone else's id opens
+          nothing. From your Google account we keep only a one-way hash of the email, from which the address can't be
+          recovered. Logs go through filters that strip keys and tokens.
+        </p>
+
+        <h2>10. Changes</h2>
+        <p>
+          If we change this policy, we'll update the date above. If the change is significant, we'll let you know in
+          the app.
+        </p>
+      </article>
+    </main>
+
+    <footer class="legal-foot">
+      <a href="/privacy.html">Privacidad · Privacy</a>
+      <a href="/terms.html">Condiciones · Terms</a>
+    </footer>
+  </body>
+</html>

@@ -3,6 +3,7 @@ import json
 import pytest
 
 from api import wiring
+from microadventures.domain.models.support_code import support_code
 from tests.auth_helpers import signed_in
 from tests.fakes import (
     FakeGoogleIdentityVerifier,
@@ -28,7 +29,7 @@ def test_a_fresh_account_has_no_nickname_and_no_google():
     response = client.get("/api/users/user-1/account")
 
     assert response.status_code == 200
-    assert response.json() == {"nickname": None, "google_linked": False}
+    assert response.json() == {"nickname": None, "google_linked": False, "support_code": support_code("user-1")}
 
 
 def test_setting_a_nickname():
@@ -77,6 +78,7 @@ def test_linking_a_google_account():
     assert body == {
         "nickname": None,
         "google_linked": True,
+        "support_code": support_code("user-1"),
         "switched": False,
         "user_id": "user-1",
         "access": None,
@@ -120,7 +122,7 @@ def test_unlinking_google():
     response = client.post("/api/users/user-1/account/google/unlink")
 
     assert response.status_code == 200
-    assert response.json() == {"nickname": None, "google_linked": False}
+    assert response.json() == {"nickname": None, "google_linked": False, "support_code": support_code("user-1")}
 
 
 def test_cannot_link_google_for_another_user():

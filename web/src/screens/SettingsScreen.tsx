@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { deleteAccount, getAccount, linkGoogleAccount, setNickname, unlinkGoogleAccount } from "../api";
 import { consumePendingGoogleCredential, googleSignInAvailable, renderGoogleSignIn } from "../google";
 import Icon from "../components/Icon";
+import LegalLinks from "../components/LegalLinks";
 import { restartTours } from "../components/tourStorage";
 import { useI18n } from "../i18n";
 import { adoptSession } from "../session";
@@ -24,6 +25,9 @@ export default function SettingsScreen() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  // Google's script is only fetched once the person asks for it: until then, opening Settings sends nothing to Google.
+  const [googleWanted, setGoogleWanted] = useState(false);
+  const [copied, setCopied] = useState(false);
   const googleButton = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -44,10 +48,10 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
-    if (!loaded || !googleSignInAvailable || !googleButton.current || account?.google_linked) return;
+    if (!loaded || !googleWanted || !googleSignInAvailable || !googleButton.current || account?.google_linked) return;
     renderGoogleSignIn(googleButton.current, lang).catch((e: Error) => setGoogleError(e.message || t("error.google")));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, account?.google_linked, userId, lang]);
+  }, [loaded, googleWanted, account?.google_linked, userId, lang]);
 
   async function linkGoogle(idToken: string) {
     setGoogleError("");
@@ -59,7 +63,7 @@ export default function SettingsScreen() {
         window.location.reload(); // every screen re-reads the restored account from scratch
         return;
       }
-      setAccount({ nickname: result.nickname, google_linked: result.google_linked });
+      setAccount({ nickname: result.nickname, google_linked: result.google_linked, support_code: result.support_code });
     } catch (e) {
       setGoogleError((e as Error).message || t("error.google"));
     }
@@ -85,6 +89,16 @@ export default function SettingsScreen() {
       setAccount(await unlinkGoogleAccount(userId));
     } catch (e) {
       setGoogleError((e as Error).message);
+    }
+  }
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(account!.support_code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* the code is selectable text: it can still be copied by hand */
     }
   }
 
@@ -141,7 +155,16 @@ export default function SettingsScreen() {
         ) : (
           <>
             <p className="hint">{t("account.google.why")}</p>
-            {googleSignInAvailable ? <div ref={googleButton} /> : <p className="hint">{t("account.google.unavailable")}</p>}
+            {!googleSignInAvailable ? (
+              <p className="hint">{t("account.google.unavailable")}</p>
+            ) : googleWanted ? (
+              <div ref={googleButton} />
+            ) : (
+              <>
+                <button className="btn btn-secondary left" onClick={() => setGoogleWanted(true)}>{t("account.google.connect")}</button>
+                <p className="hint">{t("account.google.loads")}</p>
+              </>
+            )}
             <p className="hint">{t("account.google.optional")}</p>
           </>
         )}
@@ -151,6 +174,20 @@ export default function SettingsScreen() {
       {error && <p className="error" role="alert">{error}</p>}
 
       <button className="btn btn-link left" onClick={restartTours}>{t("tour.again")}</button>
+
+      <div className="panel">
+        <h3><Icon name="book" size={20} /> {t("account.data.title")}</h3>
+        {account?.support_code && (
+          <>
+            <p className="hint">{t("account.data.code")}</p>
+            <div className="story-actions">
+              <code className="user-code">{account.support_code}</code>
+              <button className="btn btn-link small" onClick={copyCode}>{copied ? t("account.data.copied") : t("account.data.copy")}</button>
+            </div>
+          </>
+        )}
+        <LegalLinks />
+      </div>
 
       <div className="panel panel-danger">
         <h3><Icon name="trash" size={20} /> {t("account.delete.title")}</h3>

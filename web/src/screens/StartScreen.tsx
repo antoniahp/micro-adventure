@@ -4,6 +4,7 @@ import ContextCard, { type ContextState } from "../components/ContextCard";
 import { getPlace, rememberedPlaceAllowed } from "../location";
 import Trail from "../components/Trail";
 import Icon from "../components/Icon";
+import LegalLinks from "../components/LegalLinks";
 import Loader from "../components/Loader";
 import { useI18n, type TextKey } from "../i18n";
 import { useSky } from "../sky";
@@ -146,6 +147,7 @@ export default function StartScreen({ onStarted }: { onStarted: (walkId: string)
 
       {error && <p className="error" role="alert">{error}</p>}
       <button className="btn btn-primary btn-big" onClick={submit}>{t("start.submit")}</button>
+      <LegalLinks />
     </section>
   );
 }
