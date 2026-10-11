@@ -41,7 +41,10 @@ export default function Tour({ steps, onDone }: { steps: TourStep[]; onDone: () 
   useEffect(() => {
     if (!step) return;
     const element = document.querySelector(`[data-tour="${step.target}"]`);
-    element?.scrollIntoView({ block: "center", behavior: "auto" });
+    // Only scroll when the element is out of view: the tabs are always on screen, and scrolling for them
+    // would push the top bar (and the language switch) out of sight for no reason.
+    const r = element?.getBoundingClientRect();
+    if (element && r && (r.top < 0 || r.bottom > window.innerHeight)) element.scrollIntoView({ block: "center", behavior: "auto" });
     measure();
     next.current?.focus();
   }, [step, measure]);
@@ -57,7 +60,7 @@ export default function Tour({ steps, onDone }: { steps: TourStep[]; onDone: () 
 
   useLayoutEffect(() => {
     if (bubble.current) setBubbleHeight(bubble.current.offsetHeight);
-  }, [index, box]);
+  }, [index, box, step?.text]); // the text changes height when the person switches language mid-guide
 
   useEffect(() => {
     if (!step) onDone(); // nothing on screen to point at
