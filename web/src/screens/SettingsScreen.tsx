@@ -13,6 +13,9 @@ export default function SettingsScreen() {
   const { t, lang } = useI18n();
   const userId = getUserId();
   const [account, setAccount] = useState<Account | null>(null);
+  // Nothing is drawn until the account arrives: an empty field first ("Por ejemplo, Jose") and the real name a
+  // moment later read as a flicker, and the layout jumped when "Quitar nombre" appeared.
+  const [loaded, setLoaded] = useState(false);
   const [nickname, setNicknameField] = useState("");
   const [nicknameSaved, setNicknameSaved] = useState(false);
   const [error, setError] = useState("");
@@ -20,12 +23,12 @@ export default function SettingsScreen() {
   const googleButton = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    getAccount(userId).then((loaded) => {
-      setAccount(loaded);
-      setNicknameField(loaded.nickname ?? "");
+    getAccount(userId).then((found) => {
+      setAccount(found);
+      setNicknameField(found.nickname ?? "");
     }).catch(() => {
       /* the panels below just stay at their empty defaults */
-    });
+    }).finally(() => setLoaded(true));
   }, [userId]);
 
   // The person left to sign in at Google and just came back: finish linking the account they picked,
@@ -37,10 +40,10 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
-    if (!googleSignInAvailable || !googleButton.current || account?.google_linked) return;
+    if (!loaded || !googleSignInAvailable || !googleButton.current || account?.google_linked) return;
     renderGoogleSignIn(googleButton.current, lang).catch((e: Error) => setGoogleError(e.message || t("error.google")));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account?.google_linked, userId, lang]);
+  }, [loaded, account?.google_linked, userId, lang]);
 
   async function linkGoogle(idToken: string) {
     setGoogleError("");
@@ -80,6 +83,8 @@ export default function SettingsScreen() {
       setGoogleError((e as Error).message);
     }
   }
+
+  if (!loaded) return <p className="hint">{t("settings.opening")}</p>;
 
   return (
     <section className="reminders">
