@@ -12,6 +12,8 @@ class GoogleLinkIn(Schema):
 class AccountOut(Schema):
     nickname: str | None
     google_linked: bool
+    legal_accepted: bool  # accepted the current version of the privacy policy and terms (domain/models/legal.py)
+    support_code: str  # short code to quote when writing about one's data (domain/models/support_code.py)
 
 
 class GoogleLinkOut(AccountOut):

@@ -106,4 +106,6 @@ export type Reminders = {
 export type Account = {
   nickname: string | null;
   google_linked: boolean;
+  legal_accepted: boolean; // accepted the current privacy policy and terms (else the notice shows next to the buttons: legalConsent.ts)
+  support_code: string; // "MA-7K3F-9Q2X": what the person quotes when writing about their data
 };

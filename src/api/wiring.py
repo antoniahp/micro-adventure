@@ -9,7 +9,9 @@ from microadventures.infrastructure.api.fallback_weather_service import Fallback
 from microadventures.infrastructure.api.met_norway_weather_service import MetNorwayWeatherService
 from microadventures.infrastructure.api.open_meteo_weather_service import OpenMeteoWeatherService
 
+from microadventures.application.commands.accept_legal.accept_legal_command_handler import AcceptLegalCommandHandler
 from microadventures.application.commands.claim_account.claim_account_command_handler import ClaimAccountCommandHandler
+from microadventures.application.commands.delete_account.delete_account_command_handler import DeleteAccountCommandHandler
 from microadventures.application.commands.set_nickname.set_nickname_command_handler import SetNicknameCommandHandler
 from microadventures.application.commands.link_google_account.link_google_account_command_handler import LinkGoogleAccountCommandHandler
 from microadventures.application.commands.unlink_google_account.unlink_google_account_command_handler import UnlinkGoogleAccountCommandHandler
@@ -130,12 +132,25 @@ def link_google_account_handler() -> LinkGoogleAccountCommandHandler:
     return LinkGoogleAccountCommandHandler(account_service=_account_repository(), verifier=_google_identity_verifier())
 
 
+def accept_legal_handler() -> AcceptLegalCommandHandler:
+    return AcceptLegalCommandHandler(account_service=_account_repository())
+
+
 def unlink_google_account_handler() -> UnlinkGoogleAccountCommandHandler:
     return UnlinkGoogleAccountCommandHandler(account_service=_account_repository())
 
 
 def _reminder_repository() -> ReminderService:
     return DbReminderRepository()
+
+
+def delete_account_handler() -> DeleteAccountCommandHandler:
+    return DeleteAccountCommandHandler(
+        walk_service=_walk_repository(),
+        reflection_service=_reflection_repository(),
+        reminder_service=_reminder_repository(),
+        account_service=_account_repository(),
+    )
 
 
 def _notification_sender() -> NotificationSender | BotWebhook:

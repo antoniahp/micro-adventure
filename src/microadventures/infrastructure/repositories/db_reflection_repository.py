@@ -13,3 +13,6 @@ class DbReflectionRepository(ReflectionService):
 
     def find_by_user_id(self, user_id: str) -> list[WeeklyReflection]:
         return list(WeeklyReflection.objects.filter(user_id=user_id))
+
+    def delete_by_user_id(self, user_id: str) -> None:
+        WeeklyReflection.objects.filter(user_id=user_id).delete()

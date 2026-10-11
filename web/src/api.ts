@@ -200,6 +200,11 @@ export async function unlinkTelegram(userId: string) {
   await request(`/users/${userId}/telegram`, { method: "DELETE" });
 }
 
+// "Accept and start": the server records which version of the privacy policy and terms, and when.
+export async function acceptLegal(userId: string) {
+  return (await request<Account>(`/users/${userId}/account/legal`, { method: "POST" }))!;
+}
+
 export async function getAccount(userId: string) {
   return (await request<Account>(`/users/${userId}/account`))!;
 }
@@ -224,6 +229,11 @@ export async function linkGoogleAccount(userId: string, idToken: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id_token: idToken }),
   }))!;
+}
+
+// Everything kept about this person goes, for good. The caller then forgets the id and tokens (see SettingsScreen).
+export async function deleteAccount(userId: string) {
+  await request(`/users/${userId}/account`, { method: "DELETE" });
 }
 
 export async function unlinkGoogleAccount(userId: string) {

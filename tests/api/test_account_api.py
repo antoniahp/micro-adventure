@@ -1,10 +1,19 @@
 import json
+from datetime import datetime, timezone
 
 import pytest
 
 from api import wiring
+from microadventures.domain.models.legal import CURRENT_LEGAL_VERSION
+from microadventures.domain.models.support_code import support_code
 from tests.auth_helpers import signed_in
-from tests.fakes import FakeGoogleIdentityVerifier, InMemoryAccountRepository
+from tests.fakes import (
+    FakeGoogleIdentityVerifier,
+    InMemoryAccountRepository,
+    InMemoryReflectionRepository,
+    InMemoryReminderRepository,
+    InMemoryWalkRepository,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -22,7 +31,7 @@ def test_a_fresh_account_has_no_nickname_and_no_google():
     response = client.get("/api/users/user-1/account")
 
     assert response.status_code == 200
-    assert response.json() == {"nickname": None, "google_linked": False}
+    assert response.json() == {"nickname": None, "google_linked": False, "legal_accepted": False, "support_code": support_code("user-1")}
 
 
 def test_setting_a_nickname():
@@ -71,6 +80,8 @@ def test_linking_a_google_account():
     assert body == {
         "nickname": None,
         "google_linked": True,
+        "legal_accepted": False,
+        "support_code": support_code("user-1"),
         "switched": False,
         "user_id": "user-1",
         "access": None,
@@ -114,7 +125,7 @@ def test_unlinking_google():
     response = client.post("/api/users/user-1/account/google/unlink")
 
     assert response.status_code == 200
-    assert response.json() == {"nickname": None, "google_linked": False}
+    assert response.json() == {"nickname": None, "google_linked": False, "legal_accepted": False, "support_code": support_code("user-1")}
 
 
 def test_cannot_link_google_for_another_user():
@@ -125,3 +136,65 @@ def test_cannot_link_google_for_another_user():
     )
 
     assert response.status_code == 403
+
+
+@pytest.fixture
+def stores(monkeypatch):
+    walks, reflections, reminders = InMemoryWalkRepository(), InMemoryReflectionRepository(), InMemoryReminderRepository()
+    monkeypatch.setattr(wiring, "_walk_repository", lambda: walks)
+    monkeypatch.setattr(wiring, "_reflection_repository", lambda: reflections)
+    monkeypatch.setattr(wiring, "_reminder_repository", lambda: reminders)
+    return walks, reflections, reminders
+
+
+def test_deleting_the_account_answers_204_and_forgets_the_nickname(in_memory_adapters, stores):
+    accounts, _ = in_memory_adapters
+    accounts.claim("user-1")
+    client = signed_in("user-1")
+    client.put("/api/users/user-1/account/nickname", data=json.dumps({"nickname": "Jose"}), content_type="application/json")
+
+    response = client.delete("/api/users/user-1/account")
+
+    assert response.status_code == 204
+    assert accounts.find_by_user_id("user-1") is None
+
+
+def test_cannot_delete_someone_elses_account(in_memory_adapters, stores):
+    accounts, _ = in_memory_adapters
+    accounts.claim("user-1")
+
+    response = signed_in("user-2").delete("/api/users/user-1/account")
+
+    assert response.status_code == 403
+    assert accounts.find_by_user_id("user-1") is not None
+
+
+def test_deleting_needs_a_token():
+    from django.test import Client
+
+    assert Client().delete("/api/users/user-1/account").status_code == 401
+
+
+def test_accepting_the_privacy_policy_and_terms_is_recorded_with_the_current_version_and_the_time(in_memory_adapters):
+    accounts, _ = in_memory_adapters
+    accounts.claim("user-1")
+
+    response = signed_in("user-1").post("/api/users/user-1/account/legal")
+
+    assert response.status_code == 200
+    assert response.json()["legal_accepted"] is True
+    account = accounts.find_by_user_id("user-1")
+    assert account.legal_version == CURRENT_LEGAL_VERSION
+    assert account.legal_accepted_at is not None
+
+
+def test_an_older_acceptance_asks_again_when_the_policy_changes(in_memory_adapters):
+    accounts, _ = in_memory_adapters
+    accounts.claim("user-1")
+    accounts.accept_legal("user-1", "2020-01-01", datetime(2020, 1, 1, tzinfo=timezone.utc))
+
+    assert signed_in("user-1").get("/api/users/user-1/account").json()["legal_accepted"] is False
+
+
+def test_cannot_accept_for_someone_else():
+    assert signed_in("user-2").post("/api/users/user-1/account/legal").status_code == 403

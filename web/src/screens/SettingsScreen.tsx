@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { getAccount, linkGoogleAccount, setNickname, unlinkGoogleAccount } from "../api";
+import { deleteAccount, getAccount, linkGoogleAccount, setNickname, unlinkGoogleAccount } from "../api";
 import { consumePendingGoogleCredential, googleSignInAvailable, renderGoogleSignIn } from "../google";
 import Icon from "../components/Icon";
+import LegalLinks from "../components/LegalLinks";
+import LegalNotice from "../components/LegalNotice";
+import { acceptLegalIfNeeded, useLegalNoticeNeeded } from "../legalConsent";
+import { restartTours } from "../components/tourStorage";
 import { useI18n } from "../i18n";
 import { adoptSession } from "../session";
-import { getUserId } from "../storage";
+import { forgetEverything, getUserId } from "../storage";
 import type { Account } from "../types";
 
 // Both optional: nothing here is needed to use the app, and leaving it untouched leaves the app
@@ -20,6 +24,13 @@ export default function SettingsScreen() {
   const [nicknameSaved, setNicknameSaved] = useState(false);
   const [error, setError] = useState("");
   const [googleError, setGoogleError] = useState("");
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  // Google's script is only fetched once the person asks for it: until then, opening Settings sends nothing to Google.
+  const [googleWanted, setGoogleWanted] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const legalNotice = useLegalNoticeNeeded();
   const googleButton = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -40,10 +51,10 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
-    if (!loaded || !googleSignInAvailable || !googleButton.current || account?.google_linked) return;
+    if (!loaded || !googleWanted || !googleSignInAvailable || !googleButton.current || account?.google_linked) return;
     renderGoogleSignIn(googleButton.current, lang).catch((e: Error) => setGoogleError(e.message || t("error.google")));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, account?.google_linked, userId, lang]);
+  }, [loaded, googleWanted, account?.google_linked, userId, lang]);
 
   async function linkGoogle(idToken: string) {
     setGoogleError("");
@@ -55,7 +66,7 @@ export default function SettingsScreen() {
         window.location.reload(); // every screen re-reads the restored account from scratch
         return;
       }
-      setAccount({ nickname: result.nickname, google_linked: result.google_linked });
+      setAccount({ nickname: result.nickname, google_linked: result.google_linked, legal_accepted: result.legal_accepted, support_code: result.support_code });
     } catch (e) {
       setGoogleError((e as Error).message || t("error.google"));
     }
@@ -65,6 +76,7 @@ export default function SettingsScreen() {
 
   async function saveNickname(value: string) {
     try {
+      await acceptLegalIfNeeded();
       const updated = await setNickname(userId, value || null);
       setAccount(updated);
       setNicknameField(updated.nickname ?? "");
@@ -84,12 +96,47 @@ export default function SettingsScreen() {
     }
   }
 
+  async function connectGoogle() {
+    setGoogleError("");
+    try {
+      await acceptLegalIfNeeded(); // before anything is fetched from Google
+      setGoogleWanted(true);
+    } catch (e) {
+      setGoogleError((e as Error).message);
+    }
+  }
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(account!.support_code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* the code is selectable text: it can still be copied by hand */
+    }
+  }
+
+  // Two steps on the page itself (no browser dialog): a first tap only asks, the second one deletes.
+  async function removeAccount() {
+    setDeleteError("");
+    setDeleting(true);
+    try {
+      await deleteAccount(userId);
+      forgetEverything();
+      window.location.reload(); // back to a brand-new start, with a new anonymous id
+    } catch (e) {
+      setDeleteError((e as Error).message);
+      setDeleting(false);
+    }
+  }
+
   if (!loaded) return <p className="hint">{t("settings.opening")}</p>;
 
   return (
     <section className="reminders">
       <h2>{t("settings.title")}</h2>
       <p className="hint">{t("settings.intro")}</p>
+      {legalNotice && <LegalNotice lead="legal.notice.settings" />}
 
       <div className="panel">
         <h3><Icon name="user" size={20} /> {t("account.nickname.title")}</h3>
@@ -123,7 +170,16 @@ export default function SettingsScreen() {
         ) : (
           <>
             <p className="hint">{t("account.google.why")}</p>
-            {googleSignInAvailable ? <div ref={googleButton} /> : <p className="hint">{t("account.google.unavailable")}</p>}
+            {!googleSignInAvailable ? (
+              <p className="hint">{t("account.google.unavailable")}</p>
+            ) : googleWanted ? (
+              <div ref={googleButton} />
+            ) : (
+              <>
+                <button className="btn btn-secondary left" onClick={connectGoogle}>{t("account.google.connect")}</button>
+                <p className="hint">{t("account.google.loads")}</p>
+              </>
+            )}
             <p className="hint">{t("account.google.optional")}</p>
           </>
         )}
@@ -131,6 +187,43 @@ export default function SettingsScreen() {
       </div>
 
       {error && <p className="error" role="alert">{error}</p>}
+
+      <button className="btn btn-link left" onClick={restartTours}>{t("tour.again")}</button>
+
+      <div className="panel">
+        <h3><Icon name="book" size={20} /> {t("account.data.title")}</h3>
+        {account?.support_code && (
+          <>
+            <p className="hint">{t("account.data.code")}</p>
+            <div className="story-actions">
+              <code className="user-code">{account.support_code}</code>
+              <button className="btn btn-link small" onClick={copyCode}>{copied ? t("account.data.copied") : t("account.data.copy")}</button>
+            </div>
+          </>
+        )}
+        <LegalLinks />
+      </div>
+
+      <div className="panel panel-danger">
+        <h3><Icon name="trash" size={20} /> {t("account.delete.title")}</h3>
+        <p className="hint">{t("account.delete.why")}</p>
+        {confirmingDelete ? (
+          <>
+            <p className="error" role="alert">{t("account.delete.confirm")}</p>
+            <div className="story-actions">
+              <button className="btn btn-danger" disabled={deleting} onClick={removeAccount}>
+                {deleting ? t("account.delete.working") : t("account.delete.yes")}
+              </button>
+              <button className="btn btn-secondary" disabled={deleting} onClick={() => setConfirmingDelete(false)}>
+                {t("account.delete.no")}
+              </button>
+            </div>
+          </>
+        ) : (
+          <button className="btn btn-secondary left" onClick={() => setConfirmingDelete(true)}>{t("account.delete.start")}</button>
+        )}
+        {deleteError && <p className="error" role="alert">{deleteError}</p>}
+      </div>
     </section>
   );
 }

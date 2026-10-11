@@ -16,3 +16,8 @@ class ReflectionService(ABC):
     @abstractmethod
     def find_by_user_id(self, user_id: str) -> list[WeeklyReflection]:
         raise NotImplementedError
+
+    @abstractmethod
+    def delete_by_user_id(self, user_id: str) -> None:
+        """Removes every weekly reflection of this person."""
+        raise NotImplementedError

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Protocol
 
 
@@ -8,6 +9,7 @@ class AccountLike(Protocol):
     user_id: str
     nickname: str | None
     google_sub: str | None
+    legal_version: str | None
     # No email field here, on purpose: nothing above the repository ever needs the real address,
     # only whether a Google account is linked (google_sub) — see core/email_hash.py.
 
@@ -36,4 +38,14 @@ class AccountService(ABC):
 
     @abstractmethod
     def unlink_google(self, user_id: str) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def accept_legal(self, user_id: str, version: str, at: datetime) -> None:
+        """Records which version of the privacy policy and terms the person accepted, and when."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_by_user_id(self, user_id: str) -> None:
+        """Removes the account itself: nickname and Google link go with it."""
         raise NotImplementedError

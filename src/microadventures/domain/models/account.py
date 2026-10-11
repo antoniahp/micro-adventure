@@ -23,3 +23,8 @@ class Account(models.Model):
     nickname = models.CharField(max_length=50, null=True, blank=True)
     google_sub = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     google_email_hash = models.CharField(max_length=64, null=True, blank=True)
+
+    # The proof the person accepted the terms after seeing the privacy policy: which version (domain/models/legal.py)
+    # and when. Gone with the account when it's deleted, like everything else.
+    legal_version = models.CharField(max_length=20, null=True, blank=True)
+    legal_accepted_at = models.DateTimeField(null=True, blank=True)

@@ -12,7 +12,7 @@
   --mint: #10a878;
   --violet: #7357e8;
   --danger: #b3261e;
-  --font: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: "Bricolage Grotesque Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -41,7 +41,8 @@ section > * { min-width: 0; } /* a grid child's default min-width is its content
 
 .topbar { display: flex; align-items: center; gap: 10px; padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 0; color: var(--dusk); }
 .topbar h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
-.lang { margin-left: auto; display: flex; padding: 3px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
+/* Above the guide's dimmed layer (.tour, z-index 50): the language can be changed while the bubbles are showing. */
+.lang { position: relative; z-index: 51; margin-left: auto; display: flex; padding: 3px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
 .lang button { min-width: 40px; min-height: 32px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; font-size: 0.82rem; font-weight: 800; color: var(--muted); cursor: pointer; }
 .lang button[aria-pressed="true"] { background: var(--dusk); color: #fff; }
 
@@ -72,6 +73,17 @@ h3 { font-size: 1.15rem; font-weight: 800; }
 .btn-link.left { justify-self: start; padding-left: 0; }
 .btn-big { padding: 16px 22px; font-size: 1.15rem; width: 100%; background: var(--sun); color: var(--dusk); }
 .btn-big:hover:not(:disabled) { background: #f0a800; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: #8f1e18; }
+.panel-danger { border-color: #f1c9c5; }
+.user-code { min-width: 0; overflow-wrap: anywhere; padding: 6px 10px; border-radius: 8px; background: var(--mist); font-size: 1rem; font-weight: 700; letter-spacing: 0.06em; }
+.legal-notice { margin: 0; font-size: 0.88rem; line-height: 1.45; color: var(--muted); text-align: center; text-wrap: balance; }
+.reminders .legal-notice { text-align: left; }
+.legal-notice a { color: var(--dusk); font-weight: 700; text-underline-offset: 3px; }
+.legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; margin: 0; font-size: 0.88rem; color: var(--muted); }
+.legal-links a { color: var(--muted); text-underline-offset: 3px; }
+.panel .legal-links { justify-content: flex-start; }
+.panel-danger h3 { color: var(--danger); }
 .btn:disabled, .btn.disabled { opacity: 0.5; cursor: default; }
 .btn-primary:disabled { background: #c9cdd6; color: #6b7280; opacity: 1; }
 
@@ -323,3 +335,15 @@ a.btn { text-decoration: none; justify-self: start; }
 .spinner { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 3px solid var(--line); border-top-color: #2E6FEA; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+
+/* ---------- Guide bubbles ---------- */
+/* The page is dimmed by the highlight's own shadow, so the highlighted element stays bright and nothing extra
+   has to be cut out. The transparent layer above everything keeps taps for the bubble only. */
+.tour { position: fixed; inset: 0; z-index: 50; }
+.tour-spot { position: fixed; border-radius: 16px; box-shadow: 0 0 0 9999px rgb(15 17 48 / 0.62); outline: 3px solid var(--sun); transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease; pointer-events: none; }
+.tour-bubble { position: fixed; display: grid; gap: 6px; padding: 16px 18px 12px; border-radius: 18px; background: var(--paper); color: var(--ink); box-shadow: 0 18px 50px rgb(0 0 0 / 0.3); }
+.tour-bubble h3 { font-size: 1.1rem; }
+.tour-bubble p { font-size: 0.95rem; }
+.tour-count { color: var(--muted); font-size: 0.8rem !important; font-weight: 700; letter-spacing: 0.02em; }
+.tour-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .tour-spot { transition: none; } }

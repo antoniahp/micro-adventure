@@ -8,6 +8,9 @@ from ninja_jwt.authentication import JWTTokenUserAuth
 from ninja_jwt.exceptions import TokenError
 from ninja_jwt.tokens import RefreshToken
 
+from api import wiring
+from microadventures.application.queries.find_account.find_account_query import FindAccountQuery
+
 UserAuth = JWTTokenUserAuth()
 
 
@@ -22,6 +25,10 @@ def renew_tokens(refresh_token: str) -> dict:
     try:
         refresh = RefreshToken(refresh_token)
     except TokenError:
+        raise HttpError(401, "Invalid or expired token")
+    # A long token lasts a year: one left on another phone must not keep a deleted account going.
+    # Every session began at /auth/start, which created the account, so a missing one was deleted.
+    if wiring.find_account_handler().handle(FindAccountQuery(user_id=refresh["user_id"])) is None:
         raise HttpError(401, "Invalid or expired token")
     return issue_tokens(refresh["user_id"])
 

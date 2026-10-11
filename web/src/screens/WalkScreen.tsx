@@ -5,6 +5,8 @@ import Icon from "../components/Icon";
 import Loader from "../components/Loader";
 import { stickerWords, type Sticker } from "../components/stickerWords";
 import StoryForm from "../components/StoryForm";
+import Tour from "../components/Tour";
+import { markTourSeen, tourSeen } from "../components/tourStorage";
 import { useI18n, type TextKey } from "../i18n";
 import type { Challenge, Walk } from "../types";
 import { getUserId } from "../storage";
@@ -28,6 +30,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const [finishError, setFinishError] = useState("");
   const [before, setBefore] = useState<Set<string> | null>(null); // stickers already earned when the walk was opened
   const [earned, setEarned] = useState<{ sticker: Sticker; level: number }[]>([]); // stickers this walk has just won
+  const [walkTour, setWalkTour] = useState(false); // three bubbles the first time someone sees their challenges
 
   // useEffect runs after the screen is drawn. Here: load the walk once per walkId.
   useEffect(() => {
@@ -48,6 +51,19 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view]);
+
+  // The first walk explains its three buttons once. It waits for the app guide, so two never overlap.
+  const hasPending = walk?.challenges.some((c) => c.status !== "completed") ?? false;
+  useEffect(() => {
+    if (view !== "challenges" || !hasPending || tourSeen("walk") || !tourSeen("app")) return;
+    const timer = window.setTimeout(() => setWalkTour(true), 500);
+    return () => window.clearTimeout(timer);
+  }, [view, hasPending]);
+
+  function closeWalkTour() {
+    markTourSeen("walk");
+    setWalkTour(false);
+  }
 
   // Runs an action on one challenge, then reloads the walk to show the new state.
   async function act(challenge: Challenge, action: () => Promise<void>, photo?: File) {
@@ -113,6 +129,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
   const doneCount = walk.challenges.filter((c) => c.status === "completed").length;
   const total = walk.challenges.length;
   const allDone = doneCount === total;
+  const firstPending = walk.challenges.findIndex((c) => c.status !== "completed"); // the guide points at this one
   const told = walk.finished_at !== null;
   const decimal = lang === "es" ? "," : ".";
   const stats = [
@@ -205,8 +222,9 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
       </div>
 
       <ol className="entries">
-        {walk.challenges.map((c) => {
+        {walk.challenges.map((c, position) => {
           const category = CATEGORIES[c.category] ?? FALLBACK_CATEGORY;
+          const guided = position === firstPending;
           const done = c.status === "completed";
           const busy = busyId === c.id;
           return (
@@ -241,7 +259,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
                   <>
                     {c.category === "people_watching" && <p className="hint">{t("walk.noPeoplePhotos")}</p>}
                     <div className="entry-actions">
-                      <button className="btn btn-primary" disabled={busy} onClick={() => setTelling(c.id)}>
+                      <button data-tour={guided ? "answer" : undefined} className="btn btn-primary" disabled={busy} onClick={() => setTelling(c.id)}>
                         <Icon name="pen" size={18} /> {t("walk.tell")}
                       </button>
                       {c.accepts_photo && (
@@ -262,7 +280,7 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
                           />
                         </label>
                       )}
-                      <button className="btn btn-link" disabled={busy || swapsLeft === 0} onClick={() => act(c, () => swapChallenge(walk.id, c.id))}>
+                      <button data-tour={guided ? "swap" : undefined} className="btn btn-link" disabled={busy || swapsLeft === 0} onClick={() => act(c, () => swapChallenge(walk.id, c.id))}>
                         {swapsLeft === 0 ? t("walk.noSwaps") : t("walk.swap", { n: swapsLeft })}
                       </button>
                     </div>
@@ -279,8 +297,19 @@ export default function WalkScreen({ walkId, onFinished, onOpenNotebook }: Props
       ) : (
         <>
           <p className="hint">{t("walk.swapWarning")}</p>
-          <button className="btn btn-link left" onClick={() => setView(told ? "done" : "tell")}>{t("walk.finish")}</button>
+          <button data-tour="finish" className="btn btn-link left" onClick={() => setView(told ? "done" : "tell")}>{t("walk.finish")}</button>
         </>
+      )}
+
+      {walkTour && (
+        <Tour
+          onDone={closeWalkTour}
+          steps={[
+            { target: "answer", title: t("tour.walk.answer.title"), text: t("tour.walk.answer.text") },
+            { target: "swap", title: t("tour.walk.swap.title"), text: t("tour.walk.swap.text") },
+            { target: "finish", title: t("tour.walk.finish.title"), text: t("tour.walk.finish.text") },
+          ]}
+        />
       )}
     </section>
   );

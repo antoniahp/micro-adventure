@@ -25,3 +25,6 @@ class DbWalkRepository(WalkService):
             return Walk.objects.get(id=id)
         except Walk.DoesNotExist:
             raise WalkNotFoundException(id)
+
+    def delete_by_user_id(self, user_id: str) -> None:
+        Walk.objects.filter(user_id=user_id).delete()

@@ -1,0 +1,69 @@
+/* The privacy and terms pages: the app's colours and type, set for reading. */
+:root {
+  --mist: #f5f4f8;
+  --paper: #ffffff;
+  --dusk: #25235f;
+  --ink: #1d1b3a;
+  --muted: #67647f;
+  --line: #dedbea;
+  --sun: #ffb300;
+  --font: "Bricolage Grotesque Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body.legal {
+  margin: 0 auto;
+  max-width: 760px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 20px calc(32px + env(safe-area-inset-bottom, 0px));
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--mist);
+}
+
+/* Without the script both languages show; with it, only the chosen one. */
+html[data-show="es"] article[lang="en"],
+html[data-show="en"] article[lang="es"] { display: none; }
+html:not([data-show]) .lang { display: none; }
+
+.legal-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.legal-back { color: var(--dusk); font-weight: 800; text-decoration: none; }
+.legal-back:hover { text-decoration: underline; }
+
+.lang { display: flex; padding: 3px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
+.lang button { min-width: 40px; min-height: 32px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; font: inherit; font-size: 0.82rem; font-weight: 800; color: var(--muted); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--dusk); color: #fff; }
+
+h1 { margin: 24px 0 4px; font-size: 2rem; line-height: 1.15; letter-spacing: -0.02em; color: var(--dusk); text-wrap: balance; }
+h2 { margin: 32px 0 8px; font-size: 1.2rem; line-height: 1.3; color: var(--dusk); text-wrap: balance; }
+p, ul { margin: 0 0 12px; max-width: 68ch; }
+ul { padding-left: 1.2em; }
+li + li { margin-top: 4px; }
+a { color: var(--dusk); text-underline-offset: 3px; }
+code { font-size: 0.88em; padding: 1px 5px; border-radius: 6px; background: var(--paper); border: 1px solid var(--line); }
+.updated { color: var(--muted); font-size: 0.9rem; }
+
+.summary { margin: 20px 0; padding: 16px 20px; border-radius: 20px; background: var(--paper); border: 2px solid var(--line); border-left: 6px solid var(--sun); }
+.summary h2 { margin-top: 0; }
+.summary ul { margin-bottom: 0; }
+
+.table-wrap { overflow-x: auto; margin: 0 0 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--paper); }
+table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 0.92rem; }
+th, td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { font-size: 0.8rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+
+.legal-foot { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 0.9rem; }
+
+@media (max-width: 600px) {
+  .table-wrap { overflow: visible; border: 0; background: transparent; }
+  table { min-width: 0; }
+  thead { display: none; }
+  table, tbody, tr, td { display: block; }
+  tr { margin-bottom: 10px; padding: 12px 14px; border-radius: 16px; background: var(--paper); border: 1px solid var(--line); }
+  td { padding: 2px 0; border: 0; }
+  td:first-child { font-weight: 700; }
+  td[data-label]:not(:first-child)::before { content: attr(data-label); display: block; margin-top: 8px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+}

@@ -1,3 +1,4 @@
+from datetime import datetime
 from copy import deepcopy
 from dataclasses import dataclass
 from uuid import UUID
@@ -50,6 +51,9 @@ class InMemoryWalkRepository(WalkService):
             raise WalkNotFoundException(id)
         return deepcopy(self.walks[id])
 
+    def delete_by_user_id(self, user_id: str) -> None:
+        self.walks = {id: walk for id, walk in self.walks.items() if walk.user_id != user_id}
+
 
 class StubChallengeGenerator(ChallengeGenerator):
     def __init__(self, challenges: list[Challenge]):
@@ -89,6 +93,9 @@ class InMemoryReminderRepository(ReminderService):
 
     def find_active(self) -> list[ReminderSettings]:
         return [deepcopy(s) for s in self.settings.values() if s.enabled and s.is_linked]
+
+    def delete_by_user_id(self, user_id: str) -> None:
+        self.settings.pop(user_id, None)
 
 
 class SpyNotificationSender(NotificationSender, BotWebhook):
@@ -143,12 +150,17 @@ class InMemoryReflectionRepository(ReflectionService):
     def find_by_user_id(self, user_id: str) -> list[WeeklyReflection]:
         return [deepcopy(r) for r in self.reflections if r.user_id == user_id]
 
+    def delete_by_user_id(self, user_id: str) -> None:
+        self.reflections = [r for r in self.reflections if r.user_id != user_id]
+
 
 @dataclass
 class _FakeAccount:
     user_id: str
     nickname: str | None = None
     google_sub: str | None = None
+    legal_version: str | None = None
+    legal_accepted_at: datetime | None = None
 
 
 class InMemoryAccountRepository(AccountService):
@@ -181,6 +193,14 @@ class InMemoryAccountRepository(AccountService):
         account = self.accounts.get(user_id)
         if account:
             account.google_sub = None
+
+    def accept_legal(self, user_id: str, version: str, at: datetime) -> None:
+        account = self.accounts.setdefault(user_id, _FakeAccount(user_id=user_id))
+        account.legal_version, account.legal_accepted_at = version, at
+
+    def delete_by_user_id(self, user_id: str) -> None:
+        self.accounts.pop(user_id, None)
+        self.claimed.discard(user_id)
 
 
 class FakeGoogleIdentityVerifier(GoogleIdentityVerifier):
