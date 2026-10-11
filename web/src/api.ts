@@ -226,6 +226,11 @@ export async function linkGoogleAccount(userId: string, idToken: string) {
   }))!;
 }
 
+// Everything kept about this person goes, for good. The caller then forgets the id and tokens (see SettingsScreen).
+export async function deleteAccount(userId: string) {
+  await request(`/users/${userId}/account`, { method: "DELETE" });
+}
+
 export async function unlinkGoogleAccount(userId: string) {
   return (await request<Account>(`/users/${userId}/account/google/unlink`, { method: "POST" }))!;
 }

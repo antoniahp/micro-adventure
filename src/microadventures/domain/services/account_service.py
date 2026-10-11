@@ -37,3 +37,8 @@ class AccountService(ABC):
     @abstractmethod
     def unlink_google(self, user_id: str) -> None:
         raise NotImplementedError
+
+    @abstractmethod
+    def delete_by_user_id(self, user_id: str) -> None:
+        """Removes the account itself: nickname and Google link go with it."""
+        raise NotImplementedError

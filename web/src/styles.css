@@ -72,6 +72,10 @@ h3 { font-size: 1.15rem; font-weight: 800; }
 .btn-link.left { justify-self: start; padding-left: 0; }
 .btn-big { padding: 16px 22px; font-size: 1.15rem; width: 100%; background: var(--sun); color: var(--dusk); }
 .btn-big:hover:not(:disabled) { background: #f0a800; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: #8f1e18; }
+.panel-danger { border-color: #f1c9c5; }
+.panel-danger h3 { color: var(--danger); }
 .btn:disabled, .btn.disabled { opacity: 0.5; cursor: default; }
 .btn-primary:disabled { background: #c9cdd6; color: #6b7280; opacity: 1; }
 

@@ -17,3 +17,8 @@ class WalkService(ABC):
     @abstractmethod
     def find_or_fail_by_id(self, id: UUID) -> Walk:
         raise NotImplementedError
+
+    @abstractmethod
+    def delete_by_user_id(self, user_id: str) -> None:
+        """Removes every walk of this person, with its challenges and stories."""
+        raise NotImplementedError

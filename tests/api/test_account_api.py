@@ -4,7 +4,13 @@ import pytest
 
 from api import wiring
 from tests.auth_helpers import signed_in
-from tests.fakes import FakeGoogleIdentityVerifier, InMemoryAccountRepository
+from tests.fakes import (
+    FakeGoogleIdentityVerifier,
+    InMemoryAccountRepository,
+    InMemoryReflectionRepository,
+    InMemoryReminderRepository,
+    InMemoryWalkRepository,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -125,3 +131,40 @@ def test_cannot_link_google_for_another_user():
     )
 
     assert response.status_code == 403
+
+
+@pytest.fixture
+def stores(monkeypatch):
+    walks, reflections, reminders = InMemoryWalkRepository(), InMemoryReflectionRepository(), InMemoryReminderRepository()
+    monkeypatch.setattr(wiring, "_walk_repository", lambda: walks)
+    monkeypatch.setattr(wiring, "_reflection_repository", lambda: reflections)
+    monkeypatch.setattr(wiring, "_reminder_repository", lambda: reminders)
+    return walks, reflections, reminders
+
+
+def test_deleting_the_account_answers_204_and_forgets_the_nickname(in_memory_adapters, stores):
+    accounts, _ = in_memory_adapters
+    accounts.claim("user-1")
+    client = signed_in("user-1")
+    client.put("/api/users/user-1/account/nickname", data=json.dumps({"nickname": "Jose"}), content_type="application/json")
+
+    response = client.delete("/api/users/user-1/account")
+
+    assert response.status_code == 204
+    assert accounts.find_by_user_id("user-1") is None
+
+
+def test_cannot_delete_someone_elses_account(in_memory_adapters, stores):
+    accounts, _ = in_memory_adapters
+    accounts.claim("user-1")
+
+    response = signed_in("user-2").delete("/api/users/user-1/account")
+
+    assert response.status_code == 403
+    assert accounts.find_by_user_id("user-1") is not None
+
+
+def test_deleting_needs_a_token():
+    from django.test import Client
+
+    assert Client().delete("/api/users/user-1/account").status_code == 401

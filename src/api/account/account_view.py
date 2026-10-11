@@ -1,8 +1,9 @@
-from ninja import Router
+from ninja import Router, Status
 
 from api import wiring
 from api.account.account_serializer import AccountOut, GoogleLinkIn, GoogleLinkOut, NicknameIn
 from api.auth.session import ensure_own_user, issue_tokens
+from microadventures.application.commands.delete_account.delete_account_command import DeleteAccountCommand
 from microadventures.application.commands.link_google_account.link_google_account_command import LinkGoogleAccountCommand
 from microadventures.application.commands.set_nickname.set_nickname_command import SetNicknameCommand
 from microadventures.application.commands.unlink_google_account.unlink_google_account_command import (
@@ -57,3 +58,11 @@ def unlink_google(request, user_id: str):
     ensure_own_user(request, user_id)
     wiring.unlink_google_account_handler().handle(UnlinkGoogleAccountCommand(user_id=user_id))
     return _out(_find(user_id))
+
+
+@router.delete("/{user_id}/account", response={204: None})
+def delete_account(request, user_id: str):
+    """Deletes everything this person has here, for good. The browser then forgets its id and tokens and starts afresh."""
+    ensure_own_user(request, user_id)
+    wiring.delete_account_handler().handle(DeleteAccountCommand(user_id=user_id))
+    return Status(204, None)

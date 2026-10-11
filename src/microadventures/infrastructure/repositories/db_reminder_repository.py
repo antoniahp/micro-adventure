@@ -17,3 +17,6 @@ class DbReminderRepository(ReminderService):
 
     def find_active(self) -> list[ReminderSettings]:
         return [s for s in ReminderSettings.objects.filter(enabled=True) if s.is_linked]
+
+    def delete_by_user_id(self, user_id: str) -> None:
+        ReminderSettings.objects.filter(user_id=user_id).delete()

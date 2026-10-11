@@ -8,7 +8,7 @@ from api.auth.session import issue_tokens
 from microadventures.domain.exceptions.weather_unavailable_exception import WeatherUnavailableException
 from microadventures.infrastructure.template_challenge_generator import TemplateChallengeGenerator
 from tests.auth_helpers import signed_in
-from tests.fakes import InMemoryAccountRepository, InMemoryWalkRepository
+from tests.fakes import InMemoryAccountRepository, InMemoryReflectionRepository, InMemoryReminderRepository, InMemoryWalkRepository
 
 LEGACY_ID = "5f0a8c1e-1111-4222-8333-944455556666"
 
@@ -18,6 +18,9 @@ def adapters(monkeypatch, settings):
     accounts, walks = InMemoryAccountRepository(), InMemoryWalkRepository()
     monkeypatch.setattr(wiring, "_account_repository", lambda: accounts)
     monkeypatch.setattr(wiring, "_walk_repository", lambda: walks)
+    reflections, reminders = InMemoryReflectionRepository(), InMemoryReminderRepository()
+    monkeypatch.setattr(wiring, "_reflection_repository", lambda: reflections)
+    monkeypatch.setattr(wiring, "_reminder_repository", lambda: reminders)
     monkeypatch.setattr(wiring, "_challenge_generator", lambda: TemplateChallengeGenerator())
     settings.PHOTO_VERIFIER = "trusting"
 
@@ -100,12 +103,21 @@ def test_a_refresh_token_does_not_open_the_api():
 
 
 def test_a_refresh_token_gives_a_new_pair():
-    refresh = issue_tokens("user-1")["refresh"]
+    session = _post(Client(), "/api/auth/start", {"user_id": LEGACY_ID}).json()
 
-    renewed = _post(Client(), "/api/auth/refresh", {"refresh": refresh})
+    renewed = _post(Client(), "/api/auth/refresh", {"refresh": session["refresh"]})
 
-    assert renewed.status_code == 200 and renewed.json()["user_id"] == "user-1"
-    assert Client(HTTP_AUTHORIZATION=f"Bearer {renewed.json()['access']}").get("/api/users/user-1/progress").status_code == 200
+    assert renewed.status_code == 200 and renewed.json()["user_id"] == LEGACY_ID
+    assert Client(HTTP_AUTHORIZATION=f"Bearer {renewed.json()['access']}").get(f"/api/users/{LEGACY_ID}/progress").status_code == 200
+
+
+def test_a_deleted_account_cannot_be_kept_alive_with_an_old_refresh_token():
+    session = _post(Client(), "/api/auth/start", {"user_id": LEGACY_ID}).json()
+    Client(HTTP_AUTHORIZATION=f"Bearer {session['access']}").delete(f"/api/users/{LEGACY_ID}/account")
+
+    renewed = _post(Client(), "/api/auth/refresh", {"refresh": session["refresh"]})
+
+    assert renewed.status_code == 401
 
 
 def test_a_broken_refresh_token_is_refused():

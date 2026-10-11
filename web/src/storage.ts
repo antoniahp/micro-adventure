@@ -19,6 +19,11 @@ export function resetUserId() {
   localStorage.removeItem("walkId"); // that walk belonged to the old id
 }
 
+// After deleting the account: nothing of the old id stays in this browser (the language is kept, it's not personal).
+export function forgetEverything() {
+  for (const key of ["userId", "session", "walkId", "sharesPlace", "tour.app.done", "tour.walk.done"]) localStorage.removeItem(key);
+}
+
 export const currentWalk = {
   get: () => localStorage.getItem("walkId"),
   set: (walkId: string) => localStorage.setItem("walkId", walkId),

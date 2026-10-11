@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { getAccount, linkGoogleAccount, setNickname, unlinkGoogleAccount } from "../api";
+import { deleteAccount, getAccount, linkGoogleAccount, setNickname, unlinkGoogleAccount } from "../api";
 import { consumePendingGoogleCredential, googleSignInAvailable, renderGoogleSignIn } from "../google";
 import Icon from "../components/Icon";
 import { restartTours } from "../components/tourStorage";
 import { useI18n } from "../i18n";
 import { adoptSession } from "../session";
-import { getUserId } from "../storage";
+import { forgetEverything, getUserId } from "../storage";
 import type { Account } from "../types";
 
 // Both optional: nothing here is needed to use the app, and leaving it untouched leaves the app
@@ -21,6 +21,9 @@ export default function SettingsScreen() {
   const [nicknameSaved, setNicknameSaved] = useState(false);
   const [error, setError] = useState("");
   const [googleError, setGoogleError] = useState("");
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const googleButton = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -85,6 +88,20 @@ export default function SettingsScreen() {
     }
   }
 
+  // Two steps on the page itself (no browser dialog): a first tap only asks, the second one deletes.
+  async function removeAccount() {
+    setDeleteError("");
+    setDeleting(true);
+    try {
+      await deleteAccount(userId);
+      forgetEverything();
+      window.location.reload(); // back to a brand-new start, with a new anonymous id
+    } catch (e) {
+      setDeleteError((e as Error).message);
+      setDeleting(false);
+    }
+  }
+
   if (!loaded) return <p className="hint">{t("settings.opening")}</p>;
 
   return (
@@ -134,6 +151,27 @@ export default function SettingsScreen() {
       {error && <p className="error" role="alert">{error}</p>}
 
       <button className="btn btn-link left" onClick={restartTours}>{t("tour.again")}</button>
+
+      <div className="panel panel-danger">
+        <h3><Icon name="trash" size={20} /> {t("account.delete.title")}</h3>
+        <p className="hint">{t("account.delete.why")}</p>
+        {confirmingDelete ? (
+          <>
+            <p className="error" role="alert">{t("account.delete.confirm")}</p>
+            <div className="story-actions">
+              <button className="btn btn-danger" disabled={deleting} onClick={removeAccount}>
+                {deleting ? t("account.delete.working") : t("account.delete.yes")}
+              </button>
+              <button className="btn btn-secondary" disabled={deleting} onClick={() => setConfirmingDelete(false)}>
+                {t("account.delete.no")}
+              </button>
+            </div>
+          </>
+        ) : (
+          <button className="btn btn-secondary left" onClick={() => setConfirmingDelete(true)}>{t("account.delete.start")}</button>
+        )}
+        {deleteError && <p className="error" role="alert">{deleteError}</p>}
+      </div>
     </section>
   );
 }

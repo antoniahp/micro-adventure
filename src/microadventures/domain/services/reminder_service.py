@@ -24,3 +24,8 @@ class ReminderService(ABC):
     def find_active(self) -> list[ReminderSettings]:
         """Everyone with reminders on and Telegram connected."""
         raise NotImplementedError
+
+    @abstractmethod
+    def delete_by_user_id(self, user_id: str) -> None:
+        """Removes the reminder settings, Telegram chat id included."""
+        raise NotImplementedError

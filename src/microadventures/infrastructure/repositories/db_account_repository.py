@@ -32,3 +32,6 @@ class DbAccountRepository(AccountService):
 
     def unlink_google(self, user_id: str) -> None:
         Account.objects.filter(user_id=user_id).update(google_sub=None, google_email_hash=None)
+
+    def delete_by_user_id(self, user_id: str) -> None:
+        Account.objects.filter(user_id=user_id).delete()
