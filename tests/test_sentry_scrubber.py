@@ -1,4 +1,4 @@
-from core.sentry_scrubber import before_send
+from core.sentry_scrubber import FILTERED, before_send, scrub
 
 
 def test_the_bot_token_never_reaches_sentry():
@@ -69,3 +69,26 @@ def test_the_gunicorn_access_log_hides_the_key():
     record = logging.LogRecord("gunicorn.access", logging.INFO, "x", 1, '"GET %(p)s"', ({"p": "/run?key=abc"},), None)
     SecretsFilter().filter(record)
     assert record.getMessage() == '"GET /run?key=[Filtered]"' and RedactingLogger
+
+
+def test_token_counts_reach_sentry_while_tokens_stay_out():
+    # The span data of a model call: the counts are what Sentry's AI views are built on, not secrets.
+    span_data = {
+        "gen_ai.usage.input_tokens": 430,
+        "gen_ai.usage.output_tokens": 21,
+        "gen_ai.usage.total_tokens": 451,
+        "gen_ai.response.tokens_per_second": 24.5,
+        "access_token": "eyJhbGciOi.secret",
+        "refresh_token": "eyJhbGciOi.other",
+        "bot_token": "123456:ABC-secret",
+    }
+
+    scrubbed = scrub(span_data)
+
+    assert scrubbed["gen_ai.usage.input_tokens"] == 430
+    assert scrubbed["gen_ai.usage.output_tokens"] == 21
+    assert scrubbed["gen_ai.usage.total_tokens"] == 451
+    assert scrubbed["gen_ai.response.tokens_per_second"] == 24.5
+    assert scrubbed["access_token"] == FILTERED
+    assert scrubbed["refresh_token"] == FILTERED
+    assert scrubbed["bot_token"] == FILTERED

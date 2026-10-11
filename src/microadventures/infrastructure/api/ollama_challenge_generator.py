@@ -15,6 +15,7 @@ from microadventures.domain.exceptions.challenge_generation_failed_exception imp
 from microadventures.infrastructure.api.model_tracing import record_usage, traced_model_call
 
 TOKENS_PER_CHALLENGE = 90  # 60 cut Spanish answers in half: broken JSON, so the template fallback answered
+MIN_TOKENS = 160  # the JSON around the challenges costs the same for one as for six: a swap needs the room too
 
 
 class OllamaChallengeGenerator(ChallengeGenerator):
@@ -39,7 +40,7 @@ class OllamaChallengeGenerator(ChallengeGenerator):
                     "stream": False,
                     "think": False,  # challenges are short: reasoning first only makes the walk slower and can eat the token budget
                     "keep_alive": "30m",
-                    "options": {"temperature": 0.8, "num_predict": TOKENS_PER_CHALLENGE * brief.count},
+                    "options": {"temperature": 0.8, "num_predict": max(MIN_TOKENS, TOKENS_PER_CHALLENGE * brief.count)},
                 },
                 timeout=self.timeout_seconds,
             )
@@ -149,22 +150,36 @@ def _category(raw, position: int, forced: ChallengeCategory | None) -> Challenge
     return list(ChallengeCategory)[position % len(ChallengeCategory)]  # unknown word: spread the categories
 
 
+TEXT_KEYS = ("text", "challenge", "reto", "description", "descripcion")
+
+
 def _items(data) -> list:
     """Finds the list of challenges, whatever shape the model gave it.
 
     The prompt asks for {"challenges": [...]}, but models also answer with a bare list,
-    or with another key such as "retos".
+    or with another key such as "retos". Asked for a single challenge (a swap), they often skip the
+    list altogether: one object, the sentence under a singular key, the sentence alone, or the
+    category as the key. Every one of those used to end in the template fallback.
     """
     if isinstance(data, list):
         return data
+    if isinstance(data, str):  # just the sentence
+        return [data]
     if isinstance(data, dict):
         if isinstance(data.get("challenges"), list):
             return data["challenges"]
         for value in data.values():
             if isinstance(value, list) and value and all(isinstance(item, dict) for item in value):
                 return value
-        if "text" in data:  # a single challenge, not wrapped in a list
+        if any(isinstance(data.get(key), str) for key in TEXT_KEYS):  # a single challenge, not wrapped in a list
             return [data]
+        for value in data.values():  # one challenge object under some key: {"challenges": {...}}, {"reto": {...}}
+            if isinstance(value, dict) and any(isinstance(value.get(key), str) for key in TEXT_KEYS):
+                return [value]
+        if len(data) == 1:  # {"sound": "Listen to..."}: the category as the key
+            (category, text), = data.items()
+            if isinstance(text, str):
+                return [{"category": category, "text": text}]
     raise KeyError("challenges")
 
 
@@ -184,7 +199,7 @@ def _as_item(item) -> dict:
 
 
 def _text(item: dict) -> str:
-    for key in ("text", "challenge", "reto", "description", "descripcion"):
+    for key in TEXT_KEYS:
         if isinstance(item.get(key), str):
             return item[key].strip()
     raise KeyError("text")
